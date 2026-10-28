@@ -1,20 +1,27 @@
-"""Encrypt the workbook data for the site.
+"""Encrypt the catalog data for the site.
 
-Reads data/catalog.xlsx, builds the site's data set, encrypts it with the password,
+Builds the site's data set from the catalog, encrypts it with the team password,
 and writes data/catalog.enc.js. The site decrypts it in the browser after the
-password is entered. The plain workbook and CSV stay in this folder and are
-listed in .gitignore, so only the encrypted file is ever pushed.
+password is entered. Only the encrypted file is ever published.
 
-Run after every edit to the workbook:
+Two sources:
 
-    python3 tools/encrypt_data.py                 (prompts for the password)
-    python3 tools/encrypt_data.py --password "…"  (no prompt)
+  Google Sheet (the normal path). Netlify runs this on every build:
+      python3 tools/encrypt_data.py --from-sheet
+  It reads three environment variables, set in Netlify's site settings:
+      CATALOG_SHEET_ID             the ID in the Sheet's URL
+      GOOGLE_SERVICE_ACCOUNT_JSON  the service account key (the whole JSON file)
+      SITE_PASSWORD                the team password
+  If any of them is missing, it keeps the committed data/catalog.enc.js and says so.
 
-Changing the password is the same command with the new password; everyone
-then needs the new one. Needs: pip3 install openpyxl cryptography
+  Local workbook (fallback, or to test on a Mac):
+      python3 tools/encrypt_data.py                 (reads data/catalog.xlsx, prompts for the password)
+      python3 tools/encrypt_data.py --password '…'  (no prompt; single quotes if it has a $)
+
+Changing the password: change SITE_PASSWORD in Netlify and trigger a deploy.
+Everyone then needs the new one. Needs: pip3 install -r requirements.txt
 """
 import json, os, sys, base64, getpass, secrets, re
-import openpyxl
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
@@ -22,12 +29,35 @@ from cryptography.hazmat.primitives import hashes
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 ITER = 250_000
 
-def build_data():
+TABS = ["Catalog", "Quick Finder", "Packages", "Package Detail", "Level Definitions", "Terms"]
+
+def to_dicts(table):
+    """Header row plus data rows -> list of dicts, skipping blank rows."""
+    if not table: return []
+    hdr = [str(h) if h is not None else "" for h in table[0]]
+    out = []
+    for r in table[1:]:
+        r = [("" if v is None else v) for v in r] + [""] * (len(hdr) - len(r))
+        if any(v != "" for v in r): out.append(dict(zip(hdr, r)))
+    return out
+
+def tables_from_xlsx():
+    import openpyxl
     wb = openpyxl.load_workbook(os.path.join(ROOT, "data", "catalog.xlsx"), data_only=True)
-    def rows(name):
-        if name not in wb.sheetnames: return []
-        ws = wb[name]; it = ws.iter_rows(values_only=True); hdr = [str(h) if h is not None else "" for h in next(it)]
-        return [dict(zip(hdr, [("" if v is None else v) for v in r])) for r in it if any(v not in (None, "") for v in r)]
+    return {n: [list(r) for r in wb[n].iter_rows(values_only=True)] for n in TABS if n in wb.sheetnames}
+
+def tables_from_sheet(sheet_id, sa_json):
+    from google.oauth2 import service_account
+    from google.auth.transport.requests import AuthorizedSession
+    creds = service_account.Credentials.from_service_account_info(json.loads(sa_json), scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"])
+    s = AuthorizedSession(creds); base = f"https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}"
+    have = {t["properties"]["title"] for t in s.get(base, params={"fields": "sheets.properties.title"}).json()["sheets"]}
+    names = [n for n in TABS if n in have]
+    r = s.get(base + "/values:batchGet", params={"ranges": [f"'{n}'" for n in names], "valueRenderOption": "UNFORMATTED_VALUE"}); r.raise_for_status()
+    return {n: vr.get("values", []) for n, vr in zip(names, r.json()["valueRanges"])}
+
+def build_data(tables):
+    def rows(name): return to_dicts(tables.get(name, []))
     def num(v):
         try: return float(str(v).replace("$", "").replace(",", ""))
         except ValueError: return 0.0
@@ -68,10 +98,20 @@ def build_data():
     return dict(items=items, cats=cats, packs=packs, levels=levels, terms=terms, rates=rates)
 
 def main():
-    pw = None
-    if "--password" in sys.argv: pw = sys.argv[sys.argv.index("--password") + 1]
-    if not pw: pw = getpass.getpass("Site password: ")
-    data = build_data()
+    if "--from-sheet" in sys.argv:
+        env = {k: os.environ.get(k, "").strip() for k in ("CATALOG_SHEET_ID", "GOOGLE_SERVICE_ACCOUNT_JSON", "SITE_PASSWORD")}
+        missing = [k for k, v in env.items() if not v]
+        if missing:
+            print("Not set in Netlify: " + ", ".join(missing) + ". Keeping the committed data/catalog.enc.js.")
+            return
+        pw = env["SITE_PASSWORD"]; tables = tables_from_sheet(env["CATALOG_SHEET_ID"], env["GOOGLE_SERVICE_ACCOUNT_JSON"])
+        if not tables.get("Catalog"): sys.exit("The Sheet has no Catalog tab (or it is empty). Nothing published.")
+    else:
+        pw = None
+        if "--password" in sys.argv: pw = sys.argv[sys.argv.index("--password") + 1]
+        if not pw: pw = getpass.getpass("Site password: ")
+        tables = tables_from_xlsx()
+    data = build_data(tables)
     plain = json.dumps(data, separators=(",", ":")).encode()
     salt = secrets.token_bytes(16); iv = secrets.token_bytes(12)
     key = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=ITER).derive(pw.encode())

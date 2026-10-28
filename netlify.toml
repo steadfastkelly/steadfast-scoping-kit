@@ -1,0 +1,5 @@
+# Every deploy rebuilds data/catalog.enc.js from the Google Sheet (see tools/encrypt_data.py).
+# Netlify installs requirements.txt before the build command runs.
+[build]
+  command = "python3 tools/encrypt_data.py --from-sheet"
+  publish = "."
