@@ -144,6 +144,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 .propgrid .wide{grid-column:1/-1}
 .propgrid input,.propgrid textarea,.propgrid select{font:inherit;font-family:var(--body);font-size:.9rem;letter-spacing:0;text-transform:none;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);width:100%}
 .propgrid textarea{resize:vertical;line-height:1.45}
+.vars td{padding:5px 6px} .vars code{font-family:var(--mono);font-size:.78rem}
 .propgrid .objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
 .tlset{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:6px}
 .tlset label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
@@ -342,7 +343,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     <div id="tl-flags" style="margin-top:14px"></div>
   </div>
   <div class="tlbox">
-    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Proposal</span><h2>Send it to PandaDoc as a built proposal.</h2><p class="small">Fill in the client and the overview, then copy the PandaDoc request and paste it into Claude (with the PandaDoc connector). It builds a linked draft: client name and dates as variables, the budget as a pricing table, the timeline, the payment schedule, the terms and the signature block. Review it in PandaDoc and send it from there.</p></div>
+    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Proposal</span><h2>Build it in PandaDoc from our template.</h2><p class="small">Fill in the client and the overview. The builder picks the template (Simple, Mid-range or Complex), lists the variable values to enter once, and copies each section ready to paste: the overview, the budget, the timeline and the payment schedule. Terms, acceptance and signatures are already in the template.</p></div>
     <div class="propgrid">
       <label class="wide">Project title<input id="p-title" placeholder="HCP Sales Aid Redesign" oninput="setProp('title',this.value)"></label>
       <label>Client company<input id="p-company" oninput="setProp('company',this.value)"></label>
@@ -357,10 +358,10 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <label class="wide">Key objectives (optional, one per box)<span class="objs"><input id="p-obj0" oninput="setProp('obj0',this.value)"><input id="p-obj1" oninput="setProp('obj1',this.value)"><input id="p-obj2" oninput="setProp('obj2',this.value)"></span></label>
     </div>
     <p class="small muted" id="p-tierhint" style="margin-top:8px"></p>
+    <div id="p-paste"></div>
   </div>
   <div class="toolbar" style="margin-top:14px">
-    <button class="pri" onclick="copyPandaDoc()">Copy PandaDoc request</button>
-    <button onclick="exportScope('items')">Copy line items for the proposal</button>
+    <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
     <button onclick="copyTimeline()">Copy timeline</button>
     <button onclick="exportScope('hours')">Copy hours for production</button>
     <button onclick="exportScope('skeleton')">Copy proposal skeleton</button>
@@ -758,7 +759,7 @@ function renderProp(){
   prop.obj.forEach((v,n)=>{ const el=document.getElementById("p-obj"+n); if(el && document.activeElement!==el) el.value=v; });
   renderPropTier();
 }
-function renderPropTier(){ const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
+function renderPropTier(){ renderPaste(); const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
 // Auto tier: Simple under $15,000 with one phase, Complex from $50,000 or with a full site build, Mid-range between.
 function propTier(){
   if(prop.tier!=="auto") return prop.tier;
@@ -884,7 +885,7 @@ function proposalMarkdown(){
   return {markdown:out.join("\n"), data:d};
 }
 
-// What an AM pastes into Claude (with the PandaDoc connector) to get a linked draft.
+// Kept for a plan with PandaDoc API access: what Claude would send to create a linked draft directly.
 function pandadocPayload(){
   const {markdown,data}=proposalMarkdown();
   const name=`${prop.company||"Client"} | ${prop.title||"Scope of Work"} | Proposal v${prop.version||1}`;
@@ -904,6 +905,76 @@ function copyPandaDoc(){
 
 ${JSON.stringify({request:pl.request,tokens:pl.tokens},null,1)}`;
   document.getElementById("out").textContent=s; copyText(s,`PandaDoc request copied (${pl.tier})`);
+}
+
+
+/* Paste-ready sections for the PandaDoc templates (our plan has no API, so the AM starts the document
+   from a template in PandaDoc and pastes these in). Each copies as rich text, so tables paste as tables,
+   with a plain-text fallback. The variable values go into PandaDoc's Variables panel once. */
+const esc = s => String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const money0 = n => "$"+Math.round(n).toLocaleString("en-US");
+const TB='style="border-collapse:collapse;width:100%"', TH='style="text-align:left;padding:6px 8px;border-bottom:2px solid #222;font-size:11px;letter-spacing:.12em;text-transform:uppercase"', TD='style="padding:8px;border-bottom:1px solid #ddd;vertical-align:top"', TS='style="padding:6px 8px;background:#eef3f2;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:bold"';
+function propSections(){
+  const d=proposalData(), tier=d.tier, S={};
+  // Project Overview
+  const obj=prop.obj.map(s=>s.trim()).filter(Boolean), keyDeliv=[...new Set(d.once.flatMap(x=>x.i.deliv||[]))].slice(0,10);
+  const ov=(prop.overview.trim()||"[Two short paragraphs in Taylor's voice: the client's situation and the move, then what the team holds at the end.]").split(/\n\s*\n/);
+  S.overview={label:"Project Overview",
+    html:ov.map(p=>`<p>${esc(p)}</p>`).join("")+(obj.length?`<p><b>Key Objectives</b></p><ol>${obj.map(o=>`<li>${esc(o)}</li>`).join("")}</ol>`:"")+(keyDeliv.length?`<p><b>Key Deliverables</b></p><ul>${keyDeliv.map(o=>`<li>${esc(o)}</li>`).join("")}</ul>`:""),
+    text:ov.join("\n\n")+(obj.length?"\n\nKey Objectives\n"+obj.map((o,n)=>`${n+1}. ${o}`).join("\n"):"")+(keyDeliv.length?"\n\nKey Deliverables\n"+keyDeliv.map(o=>"• "+o).join("\n"):"")};
+  // Scope of Work, each item in Taylor's format (mid-range and complex)
+  if(tier!=="L1"){ let h="", t="";
+    for(const sec of SECTION_ORDER){ const g=d.items.filter(x=>x.i.section===sec); if(!g.length) continue;
+      h+=`<h3>${esc(sec)}</h3>`; t+=`\n${sec.toUpperCase()}\n`;
+      for(const {e,i} of g){ const nm=clientName(i)+(e.qty>1?` (x ${e.qty})`:"");
+        h+=`<p><b>${esc(nm)}</b></p><p>${esc(cDesc(i))}</p>`+(i.incl&&i.incl.length?`<p><i>Includes</i></p><ul>${i.incl.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"")+(i.deliv&&i.deliv.length?`<p><i>Deliverables</i></p><ul>${i.deliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"")+(i.note?`<p><i>Note: ${esc(i.note)}</i></p>`:"");
+        t+=`\n${nm}\n${cDesc(i)}\n`+(i.incl&&i.incl.length?"Includes\n"+i.incl.map(x=>"• "+x).join("\n")+"\n":"")+(i.deliv&&i.deliv.length?"Deliverables\n"+i.deliv.map(x=>"• "+x).join("\n")+"\n":"")+(i.note?`Note: ${i.note}\n`:""); } }
+    S.scope={label:"Scope of Work",html:h,text:t.trim()}; }
+  // Budget: Item / Deliverables / Price, grouped by stage, like the L1 and L2 designs
+  const table=(list,totalLabel,total,per)=>{ let h=`<table ${TB}><tr><th ${TH}>Item</th><th ${TH}>Deliverables</th><th ${TH}>Price</th></tr>`, t="ITEM | DELIVERABLES | PRICE\n";
+    for(const sec of SECTION_ORDER){ const g=list.filter(x=>x.i.section===sec); if(!g.length) continue;
+      h+=`<tr><td ${TS} colspan="3">${esc(sec)}</td></tr>`; t+=`\n${sec.toUpperCase()}\n`;
+      for(const {e,i} of g){ const nm=clientName(i)+(e.qty>1?` (x ${e.qty})`:""), pr=money0(i.price*e.qty)+per;
+        h+=`<tr><td ${TD}><b>${esc(nm)}</b><br>${esc(tier==="L1"?cDesc(i):(i.lname?i.lname[0].toUpperCase()+i.lname.slice(1):""))}</td><td ${TD}>${(i.deliv||[]).map(esc).join("<br>")}</td><td ${TD}><b>${pr}</b></td></tr>`;
+        t+=`${nm} | ${(i.deliv||[]).join("; ")} | ${pr}\n`; } }
+    h+=`<tr><td ${TD} colspan="2"><b>${totalLabel}</b></td><td ${TD}><b>${money0(total)}${per}</b></td></tr></table>`; t+=`\n${totalLabel}: ${money0(total)}${per}`; return {h,t}; };
+  const bOnce=d.once.length?table(d.once,"Total",d.oneTime,""):{h:"",t:""}, bMon=d.monthly.length?table(d.monthly,"Monthly total",d.perMonth," /mo"):{h:"",t:""};
+  const notIn=[...new Set(d.items.map(x=>x.i.note).filter(Boolean))];
+  S.budget={label:"Budget",
+    html:bOnce.h+(bMon.h?`<p><b>Ongoing services${tier==="L3"?" (optional, monthly from launch)":" (monthly)"}</b></p>`+bMon.h:"")+(notIn.length?`<p><b>Not in Scope</b></p><ul>${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""),
+    text:bOnce.t+(bMon.t?"\n\nOngoing services\n"+bMon.t:"")+(notIn.length?"\n\nNot in Scope\n"+notIn.map(x=>"• "+x).join("\n"):"")};
+  // Timeline
+  const tr=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr").map(r=>[r.type==="mlr"?"Client MLR review":r.label, tlRange(r.start,r.end)+(r.type==="mlr"&&r.hi>r.end+0.5?`, up to week ${Math.ceil(r.hi)}`:""), `${wkSpan(r)} week${wkSpan(r)>1?"s":""}`]);
+  tr.push(["Launch / final files",`Week ${Math.ceil(d.b.launch)}`,""]);
+  const kick=tlDate(0), launch=tlDate(d.b.launch), line=`Work begins ${kick?fmtDate(kick):"at kickoff"}, with launch planned for ${launch?fmtDate(launch):"week "+Math.ceil(d.b.launch)}. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.`;
+  S.timeline={label:"Timeline",
+    html:`<table ${TB}><tr><th ${TH}>Stage</th><th ${TH}>Timing</th><th ${TH}>Length</th></tr>${tr.map(r=>`<tr>${r.map(c=>`<td ${TD}>${esc(c)}</td>`).join("")}</tr>`).join("")}</table><p>${esc(line)}</p>`,
+    text:tr.map(r=>r.filter(Boolean).join(" | ")).join("\n")+"\n\n"+line};
+  // Payment Schedule
+  const intro=d.oneTime<15000?"A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.":"A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in equal monthly installments, so payment follows the work.";
+  const mon=d.monthly.length?`Ongoing services are invoiced monthly from launch at ${money0(d.perMonth)} per month.`:"";
+  S.payment={label:"Payment Schedule",
+    html:`<p>${intro}</p><table ${TB}><tr><th ${TH}>Invoice</th><th ${TH}>Due</th><th ${TH}>Amount</th></tr>${d.pay.map(([a,b,c])=>`<tr><td ${TD}>${a}</td><td ${TD}>${b}</td><td ${TD}>${money0(c)}</td></tr>`).join("")}<tr><td ${TD} colspan="2"><b>Total</b></td><td ${TD}><b>${money0(d.oneTime)}</b></td></tr></table>${mon?`<p>${mon}</p>`:""}`,
+    text:intro+"\n\n"+d.pay.map(([a,b,c])=>`${a} | ${b} | ${money0(c)}`).join("\n")+`\nTotal | ${money0(d.oneTime)}`+(mon?"\n\n"+mon:"")};
+  return {tier,S,tokens:d.tokens};
+}
+function copySection(k){
+  if(!scope.length){toast("Nothing in the scope yet");return;}
+  const sec=propSections().S[k]; if(!sec) return;
+  const done=()=>toast(sec.label+" copied. Paste it into PandaDoc.");
+  if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+    navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([sec.html],{type:"text/html"}),"text/plain":new Blob([sec.text],{type:"text/plain"})})]).then(done).catch(()=>copyText(sec.text,sec.label+" copied as plain text"));
+  } else copyText(sec.text,sec.label+" copied as plain text");
+}
+const TEMPLATE_NAME={L1:"Steadfast Proposal | Simple (L1)",L2:"Steadfast Proposal | Mid-range (L2)",L3:"Steadfast Proposal | Complex (L3)"};
+function renderPaste(){
+  const box=document.getElementById("p-paste"); if(!box) return;
+  if(!scope.length){ box.innerHTML=""; return; }
+  const {tier,S,tokens}=propSections();
+  box.innerHTML=`<p class="small" style="margin:14px 0 8px"><b>1.</b> In PandaDoc, create a document from <b>${TEMPLATE_NAME[tier]}</b> and add the client contact as the recipient. <b>2.</b> In the Variables panel, enter these values once; they fill in everywhere:</p>
+   <div class="scroll"><table class="tbl vars"><tbody>${tokens.filter(t=>!/^Client\.(FirstName|LastName|Email)$/.test(t.name)).map(t=>`<tr><td class="small"><code>${t.name}</code></td><td>${esc(t.value)||'<span class="muted small">(leave blank)</span>'}</td><td class="r">${t.value?`<button class="sm" onclick='copyText(${JSON.stringify(t.value)},"Copied ${t.name}")'>Copy</button>`:""}</td></tr>`).join("")}</tbody></table></div>
+   <p class="small" style="margin:14px 0 8px"><b>3.</b> Paste each section where the template says to:</p>
+   <div class="acts">${Object.entries(S).map(([k,s])=>`<button class="sm${k==="budget"?" pri":""}" onclick="copySection('${k}')">Copy ${s.label}</button>`).join("")}</div>`;
 }
 
 function copyTimeline(){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=timelineText(); document.getElementById("out").textContent=s; copyText(s,"Timeline copied"); }

@@ -31,6 +31,18 @@ Two optional Catalog columns override the defaults per row; leave them blank to 
 - `Lead time (weeks)`: a fixed length for that row.
 - `MLR review`: Yes or No, to override whether the row goes through MLR.
 
+## Proposals in PandaDoc
+
+Our PandaDoc plan has no API, so proposals start from three PandaDoc templates: Steadfast Proposal | Simple (L1), Mid-range (L2) and Complex (L3). Their content lives in Google Drive as "Steadfast Proposal | ... | PandaDoc template content"; it is styled and saved as a template in PandaDoc once. Terms and acceptance text live in the template, so update the templates when the Terms tab changes.
+
+For each proposal, the Proposal panel in the Scope Builder:
+
+1. Picks the template from the scope (Simple under $15,000 with one phase, Complex from $50,000 or with a site build, Mid-range between; the AM can override).
+2. Lists the variable values (project title, dates, total, weeks) to enter once in PandaDoc's Variables panel. Client name fields fill from the recipient.
+3. Copies each section ready to paste: Project Overview, Scope of Work (L2 and L3), Budget, Timeline and Payment Schedule.
+
+If the plan ever gains API access, `pandadocPayload()` in index.html already builds a complete linked draft for PandaDoc's API.
+
 ## Changing the password
 
 In Netlify: Site configuration → Environment variables → `SITE_PASSWORD`. Change it, then Deploys → Trigger deploy. Everyone needs the new one from then on; "Remember on this device" entries stop working and the page asks again.
