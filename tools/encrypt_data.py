@@ -67,15 +67,20 @@ def build_data(tables):
     for r in rows("Quick Finder"):
         k = r.get("Base SKU")
         if k: finder.setdefault(k, []).append(str(r.get("Client says...", "")).strip())
+    REQUIRED = ["SKU", "Line item name (PandaDoc)", "Base deliverable", "Service type", "SOW section", "Level", "Level name", "Flat price (2026)"]
+    hdr = [str(h).strip() for h in (tables.get("Catalog") or [[]])[0]]
+    missing = [c for c in REQUIRED if c not in hdr]
+    if missing:
+        sys.exit("The Catalog tab is missing these column headers: " + ", ".join(missing) + "\nHeaders found: " + " | ".join(hdr))
     items = []
     for r in rows("Catalog"):
         sku = str(r["SKU"]); bs = "-".join(sku.split("-")[:3])
         items.append(dict(sku=sku, name=r["Line item name (PandaDoc)"], base=r["Base deliverable"], cat=sku.split("-")[1], category=r["Service type"],
-            section=r["SOW section"], level=LV.get(str(r["Level"]), ""), lname=r["Level name"], desc=r["Description (customer-facing)"],
+            section=r["SOW section"], level=LV.get(str(r["Level"]), ""), lname=r["Level name"], desc=r.get("Description (customer-facing)", "") or r.get("Client description", ""),
             cdesc=str(r.get("Client description", "") or "").strip(), incl=lines(r.get("Includes")), deliv=lines(r.get("Deliverables")), note=str(r.get("Note", "") or "").strip(),
-            price=num(r["Flat price (2026)"]), unit=r["Unit"], billing=r["Billing"], rounds=r["Rev rounds"], basis=r.get("Price basis", ""),
-            use=r["When to use"], find=", ".join(finder.get(bs, [])),
-            h=dict(S=num(r["Strategy h"]), D=num(r["Design h"]), V=num(r["Dev h"]), A=num(r["Account h"]), C=num(r["Copy h"]), M=num(r["Medical copy h"]))))
+            price=num(r["Flat price (2026)"]), unit=r.get("Unit", ""), billing=r.get("Billing", ""), rounds=r.get("Rev rounds", ""), basis=r.get("Price basis", ""),
+            use=r.get("When to use", ""), find=", ".join(finder.get(bs, [])),
+            h=dict(S=num(r.get("Strategy h", 0)), D=num(r.get("Design h", 0)), V=num(r.get("Dev h", 0)), A=num(r.get("Account h", 0)), C=num(r.get("Copy h", 0)), M=num(r.get("Medical copy h", 0)))))
     cats = []; seen = set()
     for i in items:
         if i["cat"] not in seen: seen.add(i["cat"]); cats.append(dict(code=i["cat"], name=i["category"]))
