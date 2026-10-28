@@ -139,6 +139,12 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 .recv div{border-top:2px solid var(--accent);padding-top:8px;font-size:.9rem}
 .recv b{display:block;font-family:var(--display);font-weight:500;margin-bottom:2px}
 .tlbox{margin-top:28px}
+.propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.propgrid label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
+.propgrid .wide{grid-column:1/-1}
+.propgrid input,.propgrid textarea,.propgrid select{font:inherit;font-family:var(--body);font-size:.9rem;letter-spacing:0;text-transform:none;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);width:100%}
+.propgrid textarea{resize:vertical;line-height:1.45}
+.propgrid .objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
 .tlset{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:6px}
 .tlset label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
 .tlset label>span{display:flex;align-items:center;gap:6px;font-family:var(--body);font-size:.85rem;letter-spacing:0;text-transform:none}
@@ -335,8 +341,26 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     <div class="g-key small muted"><span class="k-prod">Production</span><span class="k-rev">Client review rounds</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span></div>
     <div id="tl-flags" style="margin-top:14px"></div>
   </div>
+  <div class="tlbox">
+    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Proposal</span><h2>Send it to PandaDoc as a built proposal.</h2><p class="small">Fill in the client and the overview, then copy the PandaDoc request and paste it into Claude (with the PandaDoc connector). It builds a linked draft: client name and dates as variables, the budget as a pricing table, the timeline, the payment schedule, the terms and the signature block. Review it in PandaDoc and send it from there.</p></div>
+    <div class="propgrid">
+      <label class="wide">Project title<input id="p-title" placeholder="HCP Sales Aid Redesign" oninput="setProp('title',this.value)"></label>
+      <label>Client company<input id="p-company" oninput="setProp('company',this.value)"></label>
+      <label>Partner agency (optional)<input id="p-partner" placeholder="Lead agency, if any" oninput="setProp('partner',this.value)"></label>
+      <label>Contact first name<input id="p-first" oninput="setProp('first',this.value)"></label>
+      <label>Contact last name<input id="p-last" oninput="setProp('last',this.value)"></label>
+      <label>Contact email<input id="p-email" type="email" oninput="setProp('email',this.value)"></label>
+      <label>Issue date<input id="p-date" type="date" onchange="setProp('date',this.value)"></label>
+      <label>Version<input id="p-version" type="number" min="1" step="1" oninput="setProp('version',this.value)"></label>
+      <label>Proposal format<select id="p-tier" onchange="setProp('tier',this.value)"><option value="auto">Pick from the scope</option><option value="L1">Simple (L1)</option><option value="L2">Mid-range (L2)</option><option value="L3">Complex (L3)</option></select></label>
+      <label class="wide">Project overview<textarea id="p-overview" rows="5" placeholder="Leave blank to have Claude draft it in Taylor's voice, or write it here." oninput="setProp('overview',this.value)"></textarea></label>
+      <label class="wide">Key objectives (optional, one per box)<span class="objs"><input id="p-obj0" oninput="setProp('obj0',this.value)"><input id="p-obj1" oninput="setProp('obj1',this.value)"><input id="p-obj2" oninput="setProp('obj2',this.value)"></span></label>
+    </div>
+    <p class="small muted" id="p-tierhint" style="margin-top:8px"></p>
+  </div>
   <div class="toolbar" style="margin-top:14px">
-    <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
+    <button class="pri" onclick="copyPandaDoc()">Copy PandaDoc request</button>
+    <button onclick="exportScope('items')">Copy line items for the proposal</button>
     <button onclick="copyTimeline()">Copy timeline</button>
     <button onclick="exportScope('hours')">Copy hours for production</button>
     <button onclick="exportScope('skeleton')">Copy proposal skeleton</button>
@@ -526,7 +550,7 @@ function renderBuilder(){
   document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
   document.getElementById("bbody").innerHTML = scope.map(e=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+b,0)*e.qty; return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td><td class="r"><input type="number" id="q-${i.sku}" min="0" value="${e.qty}" onchange="setQty('${i.sku}',this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem('${i.sku}')">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="7" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
   if(scope.length) document.getElementById("out").textContent = buildExport("items");
-  renderTimeline();
+  renderTimeline(); renderPropTier();
 }
 function groupBySection(){ const g={}; for(const e of scope){const i=bySku[e.sku]; (g[i.section]=g[i.section]||[]).push(e);} return g; }
 const SECTION_ORDER=["Analysis & Strategy","Design","Build & Integration","QA, Launch & Support","Account Management","Ongoing","Pass-through"];
@@ -718,6 +742,170 @@ function timelineText(){
   if(flags.length) s+="\nWATCH FOR\n"+flags.map(f=>"- "+f.t).join("\n")+"\n";
   return s;
 }
+
+/* ---------- Proposal → PandaDoc ----------
+   Builds the whole proposal as PandaDoc markdown from the scope, the timeline and the proposal details,
+   in three tiers modeled on the L1 brochure SOW, the L2 four-page SOW and the L3 website proposal.
+   Every tier carries Project Overview, Budget, Timeline, Payment Schedule, Terms & Conditions and
+   Acceptance of Proposal. Client name, dates and totals are PandaDoc variables, filled after creation,
+   so they stay linked everywhere they appear. */
+let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""]};
+function saveProp(){ try{localStorage.setItem("sowkit.prop",JSON.stringify(prop));}catch(e){} }
+function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} }
+function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else prop[k]=v; saveProp(); renderPropTier(); }
+function renderProp(){
+  for(const k of ["title","company","partner","first","last","email","date","version","tier","overview"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
+  prop.obj.forEach((v,n)=>{ const el=document.getElementById("p-obj"+n); if(el && document.activeElement!==el) el.value=v; });
+  renderPropTier();
+}
+function renderPropTier(){ const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
+// Auto tier: Simple under $15,000 with one phase, Complex from $50,000 or with a full site build, Mid-range between.
+function propTier(){
+  if(prop.tier!=="auto") return prop.tier;
+  const one=scope.map(e=>bySku[e.sku]).filter(i=>i.billing!=="recurring"&&i.section!=="Pass-through");
+  const tot=scopeTotals().tot, phases=new Set(one.map(i=>tlPhaseOf(i)).filter(p=>TL_PHASES.includes(p)));
+  if(tot>=50000 || one.some(i=>/Site Foundation|Web Application|CMS Upgrade/.test(i.base))) return "L3";
+  if(tot<15000 && phases.size<=1) return "L1";
+  return "L2";
+}
+const usd = n => (Math.round(n*100)/100).toFixed(2)+" USD";
+const cell = s => String(s??"").replace(/\|/g,"/").replace(/\s*\n\s*/g," ").trim();
+const fmtDate = d => d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+// Client-facing row name: the base deliverable, plus the level name when the scope holds two levels of the same thing.
+function clientName(i){ const same=scope.filter(e=>bySku[e.sku].base===i.base).length>1; return same&&i.lname ? `${i.base} (${i.lname})` : i.base; }
+
+// Deposit on signature, then the balance: on delivery for smaller work, monthly across the timeline for larger.
+function paySchedule(oneTime, weeks){
+  if(oneTime<=0) return [];
+  if(oneTime<15000) return [["Deposit (50%)","On signature",Math.round(oneTime/2)],["Final (50%)","On final delivery",oneTime-Math.round(oneTime/2)]];
+  const dep=Math.round(oneTime*0.3/50)*50, n=Math.min(8,Math.max(2,Math.round(weeks/4.33))), each=Math.round((oneTime-dep)/n/50)*50, rows=[["Deposit (30%)","On signature",dep]];
+  for(let k=1;k<=n;k++) rows.push([`Installment ${k}`,`Month ${k}`, k<n?each:oneTime-dep-each*(n-1)]);
+  return rows;
+}
+
+function proposalData(){
+  const tier=propTier(), b=tlBuild(), items=scope.map(e=>({e,i:bySku[e.sku]}));
+  const once=items.filter(x=>x.i.billing!=="recurring"), monthly=items.filter(x=>x.i.billing==="recurring");
+  const oneTime=once.reduce((a,x)=>a+x.i.price*x.e.qty,0), perMonth=monthly.reduce((a,x)=>a+x.i.price*x.e.qty,0);
+  const issued=prop.date?new Date(prop.date+"T12:00:00"):new Date(), valid=new Date(issued); valid.setDate(valid.getDate()+30);
+  const kick=tlDate(0), launchWk=Math.ceil(b.launch), launch=tlDate(b.launch);
+  const tokens=[
+    ["Client.Company",prop.company||"[Client company]"],["Client.FirstName",prop.first],["Client.LastName",prop.last],["Client.Email",prop.email],
+    ["Client.Partner",prop.partner?`, in partnership with ${prop.partner}`:""],
+    ["Project.Title",prop.title||"Scope of Work"],["Proposal.Version",String(prop.version||1)],
+    ["Proposal.Date",fmtDate(issued)],["Proposal.ValidUntil",fmtDate(valid)],
+    ["Project.Kickoff",kick?fmtDate(kick):"the agreed kickoff date"],["Project.Launch",launch?fmtDate(launch):`week ${launchWk}`],
+    ["Project.Weeks",String(launchWk)],["Project.Total","$"+oneTime.toLocaleString("en-US")],
+  ].map(([name,value])=>({name,value:String(value??"")}));
+  return {tier,b,items,once,monthly,oneTime,perMonth,tokens,pay:paySchedule(oneTime,b.launch)};
+}
+
+const wkSpan = r => Math.max(1,Math.ceil(r.end)-Math.floor(r.start)); // matches the "Weeks a to b" range
+function proposalMarkdown(){
+  const d=proposalData(), {tier}=d, L=n=>["L1","L2","L3"].indexOf(tier)>=n-1, out=[];
+  const p=s=>out.push(s,"");
+  // Cover and client block
+  p(`# [Project.Title]`);
+  p(`Proposal v[Proposal.Version], prepared by Steadfast for [Client.Company]`);
+  p(`| CLIENT | ISSUED |\n|---|---|\n| **[Client.Company][Client.Partner]**  [Client.FirstName] [Client.LastName] | **[Proposal.Date]**  Version [Proposal.Version], valid until [Proposal.ValidUntil] |`);
+  // Project Overview
+  p(`## Project Overview`);
+  p(prop.overview.trim() || "[Two short paragraphs in Taylor's voice: the client's situation and the move, then what the team holds at the end.]");
+  const obj=prop.obj.map(s=>s.trim()).filter(Boolean);
+  if(obj.length || L(3)){ p(`### Key Objectives`); p((obj.length?obj:["[Objective one]","[Objective two]","[Objective three]"]).map((o,n)=>`${n+1}. ${o}`).join("\n")); }
+  const keyDeliv=[...new Set(d.once.flatMap(x=>x.i.deliv||[]))].slice(0,10);
+  if(keyDeliv.length){ p(`### Key Deliverables`); p(keyDeliv.map(s=>"- "+s).join("\n")); }
+  // L3: the plan and investment at a glance
+  if(L(3)){
+    p(`## Plan & Investment`);
+    const bySec={}; for(const x of d.once) bySec[x.i.section]=(bySec[x.i.section]||0)+x.i.price*x.e.qty;
+    p(`| Stage | Investment |\n|---|---|\n`+SECTION_ORDER.filter(s=>bySec[s]).map(s=>`| ${s} | $${bySec[s].toLocaleString("en-US")} |`).join("\n")+`\n| **Total** | **[Project.Total]** |`);
+    p(`About [Project.Weeks] weeks from kickoff to launch. The payment schedule follows the work, below.`);
+  }
+  // L2 and up: each item in Taylor's format
+  if(L(2)){
+    p(`## Scope of Work`);
+    for(const sec of SECTION_ORDER){ const g=d.items.filter(x=>x.i.section===sec); if(!g.length) continue;
+      p(`### ${sec}`);
+      for(const {e,i} of g){
+        p(`**${clientName(i)}${e.qty>1?` (x ${e.qty})`:""}**`);
+        p(cDesc(i));
+        if(i.incl&&i.incl.length) p("*Includes*\n\n"+i.incl.map(s=>"- "+s).join("\n"));
+        if(i.deliv&&i.deliv.length) p("*Deliverables*\n\n"+i.deliv.map(s=>"- "+s).join("\n"));
+        if(i.note) p(`*Note: ${i.note}*`);
+      }
+    }
+  }
+  // Budget: a real pricing table, grouped by stage
+  p(`## Budget`);
+  const rows = list => list.map(({e,i})=>`| ${cell(clientName(i))} | ${cell(tier==="L1"?cDesc(i):(i.lname?i.lname[0].toUpperCase()+i.lname.slice(1):""))} | ${cell((i.deliv||[]).join("; "))} | ${usd(i.price)} | ${e.qty} |`).join("\n");
+  const head="| Name | Description | Deliverables | Price | QTY |\n|---|---|---|---|---|";
+  if(d.once.length){
+    let t=`<!-- pandadoc:pricing-table name="Scope" -->\n`;
+    for(const sec of SECTION_ORDER){ const g=d.once.filter(x=>x.i.section===sec); if(g.length) t+=`### ${sec}\n\n${head}\n${rows(g)}\n\n`; }
+    t+=`* Subtotal: ${usd(d.oneTime)}\n* Total: ${usd(d.oneTime)}\n<!-- pandadoc:end-pricing-table -->`; p(t);
+  }
+  if(d.monthly.length){
+    p(tier==="L3"?`### Ongoing Services (optional, monthly from launch)`:`### Ongoing Services (monthly)`);
+    p(`<!-- pandadoc:pricing-table name="Monthly" -->\n${head}\n${rows(d.monthly)}\n\n* Total: ${usd(d.perMonth)}\n<!-- pandadoc:end-pricing-table -->`);
+  }
+  const notIn=[...new Set(d.items.map(x=>x.i.note).filter(Boolean))];
+  if(notIn.length){ p(`### Not in Scope`); p(notIn.map(s=>"- "+s).join("\n")); }
+  // Timeline, from the builder's waterfall
+  p(`## Timeline`);
+  const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr").map(r=>`| ${r.type==="mlr"?"Client MLR review":r.label} | ${tlRange(r.start,r.end)}${r.type==="mlr"&&r.hi>r.end+0.5?`, up to week ${Math.ceil(r.hi)}`:""} | ${wkSpan(r)} week${wkSpan(r)>1?"s":""} |`);
+  p(`| Stage | Timing | Length |\n|---|---|---|\n${tlRows.join("\n")}\n| **Launch / final files** | **Week [Project.Weeks]** |  |`);
+  p(`Work begins [Project.Kickoff], with launch planned for [Project.Launch]. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.`);
+  if(L(2)){
+    p(`### How Review Rounds Work`);
+    p(`Each round is one consolidated set of feedback from a single designated decision-maker. Steadfast shares the work, [Client.Company] returns one consolidated response, and Steadfast makes the revisions and reshares. Rounds beyond those listed are billed at Steadfast's hourly rates.`);
+    p(`### Client Responsibilities`);
+    p(["One designated decision-maker who owns approvals and consolidates feedback into a single response per round",
+       "Final, approved copy and all references, claims and required regulatory language when design begins, unless writing is in this scope",
+       d.b.m?"Routing each MLR submission and returning comments within the timing above":"Feedback within the agreed review window",
+       "Any product imagery, or approval of stock licensing costs before purchase"].map(s=>"- "+s).join("\n"));
+  }
+  // Payment schedule
+  p(`## Payment Schedule`);
+  p(d.oneTime<15000 ? `A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.` : `A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in equal monthly installments, so payment follows the work.`);
+  p(`| Invoice | Due | Amount |\n|---|---|---|\n`+d.pay.map(([a,b,c])=>`| ${a} | ${b} | $${c.toLocaleString("en-US")} |`).join("\n")+`\n| **Total** |  | **[Project.Total]** |`);
+  if(d.monthly.length) p(`Ongoing services are invoiced monthly from launch at $${d.perMonth.toLocaleString("en-US")} per month.`);
+  // Terms
+  p(`## Terms & Conditions`);
+  const acc=TERMS.find(g=>/acceptance/i.test(g.h));
+  for(const g of TERMS){ if(g===acc) continue; p(`### ${g.h}`); for(const [t,body] of g.items) p(`**${t}**\n\n${body}`); }
+  p(`**Rates**\n\n${RATES_TXT}`);
+  if(L(3)){ p(`## Why Steadfast`); p(`Nearly 20 years in life sciences, a senior-level U.S.-based team headquartered in North Carolina, and bespoke, human-led design for science that is hard to explain.`); }
+  // Acceptance
+  p(`## Acceptance of Proposal`);
+  p(acc&&acc.items[0] ? acc.items[0][1] : `This proposal, with Steadfast's standard Terms & Conditions, is the agreement between the Firm and the Client for everything it includes. Both parties acknowledge acceptance by signing below. Electronic signatures are legal and binding.`);
+  p(`### The Firm\n\n**Steadfast Design Firm**, 220 S. White Street #3, Wake Forest, NC 27587\n\nTaylor Tsantles, President & Chief Strategist\n\n[[signature id="Sender_Signature"]]  [[date id="Sender_Date"]]`);
+  p(`### The Client\n\n**[Client.Company]**\n\nFull name: [[text id="Client_Name" placeholder="Full name"]]\n\nTitle: [[text id="Client_Title" placeholder="Title"]]\n\n[[signature id="Client_Signature"]]  [[date id="Client_Date"]]`);
+  return {markdown:out.join("\n"), data:d};
+}
+
+// What an AM pastes into Claude (with the PandaDoc connector) to get a linked draft.
+function pandadocPayload(){
+  const {markdown,data}=proposalMarkdown();
+  const name=`${prop.company||"Client"} | ${prop.title||"Scope of Work"} | Proposal v${prop.version||1}`;
+  const req={source:"markdown",name,document_markdown:markdown};
+  if(prop.email){ req.recipients=[{email:prop.email,first_name:prop.first||undefined,last_name:prop.last||undefined,role:"Client"}]; req.role_fields=[{role:"Client",field_ids:["Client_Name","Client_Title","Client_Signature","Client_Date"]}]; }
+  return {name, tier:data.tier, request:req, tokens:data.tokens};
+}
+function copyPandaDoc(){
+  if(!scope.length){toast("Nothing in the scope yet");return;}
+  const pl=pandadocPayload();
+  const s=`Create this proposal as a PandaDoc draft (do not send it).
+0. If the markdown still has the bracketed overview or objective placeholders, replace them first: write the Project Overview as two short paragraphs in Taylor's voice (taylor-voice skill: the client's situation and the move, then what the team holds at the end; no em dashes) from the scope below.
+1. Call documents_create with the "request" object below exactly as given.
+2. Poll documents_status_get until the document is Draft.
+3. Call documents_update with the "tokens" below to fill the linked variables.
+4. Reply with the document link. The Sender signature and date are left for Steadfast to assign in PandaDoc.
+
+${JSON.stringify({request:pl.request,tokens:pl.tokens},null,1)}`;
+  document.getElementById("out").textContent=s; copyText(s,`PandaDoc request copied (${pl.tier})`);
+}
+
 function copyTimeline(){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=timelineText(); document.getElementById("out").textContent=s; copyText(s,"Timeline copied"); }
 
 /* ---------- utilities ---------- */
@@ -785,7 +973,7 @@ function start(){
   const st=document.getElementById("src"); if(st) st.textContent = DATA.items.length+" line items loaded";
   const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
   for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
-  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); renderBuilder(); route();
+  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); renderBuilder(); renderProp(); route();
 }
 function lock(){ forgetPw(); location.reload(); }
 (function init(){
