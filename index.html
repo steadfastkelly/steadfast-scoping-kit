@@ -73,6 +73,11 @@ input[type=number]{width:62px;text-align:right;font-family:var(--mono)}
 .row .more{display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:none}
 .row.open .more{display:block}
 .row .desc{max-width:72ch}
+.client .desc{max-width:72ch}
+.client .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 28px;margin-top:12px}
+.client ul{margin:6px 0 0;padding-left:18px}
+.client li{font-size:.9rem;margin:2px 0}
+.client .note{margin-top:12px;color:var(--fg2);font-style:italic;max-width:72ch}
 .hrs{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono);font-size:.8rem;color:var(--fg2);margin-top:8px}
 .hrs b{color:var(--fg);font-weight:500}
 .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
@@ -400,14 +405,27 @@ function rowHTML(i){
   const ind = /norm|Derived|no hour/i.test(i.basis) ? `<span class="chip basis-i" title="${i.basis}">industry norm</span>` : "";
   return `<div class="row" id="r-${i.sku}"><div class="top" onclick="toggleRow('${i.sku}')" style="cursor:pointer"><span class="nm">${i.name}</span><span class="chip">${i.category}</span>${ind}<span class="pr">${money(i.price)}${i.unit==="month"?" /mo":""}</span></div>
    <div class="lv">${i.lname?LVL[i.level]+": "+i.lname:i.use}</div>
-   <div class="more"><p class="desc small">${i.desc}</p><p class="small muted" style="margin-top:6px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${hoursLine(i)}
-   <div class="acts"><button class="sm pri" onclick="addItem('${i.sku}',1)">Add to scope</button><button class="sm" onclick='copyText(${JSON.stringify(i.name+"\n"+i.desc)},"Description copied")'>Copy description</button></div></div></div>`;
+   <div class="more">${clientHTML(i)}<p class="small muted" style="margin-top:14px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${hoursLine(i)}
+   <div class="acts"><button class="sm pri" onclick="addItem('${i.sku}',1)">Add to scope</button><button class="sm" onclick='copyText(${JSON.stringify(clientText(i,1))},"Client copy copied")'>Copy client copy</button></div></div></div>`;
+}
+/* Client copy, in Taylor's order: description, includes, deliverables, note. Falls back to the older one-paragraph description. */
+const cDesc = i => i.cdesc || i.desc;
+function clientHTML(i){
+  const ul = (h,a) => a&&a.length ? `<div class="cl"><span class="eyebrow">${h}</span><ul>${a.map(x=>`<li>${x}</li>`).join("")}</ul></div>` : "";
+  return `<div class="client"><p class="desc">${cDesc(i)}</p>${(i.incl&&i.incl.length)||(i.deliv&&i.deliv.length)?`<div class="cols">${ul("Includes",i.incl)}${ul("Deliverables",i.deliv)}</div>`:""}${i.note?`<p class="small note"><b>Note:</b> ${i.note}</p>`:""}</div>`;
+}
+function clientText(i,qty){
+  let s=`${i.name}${qty>1?"  x "+qty:""}  ${money(i.price*qty)}${i.unit==="month"?" /mo":""}\n${cDesc(i)}\n`;
+  if(i.incl&&i.incl.length) s+="\nIncludes\n"+i.incl.map(x=>"• "+x).join("\n")+"\n";
+  if(i.deliv&&i.deliv.length) s+="\nDeliverables\n"+i.deliv.map(x=>"• "+x).join("\n")+"\n";
+  if(i.note) s+="\nNote: "+i.note+"\n";
+  return s;
 }
 function toggleRow(s){ document.getElementById("r-"+s).classList.toggle("open"); }
 function renderCatalog(){
   const q=document.getElementById("q").value.trim().toLowerCase(), c=document.getElementById("fcat").value, l=document.getElementById("flvl");
   const lv = l.selectedIndex===0 ? null : l.value;
-  const hit = DATA.items.filter(i => (!c||i.cat===c) && (lv===null||i.level===lv) && (!q || (i.name+" "+i.find+" "+i.lname+" "+i.desc+" "+i.use).toLowerCase().includes(q)));
+  const hit = DATA.items.filter(i => (!c||i.cat===c) && (lv===null||i.level===lv) && (!q || (i.name+" "+i.find+" "+i.lname+" "+i.desc+" "+(i.cdesc||"")+" "+(i.incl||[]).join(" ")+" "+(i.deliv||[]).join(" ")+" "+i.use).toLowerCase().includes(q)));
   document.getElementById("qcount").textContent = hit.length+" line items";
   document.getElementById("list").innerHTML = hit.slice(0,400).map(rowHTML).join("");
 }
@@ -470,7 +488,7 @@ function buildExport(kind){
     return s;
   }
   let s="SCOPE OF WORK (2026 rates)\n";
-  for(const sec of secs){ let st=0; s+="\n"+sec.toUpperCase()+"\n"; for(const e of g[sec]){const i=bySku[e.sku]; st+=i.price*e.qty; s+=`${i.name}${e.qty>1?"  x "+e.qty:""}  ${money(i.price*e.qty)}\n${i.desc}\n\n`;} s+=`Subtotal, ${sec}: ${money(st)}\n`; }
+  for(const sec of secs){ let st=0; s+="\n"+sec.toUpperCase()+"\n"; for(const e of g[sec]){const i=bySku[e.sku]; st+=i.price*e.qty; s+=clientText(i,e.qty)+"\n";} s+=`Subtotal, ${sec}: ${money(st)}\n`; }
   s+=`\nTOTAL INVESTMENT: ${money(t.tot)}\n`; return s;
 }
 function exportScope(kind){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=buildExport(kind); document.getElementById("out").textContent=s; copyText(s, kind==="items"?"Line items copied":kind==="hours"?"Hours copied":"Skeleton copied"); }
@@ -493,9 +511,10 @@ function fromWorkbook(wb){
   const cat = sj("Catalog"); if(!cat.length) throw new Error("No Catalog sheet");
   const finder = {}; for(const r of sj("Quick Finder")){ const k=r["Base SKU"]; if(!k) continue; (finder[k]=finder[k]||[]).push(String(r["Client says..."]).trim()); }
   const num = v => { const n=parseFloat(String(v).replace(/[$,]/g,"")); return isNaN(n)?0:n; };
+  const bl = v => String(v||"").split(/\r?\n/).map(x=>x.replace(/^\s*[-•*]\s*/,"").trim()).filter(Boolean);
   const items = cat.map(r=>{ const sku=String(r["SKU"]); const bs=sku.split("-").slice(0,3).join("-");
     return { sku, name:r["Line item name (PandaDoc)"], base:r["Base deliverable"], cat:sku.split("-")[1], category:r["Service type"], section:r["SOW section"],
-      level: LVCODE[String(r["Level"])] ?? "", lname:r["Level name"], desc:r["Description (customer-facing)"], price:num(r["Flat price (2026)"]), unit:r["Unit"], billing:r["Billing"],
+      level: LVCODE[String(r["Level"])] ?? "", lname:r["Level name"], desc:r["Description (customer-facing)"], cdesc:String(r["Client description"]||"").trim(), incl:bl(r["Includes"]), deliv:bl(r["Deliverables"]), note:String(r["Note"]||"").trim(), price:num(r["Flat price (2026)"]), unit:r["Unit"], billing:r["Billing"],
       rounds:r["Rev rounds"], basis:r["Price basis"]||"", use:r["When to use"], find:(finder[bs]||[]).join(", "),
       h:{S:num(r["Strategy h"]),D:num(r["Design h"]),V:num(r["Dev h"]),A:num(r["Account h"]),C:num(r["Copy h"]),M:num(r["Medical copy h"])} }; });
   const seen=new Set(); const cats=[]; for(const i of items){ if(!seen.has(i.cat)){ seen.add(i.cat); cats.push({code:i.cat,name:i.category}); } }

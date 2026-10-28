@@ -58,6 +58,7 @@ def tables_from_sheet(sheet_id, sa_json):
 
 def build_data(tables):
     def rows(name): return to_dicts(tables.get(name, []))
+    def lines(v): return [re.sub(r"^\s*[-•*]\s*", "", x).strip() for x in str(v or "").splitlines() if x.strip()]
     def num(v):
         try: return float(str(v).replace("$", "").replace(",", ""))
         except ValueError: return 0.0
@@ -71,6 +72,7 @@ def build_data(tables):
         sku = str(r["SKU"]); bs = "-".join(sku.split("-")[:3])
         items.append(dict(sku=sku, name=r["Line item name (PandaDoc)"], base=r["Base deliverable"], cat=sku.split("-")[1], category=r["Service type"],
             section=r["SOW section"], level=LV.get(str(r["Level"]), ""), lname=r["Level name"], desc=r["Description (customer-facing)"],
+            cdesc=str(r.get("Client description", "") or "").strip(), incl=lines(r.get("Includes")), deliv=lines(r.get("Deliverables")), note=str(r.get("Note", "") or "").strip(),
             price=num(r["Flat price (2026)"]), unit=r["Unit"], billing=r["Billing"], rounds=r["Rev rounds"], basis=r.get("Price basis", ""),
             use=r["When to use"], find=", ".join(finder.get(bs, [])),
             h=dict(S=num(r["Strategy h"]), D=num(r["Design h"]), V=num(r["Dev h"]), A=num(r["Account h"]), C=num(r["Copy h"]), M=num(r["Medical copy h"]))))
