@@ -138,6 +138,41 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 .recv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .recv div{border-top:2px solid var(--accent);padding-top:8px;font-size:.9rem}
 .recv b{display:block;font-family:var(--display);font-weight:500;margin-bottom:2px}
+.tlbox{margin-top:28px}
+.tlset{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:6px}
+.tlset label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
+.tlset label>span{display:flex;align-items:center;gap:6px;font-family:var(--body);font-size:.85rem;letter-spacing:0;text-transform:none}
+.tlset input[type=date]{font:inherit;font-size:.9rem;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);letter-spacing:0;text-transform:none}
+.tlset select{letter-spacing:0;text-transform:none}
+.gantt{min-width:680px;background:var(--panel);border-radius:10px;padding:10px 14px 6px}
+.g-row{display:grid;grid-template-columns:minmax(190px,30%) 1fr;align-items:center;min-height:30px;border-bottom:1px solid var(--line)}
+.g-row:last-child{border-bottom:0}
+.g-lab{padding:4px 12px 4px 0;font-size:.82rem;line-height:1.25;min-width:0}
+.g-lab span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-lab small{display:block;color:var(--fg2);font-family:var(--mono);font-size:.7rem}
+.g-track{position:relative;height:100%;min-height:30px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:calc(100% / var(--w)) 100%}
+.g-axis{min-height:24px;border-bottom:1px solid var(--line)}
+.g-axis .g-track{background:none}
+.g-axis span{position:absolute;bottom:4px;font-family:var(--mono);font-size:.66rem;color:var(--fg2);white-space:nowrap}
+.g-phase .g-lab{font-family:var(--display);font-weight:500;font-size:.88rem}
+.g-bar{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:3px;display:flex;overflow:hidden;min-width:3px}
+.g-bar i{display:block;height:100%;background:var(--fg)}
+.g-bar b{display:block;height:100%;background:var(--tone2)}
+.g-gated i{background:var(--fg)}
+.g-phasebar{height:4px;background:var(--fg2);opacity:.5}
+.g-mlrbar{background:var(--warn)}
+.g-mlr .g-lab span{color:var(--warn);font-weight:500}
+.g-slip{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0 3px 3px 0;background:repeating-linear-gradient(135deg,var(--warn) 0 3px,transparent 3px 7px);opacity:.55}
+.g-spanbar,.g-ongoingbar{height:6px;background:var(--tone3)}
+.g-ongoingbar{background:repeating-linear-gradient(90deg,var(--tone2) 0 8px,transparent 8px 12px)}
+.g-ms{position:absolute;top:50%;width:12px;height:12px;background:var(--fg);transform:translate(-50%,-50%) rotate(45deg)}
+.g-launch .g-lab{font-weight:600}
+.g-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
+.g-key span::before{content:"";display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.g-key .k-prod::before{background:var(--fg)} .g-key .k-rev::before{background:var(--tone2)} .g-key .k-mlr::before{background:var(--warn)}
+.g-key .k-slip::before{background:repeating-linear-gradient(135deg,var(--warn) 0 3px,transparent 3px 7px);opacity:.6}
+.g-key .k-ms::before{width:8px;height:8px;background:var(--fg);transform:rotate(45deg)}
+.cmp.risk{border-left-color:var(--bad)} .cmp.mlr{border-left-color:var(--warn)} .cmp.info{border-left-color:var(--line)}
 .cmp{border-left:3px solid var(--warn);padding:8px 12px;background:var(--panel);border-radius:0 6px 6px 0;font-size:.88rem;margin-bottom:10px}
 @media (max-width:860px){
   .wrap{flex-direction:column}
@@ -283,8 +318,26 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <div id="warns"></div>
   <div class="tot" id="tots"></div>
   <div class="scroll"><table class="tbl" id="btbl"><thead><tr><th>Line item</th><th>Level</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr></thead><tbody id="bbody"></tbody></table></div>
+  <div class="tlbox">
+    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Timeline</span><h2>Rough lead time, start to launch.</h2><p class="small">Each row's length comes from its hours and review rounds. Phases run in order, and any phase with promotional work ends in an MLR stage sized to the client's process. Hatched bars show how far it can stretch if review runs long.</p></div>
+    <div class="tlset">
+      <label>Kickoff<input type="date" id="tl-start" onchange="setTl('start',this.value)"></label>
+      <label>Client's MLR process<select id="tl-mlr" onchange="setTl('mlr',this.value)"></select></label>
+      <span id="tl-custom" class="tlset" hidden>
+        <label>Submit every<span><input type="number" id="tl-cad" min="0" step="0.5" onchange="setTl('cad',this.value)"> wks</span></label>
+        <label>Review takes<span><input type="number" id="tl-turn" min="0" step="0.5" onchange="setTl('turn',this.value)"> wks</span></label>
+        <label>Rounds to approval<input type="number" id="tl-cyc" min="1" step="1" onchange="setTl('cyc',this.value)"></label>
+      </span>
+      <label>Client feedback<span><input type="number" id="tl-fb" min="1" step="1" onchange="setTl('fb',this.value)"> days</span></label>
+    </div>
+    <div class="tot" id="tl-sum"></div>
+    <div class="scroll"><div id="tl"></div></div>
+    <div class="g-key small muted"><span class="k-prod">Production</span><span class="k-rev">Client review rounds</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span></div>
+    <div id="tl-flags" style="margin-top:14px"></div>
+  </div>
   <div class="toolbar" style="margin-top:14px">
     <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
+    <button onclick="copyTimeline()">Copy timeline</button>
     <button onclick="exportScope('hours')">Copy hours for production</button>
     <button onclick="exportScope('skeleton')">Copy proposal skeleton</button>
     <button onclick="clearScope()">Clear</button>
@@ -405,7 +458,7 @@ function rowHTML(i){
   const ind = /norm|Derived|no hour/i.test(i.basis) ? `<span class="chip basis-i" title="${i.basis}">industry norm</span>` : "";
   return `<div class="row" id="r-${i.sku}"><div class="top" onclick="toggleRow('${i.sku}')" style="cursor:pointer"><span class="nm">${i.name}</span><span class="chip">${i.category}</span>${ind}<span class="pr">${money(i.price)}${i.unit==="month"?" /mo":""}</span></div>
    <div class="lv">${i.lname?LVL[i.level]+": "+i.lname:i.use}</div>
-   <div class="more">${clientHTML(i)}<p class="small muted" style="margin-top:14px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${hoursLine(i)}
+   <div class="more">${clientHTML(i)}<p class="small muted" style="margin-top:14px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${leadText(i)?`<p class="small muted" style="margin-top:4px"><b>Lead time:</b> ${leadText(i)}</p>`:""}${hoursLine(i)}
    <div class="acts"><button class="sm pri" onclick="addItem('${i.sku}',1)">Add to scope</button><button class="sm" onclick='copyText(${JSON.stringify(clientText(i,1))},"Client copy copied")'>Copy client copy</button></div></div></div>`;
 }
 /* Client copy, in Taylor's order: description, includes, deliverables, note. Falls back to the older one-paragraph description. */
@@ -432,9 +485,11 @@ function renderCatalog(){
 
 /* ---------- Packages ---------- */
 function packTotals(p){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const li of p.items){const i=bySku[li.sku]; tot+=i.price*li.qty; for(const k in h)h[k]+=i.h[k]*li.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
+// Weeks to launch for a package on its own, with standard feedback and no MLR (the builder adds MLR for the client).
+function packWeeks(p){ const keep=[scope,tl]; scope=p.items.map(li=>({sku:li.sku,qty:li.qty})); tl=Object.assign({},tl,{mlr:"none",fb:5}); const w=Math.ceil(tlBuild().launch); [scope,tl]=keep; return w; }
 function renderPacks(){
   document.getElementById("packs").innerHTML = DATA.packs.map((p,n)=>{const t=packTotals(p); return `<div class="card pack"><span class="eyebrow">${p.items.length} line items</span><h3>${p.name}</h3><p class="small muted">${p.use}</p>
-   <div class="tot"><div class="t"><div class="v">${money(t.tot)}</div><div class="k">Total</div></div><div class="t"><div class="v">${t.th} h</div><div class="k">Hours</div></div><div class="t"><div class="v">$${Math.round(t.tot/t.th)}</div><div class="k">Blended /h</div></div></div>
+   <div class="tot"><div class="t"><div class="v">${money(t.tot)}</div><div class="k">Total</div></div><div class="t"><div class="v">${t.th} h</div><div class="k">Hours</div></div><div class="t"><div class="v">$${Math.round(t.tot/t.th)}</div><div class="k">Blended /h</div></div><div class="t"><div class="v">${packWeeks(p)} wks</div><div class="k">Typical timeline, before MLR</div></div></div>
    <div class="scroll"><table class="tbl"><thead><tr><th>Line item</th><th>Level</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Subtotal</th><th class="r">Hours</th></tr></thead><tbody>
    ${p.items.map(li=>{const i=bySku[li.sku]; const ih=Object.values(i.h).reduce((a,b)=>a+b,0)*li.qty; return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td><td class="r">${li.qty}</td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*li.qty)}</td><td class="r">${ih}</td></tr>`;}).join("")}
    </tbody><tfoot><tr><td colspan="4"><b>Package total</b></td><td class="r"><b>${money(t.tot)}</b></td><td class="r"><b>${t.th}</b></td></tr></tfoot></table></div>
@@ -471,6 +526,7 @@ function renderBuilder(){
   document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
   document.getElementById("bbody").innerHTML = scope.map(e=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+b,0)*e.qty; return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td><td class="r"><input type="number" id="q-${i.sku}" min="0" value="${e.qty}" onchange="setQty('${i.sku}',this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem('${i.sku}')">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="7" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
   if(scope.length) document.getElementById("out").textContent = buildExport("items");
+  renderTimeline();
 }
 function groupBySection(){ const g={}; for(const e of scope){const i=bySku[e.sku]; (g[i.section]=g[i.section]||[]).push(e);} return g; }
 const SECTION_ORDER=["Analysis & Strategy","Design","Build & Integration","QA, Launch & Support","Account Management","Ongoing","Pass-through"];
@@ -493,6 +549,170 @@ function buildExport(kind){
 }
 function exportScope(kind){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=buildExport(kind); document.getElementById("out").textContent=s; copyText(s, kind==="items"?"Line items copied":kind==="hours"?"Hours copied":"Skeleton copied"); }
 
+/* ---------- Timeline ----------
+   Rough lead times from each row's hours and revision rounds, laid out as a waterfall by SOW section,
+   with an MLR stage after any phase that holds promotional work. Everything is in weeks from kickoff.
+   A row's "Lead time (weeks)" and "MLR review" columns in the Sheet override the defaults below. */
+const TL_PHASES=["Analysis & Strategy","Design","Build & Integration","QA, Launch & Support"];
+const TL_CAP=30; // production hours one person gives a project in a week; rows over 150 hours in one role get two people
+const TL_TIER={ // order inside a phase: lower tiers finish before higher ones start; the same tier runs side by side (default 1)
+  "Discovery & Strategy Brief":0,"Working Session":0,"Website & Brand Audit":0,"Market & KOL Research Study":0,"Physician Survey & Readout":0,"Brand Evolution Summit":0,
+  "Wireframes":2,"Copywriting":2,"Medical Writing & Narrative":2,
+  "Brand Identity":0,"Logo":0,"Campaign Development":0,"Homepage Design":0,"Additional Revision Round":3,
+  "Brand Guidelines":2,"Template System":2,"Brand Asset Onboarding":2,
+  "Site Foundation":0,"Template Website":0,"CMS Upgrade or Platform Migration":0,
+  "Content Population & Migration":2,"Localization Management":2,"Rep CRM Certification":2,
+  "Post-Launch Support & Training":1,"QA, Accessibility & Launch":0,"Accessibility Audit & Remediation":0};
+const TL_MLR_BASES=new Set(["Messaging & Content Document","Medical Writing & Narrative","Copywriting",
+  "Campaign Development","Brand Extension Piece","Homepage Design","Web Page Design","Update to Existing Work","Landing Page","One-Pager or Leave-Behind","Brochure","Sales Aid","Guide or Report","Print Ad","Deck Design","Medical Illustration","Short Animation","Explainer or MOA Video","Digital Ad Set","HTML Email","Social Post","Social Launch Package","Booth Design","Banner or Placement Graphic","Clinical Trial Materials Kit","Congress Presentation","Live-Action Video","Interactive Booth Experience",
+  "Web Page Development","Template Website","Content Population & Migration","Interactive Visual Aid","Rep CRM Certification","Localization Management",
+  "Monthly Social Management","Monthly Email Program","Paid Media Management"]);
+const TL_MLR=[
+  {id:"unknown",label:"Not known yet (new client)"},
+  {id:"none",label:"No MLR review"},
+  {id:"fast",label:"Submit anytime, back in 1 to 2 days",cad:0,turn:0.4,cyc:2},
+  {id:"weekly",label:"Weekly review committee",cad:1,turn:1,cyc:2},
+  {id:"twice",label:"Twice a month, reviewed within 2 weeks",cad:2,turn:2,cyc:2},
+  {id:"monthly",label:"Monthly committee",cad:4,turn:2,cyc:2},
+  {id:"custom",label:"Custom"}];
+let tl={start:"",mlr:"unknown",fb:5,cad:2,turn:2,cyc:2};
+function saveTl(){ try{localStorage.setItem("sowkit.tl",JSON.stringify(tl));}catch(e){} }
+function loadTl(){ try{Object.assign(tl,JSON.parse(localStorage.getItem("sowkit.tl")||"{}"));}catch(e){} }
+function setTl(k,v){ tl[k]= k==="start"||k==="mlr" ? v : Math.max(0,parseFloat(v)||0); saveTl(); renderTimeline(); }
+
+const tlPhaseOf = i => i.base==="Additional Revision Round" ? "Design" : i.section;
+const tlIsMLR = i => (i.mlr===true||i.mlr===false) ? i.mlr : TL_MLR_BASES.has(i.base);
+// One MLR stage: every gated piece in the phase goes in together. cad = weeks between submission windows,
+// turn = weeks to get comments back, cyc = submissions until approval, with half a week to revise between them.
+function tlStage(p){ const c=Math.max(1,p.cyc), rev=(c-1)*0.5; return {lo:c*p.turn+rev, mid:c*(p.cad/2+p.turn)+rev, hi:c*(p.cad+p.turn)+rev}; }
+function tlMlr(){
+  if(tl.mlr==="none") return null;
+  if(tl.mlr==="unknown"){ const P=id=>TL_MLR.find(x=>x.id===id); return {lo:tlStage(P("fast")).lo, mid:tlStage(P("weekly")).mid, hi:tlStage(P("twice")).hi}; }
+  return tlStage(tl.mlr==="custom" ? tl : TL_MLR.find(x=>x.id===tl.mlr));
+}
+function tlProd(i,qty){ let w=0; for(const k of ["S","D","V","C","M"]){ const h=(i.h[k]||0)*qty; if(h) w=Math.max(w, h/(TL_CAP*(h>150?2:1))); } return Math.max(w,0.4); }
+function tlItem(i,qty,fb){
+  fb = fb ?? tl.fb;
+  if(i.lead) return {prod:i.lead,rev:0,total:i.lead,rounds:0,over:true,gate:i.lead};
+  if(i.base==="Additional Revision Round"){ const r=fb/5+0.5; return {prod:0,rev:qty*r,total:qty*r,rounds:qty,gate:qty*r}; }
+  const prod=tlProd(i,qty), r=Number(i.rounds)||0, per=fb/5+Math.min(1,Math.max(0.2,prod*0.25)); // a round: the client's feedback, then our revisions
+  return {prod,rev:r*per,total:prod+r*per,rounds:r,gate:prod+(r?per:0)};
+}
+const wk = n => Math.max(1,Math.round(n));
+function leadText(i){
+  if(i.billing==="recurring") return "Monthly. The timeline starts it at launch.";
+  if(i.section==="Pass-through") return "";
+  if(/^Account Management/.test(i.base)||i.base==="PRC Submission Support") return "Runs for the length of the project.";
+  const d=tlItem(i,1,5), n=wk(d.total);
+  return `About ${n} week${n>1?"s":""}${d.over?" (set in the Sheet)":d.rounds?`, including ${d.rounds} client review round${d.rounds>1?"s":""}`:""}${tlIsMLR(i)?", plus MLR review for clients who have it":""}.`;
+}
+
+function tlBuild(){
+  const m=tlMlr(), rows=[], flags=[]; let t=0, slip=0, done=0; // t: where the next phase may start; done: when everything so far is finished
+  const all=scope.map(e=>({e,i:bySku[e.sku]})), bases=new Set(all.map(x=>x.i.base));
+  const phaseStart={}; let gatedTotal=0;
+  for(const ph of TL_PHASES){
+    const list=all.filter(x=>tlPhaseOf(x.i)===ph && x.i.billing!=="recurring");
+    if(!list.length) continue;
+    if(ph==="QA, Launch & Support") t=Math.max(t,done); // QA waits for the build to be finished
+    phaseStart[ph]=t; const head={type:"phase",label:ph,start:t,end:t}; rows.push(head);
+    // A tier starts once the tier before it has its direction approved (production plus the first review round);
+    // its remaining rounds overlap the next tier. The phase ends when every row is done.
+    let ts=t, pe=t;
+    for(const tier of [...new Set(list.map(x=>TL_TIER[x.i.base]??1))].sort((a,b)=>a-b)){
+      let te=ts, tg=ts;
+      for(const x of list.filter(x=>(TL_TIER[x.i.base]??1)===tier)){
+        const d=tlItem(x.i,x.e.qty);
+        rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:""),start:ts,end:ts+d.total,prod:d.prod,rev:d.rev,rounds:d.rounds,mlr:!!m&&tlIsMLR(x.i)});
+        te=Math.max(te,ts+d.total); tg=Math.max(tg,ts+d.gate);
+        if(d.total>10) flags.push({k:"info",t:`${x.i.name} runs about ${wk(d.total)} weeks on its own. Consider staging it so part of it can go to review sooner.`});
+      }
+      pe=Math.max(pe,te); ts=tg;
+    }
+    head.end=pe; done=Math.max(done,pe);
+    t=ts; // without an MLR stage, the next phase starts once this one's direction is approved
+    const gated=list.filter(x=>tlIsMLR(x.i));
+    if(m && gated.length){
+      const pieces=gated.reduce((a,x)=>a+x.e.qty,0);
+      t=pe; gatedTotal+=gated.length; // MLR approves the finished work, so it waits for the whole phase
+      rows.push({type:"mlr",label:`MLR review, ${ph}`,start:t,end:t+m.mid,hi:t+m.hi+slip,lo:t+m.lo,n:gated.length});
+      flags.push({k:"mlr",t:`MLR review after ${ph}: ${pieces>1?pieces+" pieces submitted together":"1 piece"}, about ${wk(m.mid)} week${wk(m.mid)>1?"s":""} (${wk(m.lo)} to ${wk(m.hi)}). Work after this stage waits for approval.`});
+      slip+=m.hi-m.mid; t+=m.mid; done=Math.max(done,t);
+    }
+  }
+  const launch=done;
+  for(const x of all){
+    const i=x.i;
+    if(/^Account Management/.test(i.base)||i.base==="PRC Submission Support") rows.push({type:"span",label:i.name,start:0,end:Math.max(launch,1)});
+    else if(i.base==="Event Logistics & On-Site Support") rows.push({type:"ongoing",label:i.name+" (on the event date)",start:launch,end:launch+1});
+    else if(i.billing==="recurring") rows.push({type:"ongoing",label:i.name+" (monthly)",start:launch,end:launch+12,mlr:!!m&&tlIsMLR(i)});
+  }
+  if(all.some(x=>tlPhaseOf(x.i)!=="Pass-through" && x.i.billing!=="recurring")) rows.push({type:"launch",label:"Launch / final files",start:launch,end:launch,hi:launch+slip});
+
+  // What could slow it down
+  if(m && tl.mlr==="unknown" && gatedTotal) flags.unshift({k:"risk",t:"The client's MLR process isn't confirmed. This plan assumes a weekly committee and shows the range from a fast reviewer to a twice-a-month one. At kickoff, ask how often they submit, how long review takes, and who on their side owns submission."});
+  if(m && gatedTotal && !bases.has("PRC Submission Support")) flags.push({k:"risk",t:"No PRC Submission Support row. The client's team packages references and submits to MLR themselves. If nobody on their side is actively managing it, each missed submission window pushes everything after it."});
+  const needsCopy=[...bases].some(b=>/Web Page Design|Homepage Design|Landing Page|One-Pager|Brochure|Sales Aid|Guide or Report|HTML Email|Deck Design|Template Website|Interactive Visual Aid|Clinical Trial Materials/.test(b));
+  const writes=[...bases].some(b=>/Copywriting|Messaging & Content Document|Medical Writing/.test(b));
+  const firstMake=["Design","Build & Integration"].find(p=>p in phaseStart);
+  if(needsCopy && !writes && firstMake) flags.push({k:"risk",t:`No writing in the scope, so the client supplies the copy. It needs to be final${m?", and MLR-approved,":""} by week ${wk(phaseStart[firstMake]+1)}, when ${firstMake} starts.`});
+  if(bases.has("Content Population & Migration") && "Build & Integration" in phaseStart) flags.push({k:"info",t:`Content Population & Migration needs approved content in hand by week ${wk(phaseStart["Build & Integration"]+1)}.`});
+  if(bases.has("Naming")) flags.push({k:"risk",t:"Naming needs trademark screening and legal clearance on the client's side, often 2 to 4 weeks that sit outside this plan."});
+  if(bases.has("Clinical Trial Materials Kit")) flags.push({k:"risk",t:"Trial materials usually need IRB or ethics approval, on that board's calendar rather than the client's MLR calendar."});
+  if(bases.has("Investor Materials")) flags.push({k:"info",t:"Investor materials go through the client's legal or IR review instead of MLR. Ask how long it takes."});
+  if(m && all.some(x=>x.i.billing==="recurring"&&tlIsMLR(x.i))) flags.push({k:"mlr",t:`Monthly social, email or paid media content also goes through MLR every month. Plan each month's content about ${wk(m.mid)} week${wk(m.mid)>1?"s":""} ahead.`});
+  if(bases.has("Rush Surcharge")) flags.push({k:"info",t:"A rush surcharge is in the scope. This chart shows the standard pace; agree in writing which stages compress and what the client commits to turning around faster."});
+  if(scope.length) flags.push({k:"info",t:`Assumes client feedback within ${tl.fb} business days each round. A slow round adds about a week to that row and everything after it.`});
+  return {rows,flags,launch,slip,m};
+}
+
+const tlDate = w => { if(!tl.start) return null; const d=new Date(tl.start+"T12:00:00"); d.setDate(d.getDate()+Math.floor(w)*7); return d; };
+const tlFmt = d => d.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+const tlRange = (a,b) => { const s=Math.floor(a)+1, e=Math.max(s,Math.ceil(b)); return s===e?`Week ${s}`:`Weeks ${s} to ${e}`; };
+function renderTimeline(){
+  const box=document.getElementById("tl"); if(!box) return;
+  const sel=document.getElementById("tl-mlr");
+  if(sel && !sel.options.length) sel.innerHTML=TL_MLR.map(o=>`<option value="${o.id}">${o.label}</option>`).join("");
+  if(sel) sel.value=tl.mlr;
+  for(const k of ["start","fb","cad","turn","cyc"]){ const el=document.getElementById("tl-"+k); if(el && document.activeElement!==el) el.value=tl[k]; }
+  document.getElementById("tl-custom").hidden = tl.mlr!=="custom";
+  if(!scope.length){ box.innerHTML=`<p class="small muted">Add rows to see the timeline.</p>`; document.getElementById("tl-flags").innerHTML=""; return; }
+  const {rows,flags,launch,slip}=tlBuild();
+  const W=Math.max(4,Math.ceil(Math.max(...rows.map(r=>Math.max(r.end,r.hi||0)))));
+  const pct = w => (w/W*100).toFixed(3)+"%";
+  const step = [1,2,4,8,13,26].find(n=>W/n<=10) || 52;
+  let axis=""; for(let w=0;w<W;w+=step){ const d=tlDate(w); axis+=`<span style="left:${pct(w)}">${d?tlFmt(d):"Wk "+(w+1)}</span>`; }
+  const bar = r => {
+    if(r.type==="launch") return `<div class="g-ms" style="left:${pct(r.start)}" title="Launch"></div>${r.hi>r.start+0.01?`<div class="g-slip" style="left:${pct(r.start)};width:${pct(r.hi-r.start)}" title="If MLR runs long"></div>`:""}`;
+    if(r.type==="mlr") return `<div class="g-bar g-mlrbar" style="left:${pct(r.start)};width:${pct(r.end-r.start)}"></div><div class="g-slip" style="left:${pct(r.end)};width:${pct(Math.max(0,r.hi-r.end))}" title="Up to week ${Math.ceil(r.hi)} if review runs long"></div>`;
+    if(r.type==="item"){ const tot=r.end-r.start||1; return `<div class="g-bar${r.mlr?" g-gated":""}" style="left:${pct(r.start)};width:${pct(tot)}"><i style="width:${(r.prod/tot*100).toFixed(1)}%"></i>${r.rounds?`<b style="width:${(r.rev/tot*100).toFixed(1)}%"></b>`:""}</div>`; }
+    return `<div class="g-bar g-${r.type}bar" style="left:${pct(r.start)};width:${pct(Math.max(r.end-r.start,0.15))}"></div>`;
+  };
+  const when = r => r.type==="launch" ? (r.hi>r.start+0.5?`Week ${Math.ceil(r.start)}, up to ${Math.ceil(r.hi)}`:`Week ${Math.ceil(r.start)}`) : r.type==="mlr" ? `${tlRange(r.start,r.end)}, up to ${Math.ceil(r.hi)}` : r.type==="ongoing" ? `From week ${Math.floor(r.start)+1}` : tlRange(r.start,r.end);
+  box.innerHTML=`<div class="gantt" style="--w:${W}"><div class="g-row g-axis"><div class="g-lab"></div><div class="g-track">${axis}</div></div>`+
+    rows.map(r=>`<div class="g-row g-${r.type}"><div class="g-lab"><span>${r.label}</span><small>${when(r)}</small></div><div class="g-track">${bar(r)}</div></div>`).join("")+`</div>`;
+  const sum=document.getElementById("tl-sum");
+  const end=launch, d1=tlDate(end), d2=tlDate(end+slip);
+  sum.innerHTML = launch>0 ? `<div class="t"><div class="v">${Math.ceil(end)} wks</div><div class="k">To launch</div></div>${slip>0.5?`<div class="t"><div class="v">${Math.ceil(end+slip)} wks</div><div class="k">If MLR runs long</div></div>`:""}${d1?`<div class="t"><div class="v">${tlFmt(d1)}${slip>0.5?" to "+tlFmt(d2):""}</div><div class="k">Launch date</div></div>`:""}` : "";
+  document.getElementById("tl-flags").innerHTML = flags.map(f=>`<div class="cmp ${f.k}">${f.t}</div>`).join("");
+}
+function timelineText(){
+  const {rows,flags,launch,slip}=tlBuild(); const o=TL_MLR.find(x=>x.id===tl.mlr);
+  let s=`TIMELINE (rough, in weeks from kickoff${tl.start?", kickoff "+tlFmt(tlDate(0)):""})\nMLR: ${o.label}${tl.mlr==="custom"?` (submissions every ${tl.cad} weeks, ${tl.turn} weeks to review, ${tl.cyc} rounds)`:""}. Client feedback within ${tl.fb} business days per round.\n`;
+  for(const r of rows){
+    const span=r.end-r.start;
+    if(r.type==="phase") s+=`\n${r.label.toUpperCase()}  ${wk(span)} week${wk(span)>1?"s":""}, ${tlRange(r.start,r.end)}\n`;
+    else if(r.type==="item") s+=`  ${r.label}  ${tlRange(r.start,r.end)}\n`;
+    else if(r.type==="mlr") s+=`MLR REVIEW  ${tlRange(r.start,r.end)}, up to week ${Math.ceil(r.hi)}\n`;
+    else if(r.type==="span") s+=`\nThroughout: ${r.label}`;
+    else if(r.type==="ongoing") s+=`\nFrom launch: ${r.label}`;
+  }
+  s+=`\n\nLAUNCH / FINAL FILES  Week ${Math.ceil(launch)}${slip>0.5?`, up to week ${Math.ceil(launch+slip)} if MLR runs long`:""}\n`;
+  if(flags.length) s+="\nWATCH FOR\n"+flags.map(f=>"- "+f.t).join("\n")+"\n";
+  return s;
+}
+function copyTimeline(){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=timelineText(); document.getElementById("out").textContent=s; copyText(s,"Timeline copied"); }
+
 /* ---------- utilities ---------- */
 let tt;
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),1600); }
@@ -511,10 +731,11 @@ function fromWorkbook(wb){
   const cat = sj("Catalog"); if(!cat.length) throw new Error("No Catalog sheet");
   const finder = {}; for(const r of sj("Quick Finder")){ const k=r["Base SKU"]; if(!k) continue; (finder[k]=finder[k]||[]).push(String(r["Client says..."]).trim()); }
   const num = v => { const n=parseFloat(String(v).replace(/[$,]/g,"")); return isNaN(n)?0:n; };
+  const yn = v => { v=String(v||"").trim().toLowerCase(); return ["yes","y","true","1"].includes(v)?true:["no","n","false","0"].includes(v)?false:null; };
   const bl = v => String(v||"").split(/\r?\n/).map(x=>x.replace(/^\s*[-•*]\s*/,"").trim()).filter(Boolean);
   const items = cat.map(r=>{ const sku=String(r["SKU"]); const bs=sku.split("-").slice(0,3).join("-");
     return { sku, name:r["Line item name (PandaDoc)"], base:r["Base deliverable"], cat:sku.split("-")[1], category:r["Service type"], section:r["SOW section"],
-      level: LVCODE[String(r["Level"])] ?? "", lname:r["Level name"], desc:r["Description (customer-facing)"], cdesc:String(r["Client description"]||"").trim(), incl:bl(r["Includes"]), deliv:bl(r["Deliverables"]), note:String(r["Note"]||"").trim(), price:num(r["Flat price (2026)"]), unit:r["Unit"], billing:r["Billing"],
+      level: LVCODE[String(r["Level"])] ?? "", lname:r["Level name"], desc:r["Description (customer-facing)"], cdesc:String(r["Client description"]||"").trim(), incl:bl(r["Includes"]), deliv:bl(r["Deliverables"]), note:String(r["Note"]||"").trim(), lead:String(r["Lead time (weeks)"]||"").trim()?(num(r["Lead time (weeks)"])||null):null, mlr:yn(r["MLR review"]), price:num(r["Flat price (2026)"]), unit:r["Unit"], billing:r["Billing"],
       rounds:r["Rev rounds"], basis:r["Price basis"]||"", use:r["When to use"], find:(finder[bs]||[]).join(", "),
       h:{S:num(r["Strategy h"]),D:num(r["Design h"]),V:num(r["Dev h"]),A:num(r["Account h"]),C:num(r["Copy h"]),M:num(r["Medical copy h"])} }; });
   const seen=new Set(); const cats=[]; for(const i of items){ if(!seen.has(i.cat)){ seen.add(i.cat); cats.push({code:i.cat,name:i.category}); } }
@@ -557,7 +778,7 @@ function start(){
   const st=document.getElementById("src"); if(st) st.textContent = DATA.items.length+" line items loaded";
   const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
   for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
-  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); renderBuilder(); route();
+  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); renderBuilder(); route();
 }
 function lock(){ forgetPw(); location.reload(); }
 (function init(){

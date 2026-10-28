@@ -59,6 +59,9 @@ def tables_from_sheet(sheet_id, sa_json):
 def build_data(tables):
     def rows(name): return to_dicts(tables.get(name, []))
     def lines(v): return [re.sub(r"^\s*[-•*]\s*", "", x).strip() for x in str(v or "").splitlines() if x.strip()]
+    def yesno(v):
+        v = str(v or "").strip().lower()
+        return True if v in ("yes", "y", "true", "1") else False if v in ("no", "n", "false", "0") else None
     def num(v):
         try: return float(str(v).replace("$", "").replace(",", ""))
         except ValueError: return 0.0
@@ -78,6 +81,7 @@ def build_data(tables):
         items.append(dict(sku=sku, name=r["Line item name (PandaDoc)"], base=r["Base deliverable"], cat=sku.split("-")[1], category=r["Service type"],
             section=r["SOW section"], level=LV.get(str(r["Level"]), ""), lname=r["Level name"], desc=r.get("Description (customer-facing)", "") or r.get("Client description", ""),
             cdesc=str(r.get("Client description", "") or "").strip(), incl=lines(r.get("Includes")), deliv=lines(r.get("Deliverables")), note=str(r.get("Note", "") or "").strip(),
+            lead=(num(r.get("Lead time (weeks)")) or None) if str(r.get("Lead time (weeks)", "")).strip() else None, mlr=yesno(r.get("MLR review")),
             price=num(r["Flat price (2026)"]), unit=r.get("Unit", ""), billing=r.get("Billing", ""), rounds=r.get("Rev rounds", ""), basis=r.get("Price basis", ""),
             use=r.get("When to use", ""), find=", ".join(finder.get(bs, [])),
             h=dict(S=num(r.get("Strategy h", 0)), D=num(r.get("Design h", 0)), V=num(r.get("Dev h", 0)), A=num(r.get("Account h", 0)), C=num(r.get("Copy h", 0)), M=num(r.get("Medical copy h", 0)))))

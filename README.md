@@ -20,6 +20,15 @@ The account manager kit for building scopes at 2026 rates: The Brief, seven pack
 
 If a publish fails (a renamed tab, for example), Netlify keeps the previous version live. The error is under Deploys in Netlify.
 
+## Timeline and MLR
+
+The Scope Builder draws a rough waterfall timeline under the scope. Each row's length comes from its hours (about 30 production hours per person per week, two people once a role passes 150 hours on one row) plus its revision rounds (the client's feedback time, then our revisions). Inside a phase, the next step starts once the previous one has its first round approved. Phases run Analysis & Strategy, Design, Build & Integration, then QA. A phase that holds promotional work ends in an MLR stage sized to the client's process (pick it in the builder, or "Not known yet" for a new client, which shows the range). Work after an MLR stage waits for approval. Hatched bars show how far each stage can stretch.
+
+Two optional Catalog columns override the defaults per row; leave them blank to use the calculation:
+
+- `Lead time (weeks)`: a fixed length for that row.
+- `MLR review`: Yes or No, to override whether the row goes through MLR.
+
 ## Changing the password
 
 In Netlify: Site configuration → Environment variables → `SITE_PASSWORD`. Change it, then Deploys → Trigger deploy. Everyone needs the new one from then on; "Remember on this device" entries stop working and the page asks again.
