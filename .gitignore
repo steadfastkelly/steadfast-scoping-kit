@@ -1,0 +1,5 @@
+data/catalog.xlsx
+data/pandadoc-import.csv
+data/snapshot.js
+.DS_Store
+_to_delete/

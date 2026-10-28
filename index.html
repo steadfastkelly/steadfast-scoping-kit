@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+<script src="data/catalog.enc.js"></script>
+<title>Steadfast SOW Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@500;600&family=Google+Sans+Flex:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a left rail of seven sections on desktop, a scrolling tab strip on phones; paper ground, one brown accent, numbers in mono. */
+:root{
+  --bg:#f2efe9; --bg2:#e9e4da; --panel:#ffffff; --fg:#0a0a0a; --fg2:#5a534a; --line:#d8d1c4;
+  --accent:#644835; --accent-fg:#ffffff; --accent-soft:#efe5dc;
+  --ok:#2f6b3a; --warn:#9a5b12; --bad:#9b2a2a;
+  --display:"Zalando Sans SemiExpanded","Helvetica Neue",Arial,sans-serif;
+  --body:"Google Sans Flex","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--bg2:#1e1b16;--panel:#211e19;--fg:#f0ebe2;--fg2:#b3aa9b;--line:#3a352c;--accent:#c89b7c;--accent-fg:#15130f;--accent-soft:#2c2520;--ok:#7fc48a;--warn:#e0a85a;--bad:#e07a7a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15130f;--bg2:#1e1b16;--panel:#211e19;--fg:#f0ebe2;--fg2:#b3aa9b;--line:#3a352c;--accent:#c89b7c;--accent-fg:#15130f;--accent-soft:#2c2520;--ok:#7fc48a;--warn:#e0a85a;--bad:#e07a7a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+h1,h2,h3,h4{font-family:var(--display);font-weight:500;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:1.7rem} h2{font-size:1.35rem} h3{font-size:1.05rem} h4{font-size:.95rem;font-weight:600}
+p{margin:0} a{color:var(--accent)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--fg2);font-weight:500}
+.wrap{display:flex;min-height:100%}
+.wrap>*{min-width:0}
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:flex-start;min-width:0;max-width:100%;width:220px;flex:0 0 220px;padding:22px 0 22px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:4px}
+nav.rail .brand{font-family:var(--display);font-weight:600;font-size:1rem;letter-spacing:.02em;margin-bottom:10px;padding-left:10px}
+nav.rail .brand small{display:block;font-family:var(--body);font-weight:400;font-size:.72rem;color:var(--fg2);letter-spacing:0}
+nav.rail a{display:block;padding:8px 10px;border-radius:6px;color:var(--fg);text-decoration:none;font-size:.92rem}
+nav.rail a.on{background:var(--accent);color:var(--accent-fg)}
+nav.rail a:hover:not(.on){background:var(--bg2)}
+nav.rail a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{flex:1;min-width:0;padding-block:22px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:861px){main{padding-left:28px}}
+section.view{display:none;max-width:1080px}
+section.view.on{display:block}
+.head{display:flex;flex-direction:column;gap:6px;margin-bottom:22px;max-width:70ch}
+.head p{color:var(--fg2)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:0}
+.card h3{margin-bottom:6px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--line)}
+.step:last-child{border-bottom:1px solid var(--line)}
+.step .n{font-family:var(--mono);font-size:1.1rem;color:var(--accent)}
+.step p{color:var(--fg2);max-width:68ch}
+.step b{color:var(--fg)}
+button,.btn{font:inherit;font-size:.86rem;font-weight:500;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:6px 11px;cursor:pointer}
+button.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button.sm{padding:3px 8px;font-size:.78rem}
+button:hover{filter:brightness(.97)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+input[type=search],select,input[type=number]{font:inherit;font-size:.9rem;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+input[type=search]{flex:1;min-width:200px}
+input[type=number]{width:62px;text-align:right;font-family:var(--mono)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.74rem;padding:2px 8px;border-radius:99px;background:var(--bg2);color:var(--fg2)}
+.chip.lvl{background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-weight:500}
+.chip.basis-i{border:1px dashed var(--warn);color:var(--warn);background:transparent}
+.row{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;min-width:0}
+.row .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.row .top .nm{font-weight:600;flex:1;min-width:200px}
+.row .top .pr{font-family:var(--mono);font-weight:500;white-space:nowrap}
+.row .lv{color:var(--fg2);font-size:.9rem;margin-top:2px}
+.row .more{display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:none}
+.row.open .more{display:block}
+.row .desc{max-width:72ch}
+.hrs{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono);font-size:.8rem;color:var(--fg2);margin-top:8px}
+.hrs b{color:var(--fg);font-weight:500}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.muted{color:var(--fg2)}
+.small{font-size:.86rem}
+.tbl{width:100%;border-collapse:collapse;font-size:.9rem}
+.tbl th{text-align:left;font-weight:500;color:var(--fg2);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;padding:8px 6px;border-bottom:1px solid var(--line)}
+.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td.r,.tbl th.r{text-align:right;font-family:var(--mono)}
+.scroll{overflow-x:auto}
+.tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+.tot .t{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tot .t .v{font-family:var(--mono);font-size:1.25rem;font-weight:500}
+.tot .t .k{font-size:.74rem;color:var(--fg2);text-transform:uppercase;letter-spacing:.06em}
+pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break:break-word;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:420px;overflow:auto;margin:0}
+.terms h3{margin:18px 0 6px}
+.terms h4{margin:12px 0 4px}
+.terms p{max-width:72ch;color:var(--fg);margin-bottom:6px}
+.terms .blk{position:relative;border:1px dashed var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:var(--panel)}
+.terms .blk .cp{position:absolute;top:10px;right:10px}
+.sig{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:10px}
+.sig .ln{border-bottom:1px solid var(--fg);height:30px;margin-top:18px}
+.sig .lb{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fg2);margin-top:4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+.banner{background:var(--accent);color:var(--accent-fg);border-radius:10px;padding:22px 24px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-bottom:22px}
+.banner h2{font-size:1.5rem;color:var(--accent-fg)}
+.banner p{opacity:.9;max-width:62ch;margin-top:6px}
+.banner .cta{background:var(--accent-fg);color:var(--accent);border-color:transparent;font-weight:600;white-space:nowrap}
+/* infographic */
+.info{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:22px}
+.tl{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.tl .d{background:var(--bg2);border-radius:4px;height:34px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.74rem;color:var(--fg2)}
+.tl .d.a{background:var(--accent-soft);color:var(--accent)} .tl .d.b{background:var(--accent);color:var(--accent-fg)}
+.tl .d.c{background:var(--fg);color:var(--bg)}
+.phases{display:grid;grid-template-columns:5fr 4fr 2fr;gap:4px;margin-top:6px}
+.phases div{font-size:.8rem}
+.phases b{display:block;font-family:var(--display);font-weight:500;font-size:.95rem}
+.bar{display:flex;height:40px;border-radius:6px;overflow:hidden}
+.bar div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;color:var(--accent-fg);min-width:0}
+.bar .s{background:var(--accent)} .bar .de{background:#8a6a55} .bar .ac{background:#b59882;color:var(--fg)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.84rem;margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend .s::before{background:var(--accent)} .legend .de::before{background:#8a6a55} .legend .ac::before{background:#b59882}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center}
+.flow .bx{border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
+.flow .bx .v{font-family:var(--mono);font-size:1.2rem;font-weight:500}
+.flow .ar{font-size:1.4rem;color:var(--fg2);text-align:center}
+.recv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.recv div{border-top:2px solid var(--accent);padding-top:8px;font-size:.9rem}
+.recv b{display:block;font-family:var(--display);font-weight:500;margin-bottom:2px}
+.cmp{border-left:3px solid var(--warn);padding:8px 12px;background:var(--panel);border-radius:0 6px 6px 0;font-size:.88rem;margin-bottom:10px}
+@media (max-width:860px){
+  .wrap{flex-direction:column}
+  nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;width:auto;flex:none;flex-direction:row;overflow-x:auto;gap:4px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--bg);border-bottom:1px solid var(--line)}
+  nav.rail .brand{display:none}
+  nav.rail a{white-space:nowrap;font-size:.86rem}
+  .banner{grid-template-columns:1fr}
+  .phases{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .flow .ar{transform:rotate(90deg)}
+}
+.gate{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.gate form{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:28px;width:100%;max-width:380px;display:grid;gap:12px}
+.gate h1{font-size:1.3rem}
+.gate input[type=password]{font:inherit;font-size:1rem;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);width:100%}
+.gate .err{color:var(--bad);font-size:.86rem;min-height:1.2em}
+.gate label.rm{display:flex;gap:8px;align-items:center;font-size:.86rem;color:var(--fg2)}
+.gate button{padding:10px 14px;font-size:.95rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="gate" id="gate">
+  <form id="gateform" autocomplete="off">
+    <div><div class="eyebrow">Steadfast</div><h1>SOW Kit</h1></div>
+    <p class="small muted">Internal. Enter the team password to open the catalog, packages and terms.</p>
+    <input type="password" id="pw" placeholder="Password" autofocus aria-label="Password">
+    <label class="rm"><input type="checkbox" id="remember"> Remember on this device</label>
+    <div class="err" id="gateerr"></div>
+    <button class="pri" type="submit" id="gatebtn">Open</button>
+  </form>
+</div>
+<div class="wrap" id="app" hidden>
+<nav class="rail" id="rail">
+  <div class="brand">Steadfast<small>SOW Kit, 2026 rates</small><small id="src" class="muted"></small></div>
+  <a href="#start">Start Here</a>
+  <a href="#brief">The Brief</a>
+  <a href="#packages">Packages</a>
+  <a href="#catalog">Catalog</a>
+  <a href="#builder">Scope Builder <span id="cnt" class="chip lvl" style="display:none"></span></a>
+  <a href="#levels">Levels &amp; Rates</a>
+  <a href="#terms">Terms</a>
+  <a href="#" onclick="lock();return false" class="muted" style="margin-top:auto;font-size:.8rem">Lock</a>
+</nav>
+<main>
+
+<!-- ============ START ============ -->
+<section class="view" id="v-start">
+  <div class="head">
+    <span class="eyebrow">For account managers</span>
+    <h1>Build a scope from parts, not from scratch.</h1>
+    <p>Everything a proposal needs is here at 2026 rates: 80 services at three levels, seven pre-built packages, hours for production, and the terms. Pick a package, adjust levels, add the companions, paste. Thirty minutes, not three days.</p>
+  </div>
+  <div class="step"><div class="n">1</div><div><b>Hold the intro call.</b><p>Thirty minutes, free, with Taylor or the account lead. One outcome: decide whether The Brief is the right first step. If the client already knows exactly what they want and has done it with us before, skip to step 3.</p></div></div>
+  <div class="step"><div class="n">2</div><div><b>Sell The Brief.</b><p>$5,000, two weeks, credited to Stage 1. The Brief page has the client-facing explanation and the infographic. Send the paid kickoff link after the call, never before it.</p></div></div>
+  <div class="step"><div class="n">3</div><div><b>Start from a package.</b><p>Seven bundles cover most of what we sell. Load one into the Scope Builder, then remove what the client does not need. Starting from zero is where the hours go.</p></div></div>
+  <div class="step"><div class="n">4</div><div><b>Set the level on each line.</b><p>Level 1 refreshes or works from what exists. Level 2 is new work on an approved direction. Level 3 adds strategy, research, custom interaction or regulated rounds. The level test for every service type is on the Levels page. When in doubt between two levels, pick the higher one and say what the lower one would drop.</p></div></div>
+  <div class="step"><div class="n">5</div><div><b>Add the companions.</b><p>Every site build carries Site Foundation once, QA, Accessibility &amp; Launch once, and Account Management, Website Build. Every project over $10,000 carries Account Management at the matching tier. Pass-through costs are one line, at cost, with the item named. The builder warns you when one is missing.</p></div></div>
+  <div class="step"><div class="n">6</div><div><b>Write the proposal in this order.</b><p>What we heard (four or five sentences in the client's words). One-line thesis. Four strategic imperatives with a "done when" line under each. Stages named as verbs, each with its items and price. Terms. Signature. The price comes after the argument, never before it. The builder exports the item lines and the stage totals; the narrative is yours.</p></div></div>
+  <div class="grid g3" style="margin-top:22px">
+    <div class="card"><span class="eyebrow">Rule of truth</span><h3>The catalog price is the price.</h3><p class="small muted">Discount only on a named row with a written reason. Partner-agency deals and older client rate cards are priced from the catalog first, then reduced where the contract says so.</p></div>
+    <div class="card"><span class="eyebrow">Naming</span><h3>Service Title | L2</h3><p class="small muted">Titles in Title Case, levels explained in the description in sentence case. No dashes. Copy descriptions from the catalog as they are; they were written to go in front of a client.</p></div>
+    <div class="card"><span class="eyebrow">Hours</span><h3>Hours are the budget.</h3><p class="small muted">Every line funds the hours shown at the 2026 card. Hand production the Hours by role total from the builder. Past those hours the line loses money, so flag it before it happens, not after.</p></div>
+  </div>
+</section>
+
+<!-- ============ BRIEF ============ -->
+<section class="view" id="v-brief">
+  <div class="banner">
+    <div><span class="eyebrow" style="color:inherit;opacity:.8">Our first engagement</span><h2>Start with The Brief.</h2>
+    <p>In two weeks and for a fixed $5,000, we learn your science, your market and the decision in front of you, then hand you a written brief: what to build, what it costs and what it is for. If you go forward with us, the fee comes off Stage 1. If you don't, you keep the brief.</p></div>
+    <button class="btn cta" onclick="copyText(BRIEF_BANNER,'Banner copy copied')">Copy banner copy</button>
+  </div>
+  <div class="head"><h1>The Brief, explained so anyone can follow the money.</h1><p>This is the infographic wireframe. Each block is one panel. Plain words only: no marketing acronyms, no agency shorthand.</p></div>
+  <div class="info">
+    <div>
+      <span class="eyebrow">Panel 1. Two weeks, day by day</span>
+      <div class="tl" style="margin-top:8px">
+        <div class="d a">Day 1</div><div class="d a">2</div><div class="d a">3</div><div class="d a">4</div><div class="d a">5</div><div class="d b">6</div><div class="d b">7</div><div class="d b">8</div><div class="d b">9</div><div class="d c">10</div>
+      </div>
+      <div class="phases">
+        <div><b>Listen (days 1 to 5)</b>We read what you already have and talk to the people who own the outcome. We are looking for the decision underneath the request, and the constraint nobody wrote down.</div>
+        <div><b>Shape (days 6 to 9)</b>We write one page of direction and test it with you on a call. Then we build the plan: what to make, in what order, at what price.</div>
+        <div><b>Readout (day 10)</b>You get the brief and the priced plan, walked through in 45 minutes.</div>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow">Panel 2. Where the $5,000 goes: 30 hours of senior time</span>
+      <div class="bar" style="margin-top:8px"><div class="s" style="flex:10">10 h</div><div class="de" style="flex:15">15 h</div><div class="ac" style="flex:5">5 h</div></div>
+      <div class="legend"><span class="s">Strategy: Taylor, listening and writing the direction</span><span class="de">Design: a senior designer checking the direction can be made</span><span class="ac">Account: scheduling, the readout, the folder</span></div>
+      <p class="small muted" style="margin-top:8px">At our standard rates these hours cost $5,650. The Brief is $5,000 because it is the first thing we do together, and the full $5,000 is credited back if the project goes ahead.</p>
+    </div>
+    <div>
+      <span class="eyebrow">Panel 3. What you receive on day 10</span>
+      <div class="recv" style="margin-top:8px">
+        <div><b>A written brief</b>6 to 8 pages: your situation, your audience, the message in draft, what to build and what not to, and the risks to the calendar.</div>
+        <div><b>A priced plan</b>Each stage with a fixed price, built from our standard rates, with the trades we would make if the budget is tighter than the plan.</div>
+        <div><b>A 45-minute readout</b>With the senior people who would run the work, not a sales team.</div>
+        <div><b>Everything we gathered</b>Notes, transcripts and references in a shared folder. It is your material.</div>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow">Panel 4. What happens to the $5,000</span>
+      <div class="flow" style="margin-top:8px">
+        <div class="bx"><div class="v">$5,000</div><div class="small muted">The Brief, invoiced at kickoff</div></div>
+        <div class="ar">&#8594;</div>
+        <div class="bx"><div class="v">Stage 1 minus $5,000</div><div class="small muted">If you go ahead within 60 days, the full fee comes off the first stage</div></div>
+        <div class="ar">&#8594;</div>
+        <div class="bx"><div class="v">$0 more</div><div class="small muted">If you don't, you keep the brief, the plan and the folder, and owe nothing further</div></div>
+      </div>
+    </div>
+    <div>
+      <span class="eyebrow">Panel 5. What The Brief is not</span>
+      <p class="small" style="margin-top:6px;max-width:72ch">It is not a design or a concept; nothing is designed in these two weeks, which is what keeps it honest. It is not a research study; we talk to a handful of the right people, not a sample. It is not a commitment to the build, in either direction.</p>
+    </div>
+  </div>
+  <div class="toolbar" style="margin-top:16px"><button class="pri" onclick="copyText(BRIEF_PAGE,'Brief page copy copied')">Copy the full product page copy</button><button onclick="addBrief()">Add The Brief to a scope</button></div>
+  <div class="card" style="margin-top:14px"><span class="eyebrow">For the account manager</span><p class="small" style="margin-top:6px;max-width:72ch">The Brief is sold on the intro call and never gated in front of it. Taylor leads the listening. Hold the line on "nothing is designed": the moment a mood board appears, the price stops making sense and we are giving away the front end again. The credit lives on a named row in Stage 1: "Credit for The Brief, ($5,000)". Catalog row: Discovery &amp; Strategy Brief | L1.</p></div>
+</section>
+
+<!-- ============ PACKAGES ============ -->
+<section class="view" id="v-packages">
+  <div class="head"><span class="eyebrow">Seven starting points</span><h1>Load a package, then take things out.</h1><p>Each bundle is the set of rows that sold together across the signed scopes, at 2026 prices, with the hours production will need. Load one into the builder and adjust from there.</p></div>
+  <div id="packs" class="grid g2"></div>
+</section>
+
+<!-- ============ CATALOG ============ -->
+<section class="view" id="v-catalog">
+  <div class="head"><span class="eyebrow">80 services, 235 line items</span><h1>Find the row, read the level, add it.</h1><p>Search by what the client said. Open a row to read the client-facing description and the hours. The description is written to be pasted as is.</p></div>
+  <div class="toolbar">
+    <input type="search" id="q" placeholder="Search: sales aid, landing page, booth, congress, email, KOL...">
+    <select id="fcat"><option value="">All service types</option></select>
+    <select id="flvl"><option value="">All levels</option><option value="T">Template</option><option value="L1">Level 1</option><option value="L2">Level 2</option><option value="L3">Level 3</option><option value="">Flat</option></select>
+  </div>
+  <div class="small muted" id="qcount" style="margin-bottom:10px"></div>
+  <div id="list"></div>
+</section>
+
+<!-- ============ BUILDER ============ -->
+<section class="view" id="v-builder">
+  <div class="head"><span class="eyebrow">Scope builder</span><h1>The scope, priced and houred.</h1><p>Add rows from the catalog or a package. Set quantities. The export is the line-item block for the proposal; the narrative in front of it is yours.</p></div>
+  <div id="warns"></div>
+  <div class="tot" id="tots"></div>
+  <div class="scroll"><table class="tbl" id="btbl"><thead><tr><th>Line item</th><th>Level</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr></thead><tbody id="bbody"></tbody></table></div>
+  <div class="toolbar" style="margin-top:14px">
+    <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
+    <button onclick="exportScope('hours')">Copy hours for production</button>
+    <button onclick="exportScope('skeleton')">Copy proposal skeleton</button>
+    <button onclick="clearScope()">Clear</button>
+  </div>
+  <pre class="out" id="out">Nothing in the scope yet. Load a package or add rows from the catalog.</pre>
+</section>
+
+<!-- ============ LEVELS ============ -->
+<section class="view" id="v-levels">
+  <div class="head"><span class="eyebrow">Level tests and the rate card</span><h1>The level is a test, not a feeling.</h1><p>Read the test for the service type, then pick. Revision rounds are set by level and are two hours each; the terms say so.</p></div>
+  <div class="grid g3" style="margin-bottom:22px" id="rates"></div>
+  <div id="lvls"></div>
+</section>
+
+<!-- ============ TERMS ============ -->
+<section class="view" id="v-terms">
+  <div class="head"><span class="eyebrow">Drag and drop content</span><h1>Terms &amp; Conditions, 2026.</h1><p>Copy a block or the whole set into the proposal after the price. The signature block has placeholders for the client. Rates referenced in the terms are the 2026 card on the Levels page.</p></div>
+  <div class="toolbar"><button class="pri" onclick="copyText(termsText(),'All terms copied')">Copy all terms</button><button onclick="copyText(sigText(),'Signature block copied')">Copy signature block</button></div>
+  <div class="terms" id="terms"></div>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let DATA = null; // filled by loadData()
+const RATE = {S:250,D:170,V:200,A:120,C:150,M:250};
+const ROLE = {S:"Strategy",D:"Design",V:"Dev",A:"Account",C:"Copy",M:"Medical copy"};
+const LVL = {T:"Template",L1:"Level 1",L2:"Level 2",L3:"Level 3","":"Flat"};
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+let bySku = {};
+
+/* ---------- The Brief copy ---------- */
+const BRIEF_BANNER = `Start with The Brief.
+
+In two weeks and for a fixed $5,000, we learn your science, your market and the decision in front of you, then hand you a written brief: what to build, what it costs and what it is for. If you go forward with us, the fee comes off Stage 1. If you don't, you keep the brief.
+
+Button: Book the first conversation`;
+const BRIEF_PAGE = `The Brief
+Know what to build before you commit to building it.
+
+Most agency work in biotech goes wrong before the first design is shown. A launch team that needed a sales aid was sold a campaign. A company raising a round rebuilt its website when its deck was the problem. The scope was written from a 30-minute call and a wish list, and nobody on either side had spent the hours to find out what the audience, the data and the calendar would actually allow. The Brief is those hours, done first, on their own, for a fixed fee.
+
+By the end of two weeks you hold a written brief: the decision you are facing stated plainly, the audience and the message that will move it, the materials worth building and the ones that are not, and a plan with a price for each stage. It is yours whether or not you build it with us.
+
+How the two weeks run
+Listen, days 1 to 5. We read what you already have: the deck, the label or the data package, the current site, the last three things the field asked for. We spend 90 minutes with the people who own the outcome, usually marketing, medical and whoever signs, and one session with a rep or a physician if the materials are going into the room. We are listening for the decision underneath the request, and for the constraint nobody has written down yet (the review committee's calendar, the congress date, the reviewer who rejected the last piece).
+Shape, days 6 to 9. We put the findings into one page of direction and test it with you on a call: who the audience is, what they need to understand, and the two or three ways the work could go. One of those is a recommendation. We then build the plan from it, stage by stage, with the price of each stage and what it includes, so that Stage 1 can be approved on its own.
+Readout, day 10. You receive the brief and the priced plan together, and we walk you through both in a 45-minute readout. The brief is written so it can be forwarded to your CEO or your board without a cover note.
+
+What you receive
+A written brief of 6 to 8 pages: the situation, the audience, the message in draft, the materials recommended and the ones we advise against, and the risks to the calendar. A priced plan by stage, built from our standard rates, with the trades we would make if the budget is tighter than the plan. A 45-minute readout with the senior team who will run the work. Every note, transcript and reference we gathered, in a shared folder, because it is your material.
+
+Who does the work
+The Brief is run by the people who would lead the engagement, not a sales team. Taylor leads the listening and the direction. A senior designer sits in from day one so the direction is tested against what can be made, not only what can be said. An account lead owns the calendar and the readout. About 30 hours of senior time, in two weeks.
+
+The price
+$5,000, fixed, invoiced at kickoff. If you proceed with Stage 1 within 60 days, the full $5,000 comes off that stage. If you do not, you keep the brief, the plan and the folder, and you owe nothing further.
+
+We priced it this way on purpose. A free discovery call produces a proposal written from an hour of conversation, which is why so many agency scopes are wrong by the second week. A paid brief produces a plan we will stand behind, and it gives you a way to find out how we think before you commit to a build.
+
+What The Brief is not
+It is not a creative concept or a design; nothing is designed in these two weeks, which is what keeps it honest. It is not a market research study; we talk to a handful of the right people, not a sample. It is not a commitment to the build, in either direction.
+
+Start
+Book a 30-minute conversation with Taylor. If The Brief is the right first step, you will have the kickoff on the calendar before the call ends.`;
+
+/* ---------- Terms ---------- */
+const TERMS_DEFAULT = [
+ {h:"Process", items:[
+  ["Timeline & Communication","The timeline presented for this project is an estimate only and could change depending on feedback response time, additional project requirements, or other unanticipated dilemmas. The Client is expected to respond to communications within 3 business days to help maintain steady progress. Delays in communication can result in additional fees if the Firm is required to adjust other project schedules due to untimely feedback."],
+  ["Changes","The general layout of each page, approved during the design process, is utilized to guide the design of other pages and during development. As a result, the Client must assume that any major changes to the layout or content after design approval will result in additional time and costs. Additionally, new features and/or functionality can be added after the start of the project, but must be negotiated separately from this agreement and may alter the original timeline."],
+  ["Revision Policy","After a wireframe, stylistic direction, and/or page mockup is presented, the Client is expected to collect feedback and respond at one time outlining any necessary changes. Once the Firm makes those changes, a new draft will be provided. This constitutes a single revision round. The rounds of revisions allotted for each page are outlined in the Scope of Work section. Each round is limited to two (2) hours. Excess time will be billed at the rates defined here. The Firm will notify the Client if any portion of the project extends beyond the scope of the contract and before additional charges are incurred."]]},
+ {h:"Billing", items:[
+  ["Payment Terms","Invoices are payable within 30 days of receipt, unless otherwise stated in the invoice terms. If payment is not received on time (postmarked or proof of ACH transfer by due date), a 5% penalty will be issued at 31 days following the original date of receipt. If the outstanding balance remains unpaid, interest will continue to accrue at a rate of 1% per month until payment is received."],
+  ["Default in Payment","The Client assumes responsibility for cost outlays by the Firm in all collections of unpaid fees and of legal fees necessitated by default in payment. Invoices in default will include, but are not limited to, fees for collection and legal costs."],
+  ["Expenses","The Client will reimburse the Firm for all expenses arising from this project, including but not limited to stock photography, artwork, and/or other material needed for the project. Expenses will be approved by the Client prior to purchase."]]},
+ {h:"Miscellaneous", items:[
+  ["Ownership","The Firm retains ownership of all original artwork and code until the final payment for the contract is received, at which point the legal ownership of all final designs assets and code will transfer to the Client. Artwork that was presented during the project (i.e. unused concepts, designs, etc.), but not utilized within the final product, will remain property of the Firm. The Firm reserves the right to display all final designs or unused concepts within their portfolio, both online and in print."],
+  ["Modifications","Modifications of the terms of this contract must be written and authorized by both parties, involving the implementation of a new version of the contract following standard procedures of documentation and approval."],
+  ["Cancellation","In the event of cancellation by the Client, ownership of all original artwork and code will be retained by the Firm until final payment is received. Final payment will be calculated in one of the following ways, determined by the time of cancellation: (1) if the project is canceled immediately following the completion of a phase, and the deliverables associated with that phase have been fulfilled by the Firm, the Client agrees to pay the full installment designated for that period; (2) if the project is canceled while a phase is in-progress, the Firm will discontinue all work, calculate the number of unpaid hours within the active phase, and bill to the Client at the rates defined here."]]},
+ {h:"Acceptance of Proposal", items:[
+  ["Acceptance of Proposal","This contract, in conjunction with Steadfast's standard Terms & Conditions, constitutes the sole agreement between the Client and the Firm regarding all items included in this proposal. The Firm, as sender, and the Client, as recipient, will acknowledge acceptance of these terms by signing below. Electronic signatures are considered legal and binding."]]}
+];
+let TERMS = TERMS_DEFAULT;
+let RATES_TXT = "Rates defined here (2026): Strategy $250/h, Design $170/h, Development $200/h, Account Management $120/h, Copywriting $150/h, Medical copywriting $250/h. Rush work (under 5 business days) at 1.5x.";
+function termsText(){
+  let s="Terms & Conditions\n\n";
+  for(const g of TERMS){ s+=g.h.toUpperCase()+"\n"; for(const [t,b] of g.items){ s+=t+"\n"+b+"\n\n"; } }
+  s+=RATES_TXT+"\n\n"+sigText(); return s;
+}
+function sigText(){
+  return "THE FIRM\nSteadfast Design Firm\n220 S. White Street #3, Wake Forest, NC 27587\n\n________________________________________\nFULL NAME: Taylor Tsantles\nTITLE: President & Chief Strategist\nSIGNATURE & DATE\n\nTHE CLIENT\n[Client company name]\n[Client address]\n\n________________________________________\nFULL NAME\nTITLE\nSIGNATURE & DATE";
+}
+function renderTerms(){
+  const el=document.getElementById("terms"); let h="";
+  for(const g of TERMS){ h+=`<h3>${g.h}</h3>`;
+    for(const [t,b] of g.items){ const txt=t+"\n"+b; h+=`<div class="blk"><button class="sm cp" onclick='copyText(${JSON.stringify(txt)},"Copied: ${t}")'>Copy</button><h4>${t}</h4><p>${b}</p></div>`; } }
+  h+=`<div class="blk"><button class="sm cp" onclick='copyText(RATES_TXT,"Rates copied")'>Copy</button><h4>Rates defined here</h4><p>${RATES_TXT}</p></div>`;
+  h+=`<h3>Signature</h3><div class="blk"><button class="sm cp" onclick='copyText(sigText(),"Signature block copied")'>Copy</button><div class="sig">
+   <div><span class="eyebrow">The Firm</span><p><b>Steadfast Design Firm</b><br>220 S. White Street #3, Wake Forest, NC 27587</p><div class="ln"></div><div class="lb">Full name: Taylor Tsantles</div><div class="ln"></div><div class="lb">Title: President &amp; Chief Strategist</div><div class="ln"></div><div class="lb">Signature &amp; date</div></div>
+   <div><span class="eyebrow">The Client</span><p><b>[Client company name]</b><br>[Client address]</p><div class="ln"></div><div class="lb">Full name</div><div class="ln"></div><div class="lb">Title</div><div class="ln"></div><div class="lb">Signature &amp; date</div></div></div></div>`;
+  el.innerHTML=h;
+}
+
+/* ---------- Levels & rates ---------- */
+function renderLevels(){
+  document.getElementById("rates").innerHTML = Object.keys(RATE).map(k=>`<div class="card"><span class="eyebrow">${ROLE[k]}</span><div class="num" style="font-size:1.4rem;margin-top:4px">$${RATE[k]}<span class="small muted">/h</span></div></div>`).join("")
+    + `<div class="card"><span class="eyebrow">Rush</span><div class="num" style="font-size:1.4rem;margin-top:4px">1.5x</div><div class="small muted">under 5 business days</div></div>`;
+  document.getElementById("lvls").innerHTML = DATA.levels.map(l=>`<div class="card" style="margin-bottom:10px"><h3>${l.name}</h3><p class="small" style="max-width:80ch">${l.test}</p>${Object.keys(l.rounds).length?`<div class="chips" style="margin-top:8px">${Object.entries(l.rounds).map(([a,b])=>`<span class="chip">${a}: ${b} round${b>1?"s":""}</span>`).join("")}</div>`:""}</div>`).join("");
+}
+
+/* ---------- Catalog ---------- */
+function hoursLine(i){ const t=Object.values(i.h).reduce((a,b)=>a+b,0); if(!t) return `<div class="hrs muted">No hours; billed at cost or as a surcharge.</div>`;
+  return `<div class="hrs">${Object.keys(RATE).filter(k=>i.h[k]).map(k=>`<span>${ROLE[k]} <b>${i.h[k]}</b></span>`).join("")}<span>Total <b>${t} h</b></span></div>`; }
+function rowHTML(i){
+  const ind = /norm|Derived|no hour/i.test(i.basis) ? `<span class="chip basis-i" title="${i.basis}">industry norm</span>` : "";
+  return `<div class="row" id="r-${i.sku}"><div class="top" onclick="toggleRow('${i.sku}')" style="cursor:pointer"><span class="nm">${i.name}</span><span class="chip">${i.category}</span>${ind}<span class="pr">${money(i.price)}${i.unit==="month"?" /mo":""}</span></div>
+   <div class="lv">${i.lname?LVL[i.level]+": "+i.lname:i.use}</div>
+   <div class="more"><p class="desc small">${i.desc}</p><p class="small muted" style="margin-top:6px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${hoursLine(i)}
+   <div class="acts"><button class="sm pri" onclick="addItem('${i.sku}',1)">Add to scope</button><button class="sm" onclick='copyText(${JSON.stringify(i.name+"\n"+i.desc)},"Description copied")'>Copy description</button></div></div></div>`;
+}
+function toggleRow(s){ document.getElementById("r-"+s).classList.toggle("open"); }
+function renderCatalog(){
+  const q=document.getElementById("q").value.trim().toLowerCase(), c=document.getElementById("fcat").value, l=document.getElementById("flvl");
+  const lv = l.selectedIndex===0 ? null : l.value;
+  const hit = DATA.items.filter(i => (!c||i.cat===c) && (lv===null||i.level===lv) && (!q || (i.name+" "+i.find+" "+i.lname+" "+i.desc+" "+i.use).toLowerCase().includes(q)));
+  document.getElementById("qcount").textContent = hit.length+" line items";
+  document.getElementById("list").innerHTML = hit.slice(0,400).map(rowHTML).join("");
+}
+
+/* ---------- Packages ---------- */
+function packTotals(p){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const li of p.items){const i=bySku[li.sku]; tot+=i.price*li.qty; for(const k in h)h[k]+=i.h[k]*li.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
+function renderPacks(){
+  document.getElementById("packs").innerHTML = DATA.packs.map((p,n)=>{const t=packTotals(p); return `<div class="card"><span class="eyebrow">${p.items.length} line items</span><h3>${p.name}</h3><p class="small muted">${p.use}</p>
+   <div class="tot" style="margin:10px 0"><div class="t"><div class="v">${money(t.tot)}</div><div class="k">Total</div></div><div class="t"><div class="v">${t.th} h</div><div class="k">Hours</div></div><div class="t"><div class="v">$${Math.round(t.tot/t.th)}</div><div class="k">Blended /h</div></div></div>
+   <div class="small" style="margin-bottom:10px">${p.items.map(li=>{const i=bySku[li.sku];return `${li.qty>1?li.qty+" x ":""}${i.name}`}).join(" · ")}</div>
+   <div class="acts"><button class="sm pri" onclick="loadPack(${n},true)">Load into builder</button><button class="sm" onclick="loadPack(${n},false)">Add to current scope</button></div></div>`;}).join("");
+}
+
+/* ---------- Builder ---------- */
+let scope=[]; // {sku, qty}
+function saveScope(){ try{localStorage.setItem("sowkit.scope",JSON.stringify(scope));}catch(e){} }
+function loadScopeLocal(){ try{const s=JSON.parse(localStorage.getItem("sowkit.scope")||"[]"); if(Array.isArray(s)) scope=s.filter(x=>bySku[x.sku]);}catch(e){} }
+function addItem(sku,qty){ const e=scope.find(x=>x.sku===sku); if(e) e.qty+=qty; else scope.push({sku,qty}); saveScope(); renderBuilder(); toast("Added: "+bySku[sku].name); }
+function addBrief(){ const b=DATA.items.find(i=>i.base==="Discovery & Strategy Brief"&&i.level==="L1"); addItem(b.sku,1); location.hash="#builder"; }
+function loadPack(n,replace){ const p=DATA.packs[n]; if(replace) scope=[]; for(const li of p.items) {const e=scope.find(x=>x.sku===li.sku); if(e) e.qty+=li.qty; else scope.push({sku:li.sku,qty:li.qty});} saveScope(); renderBuilder(); location.hash="#builder"; toast((replace?"Loaded: ":"Added: ")+p.name); }
+function setQty(sku,v){ const e=scope.find(x=>x.sku===sku); if(!e) return; e.qty=Math.max(0,parseInt(v)||0); if(e.qty===0) scope=scope.filter(x=>x.sku!==sku); saveScope(); renderBuilder(); }
+function removeItem(sku){ scope=scope.filter(x=>x.sku!==sku); saveScope(); renderBuilder(); }
+function clearScope(){ scope=[]; saveScope(); renderBuilder(); }
+function scopeTotals(){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const e of scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=i.h[k]*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
+function warnings(){
+  const bases=new Set(scope.map(e=>bySku[e.sku].base)); const w=[];
+  const site = [...bases].some(b=>/Web Page Development|Site Foundation|Homepage Design|Page Template|Template Website|Landing Page/.test(b));
+  if(site && !bases.has("Site Foundation") && !bases.has("Landing Page") && !bases.has("Template Website")) w.push("This looks like a site build without Site Foundation. Add it once.");
+  if(site && !bases.has("QA, Accessibility & Launch")) w.push("No QA, Accessibility & Launch row. Every build carries one.");
+  if(site && !bases.has("Account Management, Website Build") && !bases.has("Landing Page") && !bases.has("Template Website")) w.push("No Account Management, Website Build row. Full sites carry 60 or 90 account hours.");
+  const t=scopeTotals().tot;
+  if(t>10000 && !bases.has("Account Management") && !bases.has("Account Management, Website Build")) w.push("Scope is over $10,000 with no Account Management row. Add the tier that matches the total.");
+  if([...bases].some(b=>/Print|Booth|Banner|One-Pager|Brochure|Sales Aid|Guide/.test(b)) && !bases.has("Pass-Through Costs")) w.push("Print or event work usually needs Pass-Through Costs at cost. Name the item in the description.");
+  return w;
+}
+function renderBuilder(){
+  const cnt=document.getElementById("cnt"); cnt.style.display=scope.length?"inline-block":"none"; cnt.textContent=scope.length;
+  const t=scopeTotals();
+  document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">Scope total</div></div><div class="t"><div class="v">${t.th} h</div><div class="k">Production hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
+  document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
+  document.getElementById("bbody").innerHTML = scope.map(e=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+b,0)*e.qty; return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td><td class="r"><input type="number" id="q-${i.sku}" min="0" value="${e.qty}" onchange="setQty('${i.sku}',this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem('${i.sku}')">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="7" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
+  if(scope.length) document.getElementById("out").textContent = buildExport("items");
+}
+function groupBySection(){ const g={}; for(const e of scope){const i=bySku[e.sku]; (g[i.section]=g[i.section]||[]).push(e);} return g; }
+const SECTION_ORDER=["Analysis & Strategy","Design","Build & Integration","QA, Launch & Support","Account Management","Ongoing","Pass-through"];
+function buildExport(kind){
+  const t=scopeTotals(); const g=groupBySection(); const secs=SECTION_ORDER.filter(s=>g[s]);
+  if(kind==="hours"){
+    let s="HOURS FOR PRODUCTION (2026 card)\n"; for(const sec of secs){ s+="\n"+sec+"\n"; for(const e of g[sec]){const i=bySku[e.sku]; s+=`  ${e.qty>1?e.qty+" x ":""}${i.name}: `+Object.keys(RATE).filter(k=>i.h[k]).map(k=>`${ROLE[k]} ${i.h[k]*e.qty}`).join(", ")+"\n";} }
+    s+=`\nTOTAL ${t.th} h: `+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`${ROLE[k]} ${t.h[k]}`).join(", ")+"\nThese hours are what the price funds. Past them the line loses money.";
+    return s;
+  }
+  if(kind==="skeleton"){
+    let s="WHAT WE HEARD\n[Four or five sentences in the client's own words: the goal, the constraint, the deadline, the thing they said on the call that was not in the request.]\n\n[ONE-LINE THESIS, sentence case, the client's situation and the move in the same breath.]\n\n[Opening paragraph: the market, with the client as subject. Second paragraph: what the team holds at the end.]\n\nSTRATEGIC IMPERATIVES\n1. [Two-word imperative]. [One sentence.] Done when [outcome].\n2. [Two-word imperative]. [One sentence.] Done when [outcome].\n3. [Two-word imperative]. [One sentence.] Done when [outcome].\n4. [Two-word imperative]. [One sentence.] Done when [outcome].\n\n";
+    let n=1; for(const sec of secs){ let st=0; s+=`STAGE ${n}: [Verb], ${sec} ([quarter])\n`; for(const e of g[sec]){const i=bySku[e.sku]; st+=i.price*e.qty; s+=`  ${i.name}${e.qty>1?" x "+e.qty:""}  ${money(i.price*e.qty)}\n`;} s+=`  Stage ${n} total  ${money(st)}\n  [One scope-for-budget trade stated inside an item.]\n\n`; n++; }
+    s+=`INVESTMENT  ${money(t.tot)}\n[Milestone payment schedule. Credit for The Brief, ($5,000), if sold.]\n\nTERMS & CONDITIONS\n[Paste from the Terms page.]\n`;
+    return s;
+  }
+  let s="SCOPE OF WORK (2026 rates)\n";
+  for(const sec of secs){ let st=0; s+="\n"+sec.toUpperCase()+"\n"; for(const e of g[sec]){const i=bySku[e.sku]; st+=i.price*e.qty; s+=`${i.name}${e.qty>1?"  x "+e.qty:""}  ${money(i.price*e.qty)}\n${i.desc}\n\n`;} s+=`Subtotal, ${sec}: ${money(st)}\n`; }
+  s+=`\nTOTAL INVESTMENT: ${money(t.tot)}\n`; return s;
+}
+function exportScope(kind){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=buildExport(kind); document.getElementById("out").textContent=s; copyText(s, kind==="items"?"Line items copied":kind==="hours"?"Hours copied":"Skeleton copied"); }
+
+/* ---------- utilities ---------- */
+let tt;
+function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),1600); }
+function copyText(s,msg){ const done=()=>toast(msg||"Copied");
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(s).then(done).catch(()=>fallback(s,done)); } else fallback(s,done); }
+function fallback(s,done){ const ta=document.createElement("textarea"); ta.value=s; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); done();}catch(e){ toast("Select the text and copy it"); } document.body.removeChild(ta); }
+const VIEWS=["start","brief","packages","catalog","builder","levels","terms"];
+function route(){ let h=(location.hash||"#start").slice(1); if(!VIEWS.includes(h)) h="start";
+  for(const v of VIEWS){ document.getElementById("v-"+v).classList.toggle("on",v===h); }
+  document.querySelectorAll("#rail a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+h)); window.scrollTo(0,0); }
+window.addEventListener("hashchange",route);
+/* ---------- data: the workbook is the source of truth ---------- */
+const LVCODE = {"Template":"T","Level 1":"L1","Level 2":"L2","Level 3":"L3","flat":"","":""};
+function fromWorkbook(wb){
+  const sj = n => wb.Sheets[n] ? XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:""}) : [];
+  const cat = sj("Catalog"); if(!cat.length) throw new Error("No Catalog sheet");
+  const finder = {}; for(const r of sj("Quick Finder")){ const k=r["Base SKU"]; if(!k) continue; (finder[k]=finder[k]||[]).push(String(r["Client says..."]).trim()); }
+  const num = v => { const n=parseFloat(String(v).replace(/[$,]/g,"")); return isNaN(n)?0:n; };
+  const items = cat.map(r=>{ const sku=String(r["SKU"]); const bs=sku.split("-").slice(0,3).join("-");
+    return { sku, name:r["Line item name (PandaDoc)"], base:r["Base deliverable"], cat:sku.split("-")[1], category:r["Service type"], section:r["SOW section"],
+      level: LVCODE[String(r["Level"])] ?? "", lname:r["Level name"], desc:r["Description (customer-facing)"], price:num(r["Flat price (2026)"]), unit:r["Unit"], billing:r["Billing"],
+      rounds:r["Rev rounds"], basis:r["Price basis"]||"", use:r["When to use"], find:(finder[bs]||[]).join(", "),
+      h:{S:num(r["Strategy h"]),D:num(r["Design h"]),V:num(r["Dev h"]),A:num(r["Account h"]),C:num(r["Copy h"]),M:num(r["Medical copy h"])} }; });
+  const seen=new Set(); const cats=[]; for(const i of items){ if(!seen.has(i.cat)){ seen.add(i.cat); cats.push({code:i.cat,name:i.category}); } }
+  const uses = {}; for(const r of sj("Packages")) uses[r["Package"]] = r["What it is for"];
+  const pk = {}; const order=[]; for(const r of sj("Package Detail")){ const p=r["Package"], s=r["SKU"]; if(!p||!s) continue; if(!pk[p]){pk[p]=[];order.push(p);} pk[p].push({sku:String(s),qty:num(r["Qty"])||1}); }
+  const packs = order.map(p=>({name:p,use:uses[p]||"",items:pk[p]}));
+  const levels = sj("Level Definitions").map(r=>{ const rounds={}; String(r["Revision rounds by level"]).split(",").forEach(x=>{ const m=x.match(/(Template|Level \d):\s*(\d+)/); if(m) rounds[m[1]]=parseInt(m[2]); }); return {name:r["Service type"], test:r["Level test (what makes it Level 1, 2 or 3)"], rounds}; });
+  const tr = sj("Terms"); let terms=null, rates=null;
+  if(tr.length){ const g={}; const go=[]; for(const r of tr){ if(r["Group"]==="Rates"){ rates=r["Text"]; continue; } if(!g[r["Group"]]){g[r["Group"]]=[];go.push(r["Group"]);} g[r["Group"]].push([r["Heading"],r["Text"]]); } terms=go.map(h=>({h,items:g[h]})); }
+  return {items,cats,packs,levels,terms,rates};
+}
+/* ---------- password gate: the data file is encrypted; the password is the key ---------- */
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+async function decryptData(pw){
+  const E = window.SOWKIT_ENC; if(!E) throw new Error("Data file missing");
+  const km = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(E.salt), iterations:E.iter, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(E.iv)}, key, b64(E.ct));
+  return JSON.parse(dec.decode(pt));
+}
+function savedPw(){ try{ return sessionStorage.getItem("sowkit.pw") || localStorage.getItem("sowkit.pw") || ""; }catch(e){ return ""; } }
+function rememberPw(pw, persist){ try{ sessionStorage.setItem("sowkit.pw", pw); if(persist) localStorage.setItem("sowkit.pw", pw); }catch(e){} }
+function forgetPw(){ try{ sessionStorage.removeItem("sowkit.pw"); localStorage.removeItem("sowkit.pw"); }catch(e){} }
+async function unlock(pw, persist){
+  const btn=document.getElementById("gatebtn"), err=document.getElementById("gateerr");
+  btn.disabled=true; btn.textContent="Opening"; err.textContent="";
+  try{
+    DATA = await decryptData(pw); rememberPw(pw, persist);
+    if(DATA.terms){ TERMS = DATA.terms; } if(DATA.rates){ RATES_TXT = DATA.rates; }
+    bySku = Object.fromEntries(DATA.items.map(i=>[i.sku,i]));
+    document.getElementById("gate").hidden = true; document.getElementById("app").hidden = false;
+    start(); return true;
+  }catch(e){
+    forgetPw(); err.textContent = window.SOWKIT_ENC ? "That password did not open the file. Check it and try again." : "The data file is missing. Run tools/encrypt_data.py and reload.";
+    btn.disabled=false; btn.textContent="Open"; return false;
+  }
+}
+function start(){
+  const st=document.getElementById("src"); if(st) st.textContent = DATA.items.length+" line items loaded";
+  const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
+  for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
+  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); renderBuilder(); route();
+}
+function lock(){ forgetPw(); location.reload(); }
+(function init(){
+  ["q","fcat","flvl"].forEach(id=>document.getElementById(id).addEventListener("input",renderCatalog));
+  document.getElementById("gateform").addEventListener("submit", e=>{ e.preventDefault(); unlock(document.getElementById("pw").value, document.getElementById("remember").checked); });
+  if(!window.isSecureContext || !window.crypto || !crypto.subtle){ document.getElementById("gateerr").textContent="This page needs a secure address (https or a local file). Open it from the published site."; document.getElementById("gatebtn").disabled=true; return; }
+  const pw=savedPw(); if(pw){ document.getElementById("pw").value=pw; unlock(pw, !!(function(){try{return localStorage.getItem("sowkit.pw")}catch(e){return null}})()); }
+})();
+</script>
+
+</body>
+</html>
