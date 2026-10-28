@@ -486,7 +486,7 @@ function renderCatalog(){
 /* ---------- Packages ---------- */
 function packTotals(p){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const li of p.items){const i=bySku[li.sku]; tot+=i.price*li.qty; for(const k in h)h[k]+=i.h[k]*li.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 // Weeks to launch for a package on its own, with standard feedback and no MLR (the builder adds MLR for the client).
-function packWeeks(p){ const keep=[scope,tl]; scope=p.items.map(li=>({sku:li.sku,qty:li.qty})); tl=Object.assign({},tl,{mlr:"none",fb:5}); const w=Math.ceil(tlBuild().launch); [scope,tl]=keep; return w; }
+function packWeeks(p){ const keep=[scope,tl]; scope=p.items.map(li=>({sku:li.sku,qty:li.qty})); tl=Object.assign({},tl,{mlr:"none",fb:7}); const w=Math.ceil(tlBuild().launch); [scope,tl]=keep; return w; }
 function renderPacks(){
   document.getElementById("packs").innerHTML = DATA.packs.map((p,n)=>{const t=packTotals(p); return `<div class="card pack"><span class="eyebrow">${p.items.length} line items</span><h3>${p.name}</h3><p class="small muted">${p.use}</p>
    <div class="tot"><div class="t"><div class="v">${money(t.tot)}</div><div class="k">Total</div></div><div class="t"><div class="v">${t.th} h</div><div class="k">Hours</div></div><div class="t"><div class="v">$${Math.round(t.tot/t.th)}</div><div class="k">Blended /h</div></div><div class="t"><div class="v">${packWeeks(p)} wks</div><div class="k">Typical timeline, before MLR</div></div></div>
@@ -555,6 +555,10 @@ function exportScope(kind){ if(!scope.length){toast("Nothing in the scope yet");
    A row's "Lead time (weeks)" and "MLR review" columns in the Sheet override the defaults below. */
 const TL_PHASES=["Analysis & Strategy","Design","Build & Integration","QA, Launch & Support"];
 const TL_CAP=30; // production hours one person gives a project in a week; rows over 150 hours in one role get two people
+// Calibrated Oct 2026 against project-tracker status history for eight past signed SOWs:
+// production matched; client review ran a median of about 1.5 weeks a round (from 2 days to 6 weeks), and our own
+// our internal review, revisions and the AM's send-off came to about a week per project in all.
+const TL_HANDOFF=0.2;
 const TL_TIER={ // order inside a phase: lower tiers finish before higher ones start; the same tier runs side by side (default 1)
   "Discovery & Strategy Brief":0,"Working Session":0,"Website & Brand Audit":0,"Market & KOL Research Study":0,"Physician Survey & Readout":0,"Brand Evolution Summit":0,
   "Wireframes":2,"Copywriting":2,"Medical Writing & Narrative":2,
@@ -575,9 +579,9 @@ const TL_MLR=[
   {id:"twice",label:"Twice a month, reviewed within 2 weeks",cad:2,turn:2,cyc:2},
   {id:"monthly",label:"Monthly committee",cad:4,turn:2,cyc:2},
   {id:"custom",label:"Custom"}];
-let tl={start:"",mlr:"unknown",fb:5,cad:2,turn:2,cyc:2};
+let tl={v:2,start:"",mlr:"unknown",fb:7,cad:2,turn:2,cyc:2};
 function saveTl(){ try{localStorage.setItem("sowkit.tl",JSON.stringify(tl));}catch(e){} }
-function loadTl(){ try{Object.assign(tl,JSON.parse(localStorage.getItem("sowkit.tl")||"{}"));}catch(e){} }
+function loadTl(){ try{const s=JSON.parse(localStorage.getItem("sowkit.tl")||"{}"); if(!s.v) delete s.fb; Object.assign(tl,s,{v:2});}catch(e){} } // v1 defaulted feedback to 5 days
 function setTl(k,v){ tl[k]= k==="start"||k==="mlr" ? v : Math.max(0,parseFloat(v)||0); saveTl(); renderTimeline(); }
 
 const tlPhaseOf = i => i.base==="Additional Revision Round" ? "Design" : i.section;
@@ -594,16 +598,18 @@ function tlProd(i,qty){ let w=0; for(const k of ["S","D","V","C","M"]){ const h=
 function tlItem(i,qty,fb){
   fb = fb ?? tl.fb;
   if(i.lead) return {prod:i.lead,rev:0,total:i.lead,rounds:0,over:true,gate:i.lead};
-  if(i.base==="Additional Revision Round"){ const r=fb/5+0.5; return {prod:0,rev:qty*r,total:qty*r,rounds:qty,gate:qty*r}; }
-  const prod=tlProd(i,qty), r=Number(i.rounds)||0, per=fb/5+Math.min(1,Math.max(0.2,prod*0.25)); // a round: the client's feedback, then our revisions
-  return {prod,rev:r*per,total:prod+r*per,rounds:r,gate:prod+(r?per:0)};
+  if(i.base==="Additional Revision Round"){ const r=fb/5+TL_HANDOFF+0.5; return {prod:0,rev:qty*r,total:qty*r,rounds:qty,gate:qty*r}; }
+  // A round: our send-off, the client's feedback, then our revisions. Later rounds confirm changes, so the client takes about half as long.
+  const prod=tlProd(i,qty), r=Number(i.rounds)||0, fix=TL_HANDOFF+Math.min(0.75,Math.max(0.1,prod*0.15)), first=fb/5+fix, rest=fb/10+fix;
+  const rev=r ? first+(r-1)*rest : 0;
+  return {prod,rev,total:prod+rev,rounds:r,gate:prod+(r?first:0)};
 }
 const wk = n => Math.max(1,Math.round(n));
 function leadText(i){
   if(i.billing==="recurring") return "Monthly. The timeline starts it at launch.";
   if(i.section==="Pass-through") return "";
   if(/^Account Management/.test(i.base)||i.base==="PRC Submission Support") return "Runs for the length of the project.";
-  const d=tlItem(i,1,5), n=wk(d.total);
+  const d=tlItem(i,1,7), n=wk(d.total);
   return `About ${n} week${n>1?"s":""}${d.over?" (set in the Sheet)":d.rounds?`, including ${d.rounds} client review round${d.rounds>1?"s":""}`:""}${tlIsMLR(i)?", plus MLR review for clients who have it":""}.`;
 }
 
@@ -662,7 +668,8 @@ function tlBuild(){
   if(bases.has("Investor Materials")) flags.push({k:"info",t:"Investor materials go through the client's legal or IR review instead of MLR. Ask how long it takes."});
   if(m && all.some(x=>x.i.billing==="recurring"&&tlIsMLR(x.i))) flags.push({k:"mlr",t:`Monthly social, email or paid media content also goes through MLR every month. Plan each month's content about ${wk(m.mid)} week${wk(m.mid)>1?"s":""} ahead.`});
   if(bases.has("Rush Surcharge")) flags.push({k:"info",t:"A rush surcharge is in the scope. This chart shows the standard pace; agree in writing which stages compress and what the client commits to turning around faster."});
-  if(scope.length) flags.push({k:"info",t:`Assumes client feedback within ${tl.fb} business days each round. A slow round adds about a week to that row and everything after it.`});
+  if(scope.length) flags.push({k:"info",t:`Assumes client feedback within ${tl.fb} business days each round (our past projects ran from 2 days to 6 weeks, with a median near 7). A slow round adds that time to the row and everything after it.`});
+  if(scope.length) flags.push({k:"info",t:"Week 1 is when work starts. On past projects that was 1 to 3 weeks after signing, depending on the studio's queue."});
   return {rows,flags,launch,slip,m};
 }
 

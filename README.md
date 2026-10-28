@@ -5,7 +5,7 @@ The account manager kit for building scopes at 2026 rates: The Brief, seven pack
 ## How it is wired
 
 - `index.html` is the whole site. It opens on a password page.
-- **The Google Sheet "Steadfast Services Catalog" is the source of truth.** Tori, Brittney, Rebecca and Kelly edit it directly.
+- **The Google Sheet "Steadfast Services Catalog" is the source of truth.** The team edits it directly.
 - `data/catalog.enc.js` is the catalog, encrypted with the team password. It is the only data file the site reads. Netlify rebuilds it from the Sheet on every deploy; the copy in the repo is the fallback if the Sheet can't be read.
 - `tools/encrypt_data.py` reads the Sheet (or the local workbook), encrypts it and writes `catalog.enc.js`.
 - `netlify.toml` tells Netlify to run that script on every build. `requirements.txt` lists what it needs.
@@ -22,7 +22,9 @@ If a publish fails (a renamed tab, for example), Netlify keeps the previous vers
 
 ## Timeline and MLR
 
-The Scope Builder draws a rough waterfall timeline under the scope. Each row's length comes from its hours (about 30 production hours per person per week, two people once a role passes 150 hours on one row) plus its revision rounds (the client's feedback time, then our revisions). Inside a phase, the next step starts once the previous one has its first round approved. Phases run Analysis & Strategy, Design, Build & Integration, then QA. A phase that holds promotional work ends in an MLR stage sized to the client's process (pick it in the builder, or "Not known yet" for a new client, which shows the range). Work after an MLR stage waits for approval. Hatched bars show how far each stage can stretch.
+The Scope Builder draws a rough waterfall timeline under the scope. Each row's length comes from its hours (about 30 production hours per person per week, two people once a role passes 150 hours on one row) plus its revision rounds (our send-off, the client's feedback time, then our revisions). Inside a phase, the next step starts once the previous one has its first round approved. Phases run Analysis & Strategy, Design, Build & Integration, then QA. A phase that holds promotional work ends in an MLR stage sized to the client's process (pick it in the builder, or "Not known yet" for a new client, which shows the range). Work after an MLR stage waits for approval. Hatched bars show how far each stage can stretch.
+
+Calibrated in October 2026 against project-tracker history for eight past SOWs. Our production time matched the model; client review was the swing factor (2 days to 6 weeks per project, a median near 7 business days for the first round, faster after). So the builder defaults to 7 days of client feedback, later rounds take half that, and our own review, revisions and send-off add about a week per project. Projects whose clients had medical or legal review landed inside the "Not known yet" MLR range. Re-check once a few more projects close.
 
 Two optional Catalog columns override the defaults per row; leave them blank to use the calculation:
 
