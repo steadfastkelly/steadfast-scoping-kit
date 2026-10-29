@@ -198,6 +198,20 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 .gate .err{color:var(--bad);font-size:.86rem;min-height:1.2em}
 .gate label.rm{display:flex;gap:8px;align-items:center;font-size:.86rem;color:var(--fg2)}
 .gate button{padding:10px 14px;font-size:.95rem}
+.pvov{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column}
+.pvov .pvbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line)}
+.pvov .pvbar .small{flex:1;min-width:200px}
+.pvov iframe{flex:1;border:0;width:100%;background:#f2efe9}
+.modal{position:fixed;inset:0;background:rgba(10,10,10,.45);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:var(--bg);border-radius:10px;padding:26px;width:100%;max-width:520px;max-height:100%;overflow:auto}
+.mbox form{display:grid;gap:14px}
+.mbox h2{margin-top:4px}
+.mbox label{display:flex;flex-direction:column;gap:5px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
+.mbox label.rm{flex-direction:row;align-items:center;gap:8px;font-family:var(--body);font-size:.86rem;letter-spacing:0;text-transform:none}
+.mbox .mrow{display:flex;gap:6px;align-items:center;font-family:var(--body);letter-spacing:0;text-transform:none}
+.mbox .mrow input{flex:1;min-width:0;font:inherit;font-size:.95rem;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+.mbox .err{color:var(--bad);font-size:.86rem;min-height:1.2em}
+.mbox #pub-url{font-family:var(--mono);word-break:break-all}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -343,7 +357,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     <div id="tl-flags" style="margin-top:14px"></div>
   </div>
   <div class="tlbox">
-    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Proposal</span><h2>Build it in PandaDoc from our template.</h2><p class="small">Fill in the client and the overview. The builder picks the template (Simple, Mid-range or Complex), lists the variable values to enter once, and copies each section ready to paste: the overview, the budget, the timeline and the payment schedule. Terms, acceptance and signatures are already in the template.</p></div>
+    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Proposal</span><h2>Preview it, publish it, get it signed.</h2><p class="small">Fill in the client and the overview. The proposal builds itself from the scope and the timeline on the Complex layout, with fewer sections for Mid-range and Simple work. Preview opens it in a tab that follows your edits. Publish puts it online at its own address behind a password you set, with a signature block the client signs to accept.</p></div>
     <div class="propgrid">
       <label class="wide">Project title<input id="p-title" placeholder="HCP Sales Aid Redesign" oninput="setProp('title',this.value)"></label>
       <label>Client company<input id="p-company" oninput="setProp('company',this.value)"></label>
@@ -355,10 +369,14 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <label>Version<input id="p-version" type="number" min="1" step="1" oninput="setProp('version',this.value)"></label>
       <label>Proposal format<select id="p-tier" onchange="setProp('tier',this.value)"><option value="auto">Pick from the scope</option><option value="L1">Simple (L1)</option><option value="L2">Mid-range (L2)</option><option value="L3">Complex (L3)</option></select></label>
       <label class="wide">Project overview<textarea id="p-overview" rows="5" placeholder="Leave blank to have Claude draft it in Taylor's voice, or write it here." oninput="setProp('overview',this.value)"></textarea></label>
-      <label class="wide">Key objectives (optional, one per box)<span class="objs"><input id="p-obj0" oninput="setProp('obj0',this.value)"><input id="p-obj1" oninput="setProp('obj1',this.value)"><input id="p-obj2" oninput="setProp('obj2',this.value)"></span></label>
+      <label>Signing for Steadfast<input id="p-firmName" oninput="setProp('firmName',this.value)"></label>
+      <label>Their title<input id="p-firmTitle" oninput="setProp('firmTitle',this.value)"></label>
+      <label class="wide">Key objectives (optional, one per box; start with a short label and a colon to title it)<span class="objs"><input id="p-obj0" oninput="setProp('obj0',this.value)"><input id="p-obj1" oninput="setProp('obj1',this.value)"><input id="p-obj2" oninput="setProp('obj2',this.value)"></span></label>
     </div>
     <p class="small muted" id="p-tierhint" style="margin-top:8px"></p>
-    <div id="p-paste"></div>
+    <div class="toolbar" style="margin:14px 0 0"><button class="pri" onclick="openPreview()">Preview Proposal</button><button onclick="openPublish()">Publish Proposal</button></div>
+    <div class="head" style="margin:28px 0 10px"><span class="eyebrow">Published proposals</span></div>
+    <div id="p-pub"><p class="small muted">Loading.</p></div>
   </div>
   <div class="toolbar" style="margin-top:14px">
     <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
@@ -387,6 +405,26 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 </main>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal" id="pubm" hidden onclick="if(event.target===this)closePublish()">
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="pub-h">
+    <form id="pub-form" onsubmit="event.preventDefault();doPublish()">
+      <div><div class="eyebrow">Publish proposal</div><h2 id="pub-h">Put it online for the client.</h2></div>
+      <p class="small muted">The proposal is encrypted in this browser with the password you set here, so only someone with the password can read or sign it. Send the link and the password separately.</p>
+      <label>Web address<span class="mrow"><span class="small muted" id="pub-origin"></span><input id="pub-slug" required autocomplete="off" spellcheck="false"></span></label>
+      <label>Proposal password<span class="mrow"><input id="pub-pw" required minlength="8" autocomplete="off" spellcheck="false" class="num"><button type="button" class="sm" onclick="genPw()">Generate</button></span></label>
+      <label class="rm"><input type="checkbox" id="pub-over"> Replace the unsigned proposal already at this address</label>
+      <div class="err" id="pub-err"></div>
+      <div class="acts"><button type="submit" class="pri" id="pub-btn">Publish</button><button type="button" onclick="closePublish()">Cancel</button></div>
+    </form>
+    <div id="pub-done" hidden>
+      <div><div class="eyebrow">Published</div><h2>It's live.</h2></div>
+      <p class="small" style="margin-top:12px"><a id="pub-url" target="_blank" rel="noopener"></a></p>
+      <p class="small muted" style="margin-top:6px">Password: <b class="num" id="pub-pwshow"></b></p>
+      <p class="small muted" style="margin-top:12px">Send the link and the password in separate messages. The client opens the link, enters the password, reads the proposal and signs at the end. Signed status shows under Published proposals.</p>
+      <div class="acts" style="margin-top:16px"><button class="pri" onclick="copyText(document.getElementById('pub-url').href,'Link copied')">Copy link</button><button onclick="copyText(document.getElementById('pub-pwshow').textContent,'Password copied')">Copy password</button><button onclick="closePublish()">Done</button></div>
+    </div>
+  </div>
+</div>
 
 <script>
 let DATA = null; // filled by loadData()
@@ -728,6 +766,7 @@ function renderTimeline(){
   const end=launch, d1=tlDate(end), d2=tlDate(end+slip);
   sum.innerHTML = launch>0 ? `<div class="t"><div class="v">${Math.ceil(end)} wks</div><div class="k">To launch</div></div>${slip>0.5?`<div class="t"><div class="v">${Math.ceil(end+slip)} wks</div><div class="k">If MLR runs long</div></div>`:""}${d1?`<div class="t"><div class="v">${tlFmt(d1)}${slip>0.5?" to "+tlFmt(d2):""}</div><div class="k">Launch date</div></div>`:""}` : "";
   document.getElementById("tl-flags").innerHTML = flags.map(f=>`<div class="cmp ${f.k}">${f.t}</div>`).join("");
+  refreshPreview();
 }
 function timelineText(){
   const {rows,flags,launch,slip}=tlBuild(); const o=TL_MLR.find(x=>x.id===tl.mlr);
@@ -751,16 +790,16 @@ function timelineText(){
    Every tier carries Project Overview, Budget, Timeline, Payment Schedule, Terms & Conditions and
    Acceptance of Proposal. Client name, dates and totals are PandaDoc variables, filled after creation,
    so they stay linked everywhere they appear. */
-let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""]};
+let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director"};
 function saveProp(){ try{localStorage.setItem("sowkit.prop",JSON.stringify(prop));}catch(e){} }
 function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} }
 function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else prop[k]=v; saveProp(); renderPropTier(); }
 function renderProp(){
-  for(const k of ["title","company","partner","first","last","email","date","version","tier","overview"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
+  for(const k of ["title","company","partner","first","last","email","date","version","tier","overview","firmName","firmTitle"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
   prop.obj.forEach((v,n)=>{ const el=document.getElementById("p-obj"+n); if(el && document.activeElement!==el) el.value=v; });
   renderPropTier();
 }
-function renderPropTier(){ renderPaste(); const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
+function renderPropTier(){ refreshPreview(); const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
 // Auto tier: Simple under $15,000 with one phase, Complex from $50,000 or with a full site build, Mid-range between.
 function propTier(){
   if(prop.tier!=="auto") return prop.tier;
@@ -909,73 +948,236 @@ ${JSON.stringify({request:pl.request,tokens:pl.tokens},null,1)}`;
 }
 
 
-/* Paste-ready sections for the PandaDoc templates (our plan has no API, so the AM starts the document
-   from a template in PandaDoc and pastes these in). Each copies as rich text, so tables paste as tables,
-   with a plain-text fallback. The variable values go into PandaDoc's Variables panel once. */
-const esc = s => String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+/* ---------- Proposal page: preview and publish ----------
+   The client-facing proposal, built from the scope, the timeline and the proposal details on the Complex (L3)
+   layout and dialed back for Mid-range (L2) and Simple (L1). Every tier carries Project Overview, Budget,
+   Timeline, Payment Schedule, Terms & Conditions and Acceptance of Proposal. Preview opens it in its own tab
+   and keeps it in step with every edit. Publish encrypts it with a password the AM sets and sends only the
+   ciphertext to /api/proposals (netlify/functions), which serves it at /<address> with a signature block. */
+const esc = s => String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const money0 = n => "$"+Math.round(n).toLocaleString("en-US");
-const TB='style="border-collapse:collapse;width:100%"', TH='style="text-align:left;padding:6px 8px;border-bottom:2px solid #222;font-size:11px;letter-spacing:.12em;text-transform:uppercase"', TD='style="padding:8px;border-bottom:1px solid #ddd;vertical-align:top"', TS='style="padding:6px 8px;background:#eef3f2;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:bold"';
-function propSections(){
-  const d=proposalData(), tier=d.tier, S={};
-  // Project Overview
-  const obj=prop.obj.map(s=>s.trim()).filter(Boolean), keyDeliv=[...new Set(d.once.flatMap(x=>x.i.deliv||[]))].slice(0,10);
-  const ov=(prop.overview.trim()||"[Two short paragraphs in Taylor's voice: the client's situation and the move, then what the team holds at the end.]").split(/\n\s*\n/);
-  S.overview={label:"Project Overview",
-    html:ov.map(p=>`<p>${esc(p)}</p>`).join("")+(obj.length?`<p><b>Key Objectives</b></p><ol>${obj.map(o=>`<li>${esc(o)}</li>`).join("")}</ol>`:"")+(keyDeliv.length?`<p><b>Key Deliverables</b></p><ul>${keyDeliv.map(o=>`<li>${esc(o)}</li>`).join("")}</ul>`:""),
-    text:ov.join("\n\n")+(obj.length?"\n\nKey Objectives\n"+obj.map((o,n)=>`${n+1}. ${o}`).join("\n"):"")+(keyDeliv.length?"\n\nKey Deliverables\n"+keyDeliv.map(o=>"• "+o).join("\n"):"")};
-  // Scope of Work, each item in Taylor's format (mid-range and complex)
-  if(tier!=="L1"){ let h="", t="";
-    for(const sec of SECTION_ORDER){ const g=d.items.filter(x=>x.i.section===sec); if(!g.length) continue;
-      h+=`<h3>${esc(sec)}</h3>`; t+=`\n${sec.toUpperCase()}\n`;
-      for(const {e,i} of g){ const nm=clientName(i)+(e.qty>1?` (x ${e.qty})`:"");
-        h+=`<p><b>${esc(nm)}</b></p><p>${esc(cDesc(i))}</p>`+(i.incl&&i.incl.length?`<p><i>Includes</i></p><ul>${i.incl.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"")+(i.deliv&&i.deliv.length?`<p><i>Deliverables</i></p><ul>${i.deliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"")+(i.note?`<p><i>Note: ${esc(i.note)}</i></p>`:"");
-        t+=`\n${nm}\n${cDesc(i)}\n`+(i.incl&&i.incl.length?"Includes\n"+i.incl.map(x=>"• "+x).join("\n")+"\n":"")+(i.deliv&&i.deliv.length?"Deliverables\n"+i.deliv.map(x=>"• "+x).join("\n")+"\n":"")+(i.note?`Note: ${i.note}\n`:""); } }
-    S.scope={label:"Scope of Work",html:h,text:t.trim()}; }
-  // Budget: Item / Deliverables / Price, grouped by stage, like the L1 and L2 designs
-  const table=(list,totalLabel,total,per)=>{ let h=`<table ${TB}><tr><th ${TH}>Item</th><th ${TH}>Deliverables</th><th ${TH}>Price</th></tr>`, t="ITEM | DELIVERABLES | PRICE\n";
-    for(const sec of SECTION_ORDER){ const g=list.filter(x=>x.i.section===sec); if(!g.length) continue;
-      h+=`<tr><td ${TS} colspan="3">${esc(sec)}</td></tr>`; t+=`\n${sec.toUpperCase()}\n`;
-      for(const {e,i} of g){ const nm=clientName(i)+(e.qty>1?` (x ${e.qty})`:""), pr=money0(i.price*e.qty)+per;
-        h+=`<tr><td ${TD}><b>${esc(nm)}</b><br>${esc(tier==="L1"?cDesc(i):(i.lname?i.lname[0].toUpperCase()+i.lname.slice(1):""))}</td><td ${TD}>${(i.deliv||[]).map(esc).join("<br>")}</td><td ${TD}><b>${pr}</b></td></tr>`;
-        t+=`${nm} | ${(i.deliv||[]).join("; ")} | ${pr}\n`; } }
-    h+=`<tr><td ${TD} colspan="2"><b>${totalLabel}</b></td><td ${TD}><b>${money0(total)}${per}</b></td></tr></table>`; t+=`\n${totalLabel}: ${money0(total)}${per}`; return {h,t}; };
-  const bOnce=d.once.length?table(d.once,"Total",d.oneTime,""):{h:"",t:""}, bMon=d.monthly.length?table(d.monthly,"Monthly total",d.perMonth," /mo"):{h:"",t:""};
+const TIER_NAME={L1:"Simple",L2:"Mid-range",L3:"Complex"};
+const FIRM={name:"Steadfast Design Firm",addr:"220 S. White Street #3, Wake Forest, NC 27587",site:"https://www.steadfastdesignfirm.com/"};
+const DRAFT = s => `<span class="draft">${esc(s)}</span>`;
+const cap = s => s ? s[0].toUpperCase()+s.slice(1) : "";
+const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
+
+function proposalPage(){
+  const d=proposalData(), tier=d.tier, L=n=>["L1","L2","L3"].indexOf(tier)>=n-1, tok=Object.fromEntries(d.tokens.map(t=>[t.name,t.value]));
+  const company=prop.company.trim(), partner=prop.partner.trim(), contact=[prop.first,prop.last].map(s=>(s||"").trim()).filter(Boolean).join(" ");
+  const co=company?esc(company):DRAFT("Client company"), title=prop.title.trim()?esc(prop.title.trim()):DRAFT("Project title");
+  const weeks=Math.max(1,Math.ceil(d.b.launch)), kick=tlDate(0), launch=tlDate(d.b.launch);
+  let n=0, h="";
+  const head=(t,lead)=>`<div class="sp-head"><div><span class="n">${String(++n).padStart(2,"0")}</span><h2>${t}</h2></div><div class="lead">${lead}</div></div>`;
+  const sec=(cls,inner)=>`<section class="sp-sec ${cls}"><div class="wrapw">${inner}</div></section>`;
+  const nm=({e,i})=>esc(clientName(i))+(e.qty>1?` <span class="num">&times; ${e.qty}</span>`:"");
+  const per=x=>x.i.billing==="recurring"?" / mo":"";
+  const keyDeliv=[...new Set(d.once.flatMap(x=>x.i.deliv||[]))].slice(0,10);
   const notIn=[...new Set(d.items.map(x=>x.i.note).filter(Boolean))];
-  S.budget={label:"Budget",
-    html:bOnce.h+(bMon.h?`<p><b>Ongoing services${tier==="L3"?" (optional, monthly from launch)":" (monthly)"}</b></p>`+bMon.h:"")+(notIn.length?`<p><b>Not in Scope</b></p><ul>${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""),
-    text:bOnce.t+(bMon.t?"\n\nOngoing services\n"+bMon.t:"")+(notIn.length?"\n\nNot in Scope\n"+notIn.map(x=>"• "+x).join("\n"):"")};
-  // Timeline
-  const tr=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr").map(r=>[r.type==="mlr"?"Client MLR review":r.label, tlRange(r.start,r.end)+(r.type==="mlr"&&r.hi>r.end+0.5?`, up to week ${Math.ceil(r.hi)}`:""), `${wkSpan(r)} week${wkSpan(r)>1?"s":""}`]);
-  tr.push(["Launch / final files",`Week ${Math.ceil(d.b.launch)}`,""]);
-  const kick=tlDate(0), launch=tlDate(d.b.launch), line=`Work begins ${kick?fmtDate(kick):"at kickoff"}, with launch planned for ${launch?fmtDate(launch):"week "+Math.ceil(d.b.launch)}. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.`;
-  S.timeline={label:"Timeline",
-    html:`<table ${TB}><tr><th ${TH}>Stage</th><th ${TH}>Timing</th><th ${TH}>Length</th></tr>${tr.map(r=>`<tr>${r.map(c=>`<td ${TD}>${esc(c)}</td>`).join("")}</tr>`).join("")}</table><p>${esc(line)}</p>`,
-    text:tr.map(r=>r.filter(Boolean).join(" | ")).join("\n")+"\n\n"+line};
-  // Payment Schedule
-  const intro=d.oneTime<15000?"A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.":"A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in equal monthly installments, so payment follows the work.";
-  const mon=d.monthly.length?`Ongoing services are invoiced monthly from launch at ${money0(d.perMonth)} per month.`:"";
-  S.payment={label:"Payment Schedule",
-    html:`<p>${intro}</p><table ${TB}><tr><th ${TH}>Invoice</th><th ${TH}>Due</th><th ${TH}>Amount</th></tr>${d.pay.map(([a,b,c])=>`<tr><td ${TD}>${a}</td><td ${TD}>${b}</td><td ${TD}>${money0(c)}</td></tr>`).join("")}<tr><td ${TD} colspan="2"><b>Total</b></td><td ${TD}><b>${money0(d.oneTime)}</b></td></tr></table>${mon?`<p>${mon}</p>`:""}`,
-    text:intro+"\n\n"+d.pay.map(([a,b,c])=>`${a} | ${b} | ${money0(c)}`).join("\n")+`\nTotal | ${money0(d.oneTime)}`+(mon?"\n\n"+mon:"")};
-  return {tier,S,tokens:d.tokens};
+  const stages=SECTION_ORDER.filter(s=>d.once.some(x=>x.i.section===s));
+  const bySec={}; for(const x of d.once) bySec[x.i.section]=(bySec[x.i.section]||0)+x.i.price*x.e.qty;
+  const hasQA=d.items.some(x=>/QA, Accessibility|Landing Page|Template Website/.test(x.i.base));
+
+  // Cover and the client strip
+  h+=`<header class="sp-cover"><div class="arcs"><i></i><i></i><i></i><i></i></div><div class="wrapw"><div class="top"><span class="mark">S</span><span class="eb">Prepared by Steadfast for ${co}${partner?`, in partnership with ${esc(partner)}`:""}</span></div><h1>${title}</h1><div class="sub">Proposal <span class="pill">v${esc(prop.version||1)}</span></div></div></header>`;
+  h+=`<div class="sp-meta"><div class="wrapw"><div class="c"><span class="eb">Client</span><div><b>${co}${partner?`, in partnership with ${esc(partner)}`:""}</b><div class="s">${contact?esc(contact):DRAFT("Contact name")}${prop.email?`, ${esc(prop.email)}`:""}</div></div></div>
+    <div class="c"><span class="eb">Issued</span><div><b>${esc(tok["Proposal.Date"])}</b><div class="s">Version ${esc(prop.version||1)}</div><div class="xs">Valid until ${esc(tok["Proposal.ValidUntil"])}</div></div></div></div></div>`;
+
+  // 01 Project Overview, with objectives and (below Complex) the key deliverables
+  const ov=prop.overview.trim()?prop.overview.trim().split(/\n\s*\n/).map(p=>`<p>${esc(p.trim())}</p>`).join(""):`<p>${DRAFT("Project overview: two short paragraphs, the client's situation and the move, then what the team holds at the end.")}</p>`;
+  const obj=prop.obj.map(s=>s.trim()).filter(Boolean);
+  let o=head("Project Overview",ov);
+  if(obj.length) o+=`<div class="sp-cardbox"><h3 class="sub">Key Objectives</h3><div class="sp-obj">${obj.map((t,k)=>{ const m=t.match(/^([^:]{2,40}):\s*(.+)$/); return `<div><span class="eb">${String(k+1).padStart(2,"0")}${m?` &nbsp;|&nbsp; ${esc(m[1])}`:""}</span><p>${esc(m?m[2]:t)}</p></div>`; }).join("")}</div></div>`;
+  if(!L(3) && keyDeliv.length) o+=`<div class="sp-cardbox"><h3 class="sub">Key Deliverables</h3><ul class="dots">${keyDeliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  h+=sec("alt",o);
+
+  // Building blocks shared by the tiers
+  const itemsHTML=list=>SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
+    return `<div class="sp-stage">${esc(s)}</div>`+g.map(x=>{ const i=x.i;
+      return `<div class="sp-item"><div><h4>${nm(x)}</h4>${i.lname?`<div class="lv">${esc(cap(i.lname))}</div>`:""}<div class="pr">${money0(i.price*x.e.qty)}${per(x)}</div></div>
+        <div><p>${esc(cDesc(i))}</p>${(i.incl&&i.incl.length)||(i.deliv&&i.deliv.length)?`<div class="cols">${i.incl&&i.incl.length?`<div><span class="eb">Includes</span><ul class="dots">${i.incl.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:""}${i.deliv&&i.deliv.length?`<div><span class="eb">Deliverables</span><ul class="dots">${i.deliv.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:""}</div>`:""}${i.note?`<p class="note">Note: ${esc(i.note)}</p>`:""}</div></div>`; }).join(""); }).join("");
+  const budgetTbl=(list,label,total,suffix)=>`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Item</th><th>Deliverables</th><th class="r">Price</th></tr></thead><tbody>`+
+    SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
+      return `<tr class="stage"><td colspan="3">${esc(s)}</td></tr>`+g.map(x=>`<tr><td><b>${nm(x)}</b><div class="d">${esc(tier==="L1"?cDesc(x.i):cap(x.i.lname||""))}</div></td><td class="dl">${(x.i.deliv||[]).map(esc).join("<br>")}</td><td class="r">${money0(x.i.price*x.e.qty)}${suffix}</td></tr>`).join(""); }).join("")+
+    `<tr class="tot"><td colspan="2">${label}</td><td class="r">${money0(total)}${suffix}</td></tr></tbody></table></div>`;
+  const notInHTML=notIn.length?`<div class="sp-cardbox"><h3 class="sub">Not in scope</h3><ul class="dots">${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
+  const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr");
+  const W=Math.max(weeks,...tlRows.map(r=>Math.ceil(r.hi||r.end)));
+  const tlTbl=`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Stage</th><th>Timing</th>${tl.start?"<th>Dates</th>":""}<th class="r">Length</th><th style="width:30%"></th></tr></thead><tbody>`+
+    tlRows.map(r=>{ const a=tlDate(r.start), b=tlDate(Math.max(r.start,r.end-0.01));
+      return `<tr><td><b>${esc(r.type==="mlr"?`${company||"Client"} MLR review`:r.label)}</b>${r.type==="mlr"&&r.hi>r.end+0.5?`<div class="d">Up to week ${Math.ceil(r.hi)} if review runs long</div>`:""}</td><td>${tlRange(r.start,r.end)}</td>${tl.start?`<td>${a?tlFmt(a):""}${b&&wkSpan(r)>1?" to "+tlFmt(b):""}</td>`:""}<td class="r">${plural(wkSpan(r),"week")}</td>
+        <td class="bar"><div style="position:relative;height:8px;background:var(--sp-line);border-radius:4px"><i style="position:absolute;top:0;bottom:0;border-radius:4px;left:${(r.start/W*100).toFixed(2)}%;width:${Math.max(2,(r.end-r.start)/W*100).toFixed(2)}%;background:${r.type==="mlr"?"var(--sp-fg2)":"var(--sp-ink)"}"></i></div></td></tr>`; }).join("")+
+    `<tr class="tot"><td>Launch / final files</td><td>Week ${weeks}</td>${tl.start?`<td>${launch?tlFmt(launch):""}</td>`:""}<td class="r"></td><td></td></tr></tbody></table></div>`;
+  const tlLine=`<p style="margin-top:18px">Work begins ${kick?fmtDate(kick):"at kickoff"}, with launch planned for ${launch?fmtDate(launch):"week "+weeks}. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.</p>`;
+  const payIntro=d.oneTime<15000?"A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.":`A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in ${d.pay.length-1} equal monthly installments, so payment follows the work as it happens.`;
+  const payHTML=`<p>${payIntro}</p><div class="scroll" style="margin-top:22px"><table class="sp-tbl"><tbody>${d.pay.map(([a,b,c])=>`<tr><td><b>${a}</b></td><td class="due">${b==="On signature"?"Due upon signing":b}</td><td class="r">${money0(c)}</td></tr>`).join("")}<tr class="tot"><td colspan="2">Total</td><td class="r">${money0(d.oneTime)}</td></tr></tbody></table></div>${d.monthly.length?`<p style="margin-top:18px">Ongoing services are invoiced monthly from launch at ${money0(d.perMonth)} per month.</p>`:""}`;
+
+  if(L(3)){
+    // 02 Plan & Investment: the summary band, the payment schedule, then the detail in lettered sections
+    const ph=stages.filter(x=>TL_PHASES.includes(x)); const lead=`<p>Our proposed scope covers the full process${ph.length>1?`, from ${ph[0].toLowerCase()} through ${ph[ph.length-1].toLowerCase()}`:""}, in about ${plural(weeks,"week")} from kickoff to launch.</p><p>The investment below is for the scope as written. The detail behind each line, the full budget and the timeline sit in the sections that follow, so ${co} can see exactly what each stage delivers.</p>`;
+    const months=weeks>=9?Math.round(weeks/4.33):0;
+    let p=head("Plan &amp; Investment",lead);
+    p+=`<div class="sp-sum"><div><span class="sp-tag">Deliverables</span><ul class="dots">${keyDeliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div><span class="sp-tag">Budget</span><table class="sp-mini"><tbody>${stages.map(s=>`<tr><td>${esc(s)}</td><td>${money0(bySec[s])}</td></tr>`).join("")}<tr class="tot"><td>Total</td><td>${money0(d.oneTime)}</td></tr></tbody></table>${d.monthly.length?`<p class="sp-note">Plus optional post-launch services from ${money0(d.perMonth)} per month.</p>`:""}</div>
+      <div><span class="sp-tag">Timeline</span><div class="sp-big"><div class="v">${months||weeks}</div><div class="k">${months?"Months":"Weeks"}</div><div class="s">Kickoff to launch${kick?`<br>${tlFmt(kick)} to ${tlFmt(launch)}`:""}</div></div></div></div>`;
+    p+=`<div class="sp-cardbox" style="border-top:0"><h3 class="sub">Payment Schedule</h3>${payHTML}</div>`;
+    p+=`<div style="margin-top:56px"><details class="sp-acc" data-k="scope"><summary><span class="lt">A</span><h3>Scope of Work</h3><span class="ex"></span></summary><div class="body">${itemsHTML(d.once)}</div></details>
+      <details class="sp-acc" data-k="budget"><summary><span class="lt">B</span><h3>Budget</h3><span class="ex"></span></summary><div class="body">${budgetTbl(d.once,"Total",d.oneTime,"")}${notInHTML}</div></details>
+      <details class="sp-acc" data-k="timeline"><summary><span class="lt">C</span><h3>Timeline</h3><span class="ex"></span></summary><div class="body">${tlTbl}${tlLine}</div></details></div>`;
+    h+=sec("card",p);
+    // 03 Post-Launch Services, when the scope carries monthly work
+    if(d.monthly.length){
+      let q=head("Post-Launch Services",`<p>Following launch, Steadfast offers ongoing support to keep the work current, make improvements and respond to new needs as they arise.</p><p>These services are optional and billed monthly from launch.</p>`);
+      q+=d.monthly.map(x=>`<div class="sp-cardbox"><span class="eb">Optional &nbsp;|&nbsp; ${esc(x.i.section)}</span><h3 class="sub" style="margin-top:10px">${nm(x)}</h3><p>${esc(cDesc(x.i))}</p>${x.i.incl&&x.i.incl.length?`<ul class="dots" style="margin-top:14px">${x.i.incl.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:""}<p style="margin-top:16px"><span class="sp-tag" style="margin:0 10px 0 0">${esc(cap(x.i.lname||"Monthly"))}</span><span class="num" style="font-size:1.2rem">${money0(x.i.price*x.e.qty)}</span> <span class="eb">/ month</span></p>${x.i.note?`<p class="sp-note">${esc(x.i.note)}</p>`:""}</div>`).join("");
+      h+=sec("alt",q);
+    }
+  } else {
+    // Mid-range: the scope in full; Simple: straight to the budget
+    if(L(2)) h+=sec("card",head("Scope of Work",`<p>Here is what each part of the project includes and what ${co} receives at the end of it.</p>`)+itemsHTML(d.once));
+    h+=sec(L(2)?"alt":"card",head("Budget",`<p>The investment for the scope as written${d.monthly.length?", with ongoing services listed separately":""}.</p>`)+budgetTbl(d.once,"Total",d.oneTime,"")+(d.monthly.length?`<h3 class="sub" style="margin-top:44px">Ongoing services (monthly)</h3>`+budgetTbl(d.monthly,"Monthly total",d.perMonth," / mo"):"")+(notInHTML?`<div style="margin-top:28px">${notInHTML}</div>`:""));
+    h+=sec(L(2)?"card":"alt",head("Timeline",`<p>About ${plural(weeks,"week")} from kickoff to ${d.b.rows.some(r=>r.type==="launch")?"launch":"final files"}.</p>`)+tlTbl+tlLine);
+    h+=sec(L(2)?"alt":"card",head("Payment Schedule",`<p>${payIntro}</p>`)+payHTML.replace(/^<p>.*?<\/p>/,""));
+  }
+
+  // Review + Feedback, with what the client holds (Mid-range and Complex)
+  if(L(2)){
+    let r=head("Review + Feedback",`<p>Each round includes one consolidated set of feedback from ${co}.</p><p>Comments should be collected and submitted together before revisions begin. If rounds extend beyond those specified, ${co} will be notified and billed at Steadfast's <a href="#rates">hourly rates</a>.</p>`);
+    r+=`<h3 class="sub">What is a review round?</h3><div class="sp-steps"><p>Each deliverable is assigned a specific number of review rounds, listed in the Scope of Work. Some are quick touch points, others more involved, but every round follows the same process.</p><ul class="arrows"><li>Steadfast shares the work</li><li>${co} returns one consolidated response</li><li>Steadfast makes the revisions and reshares</li></ul></div>`;
+    if(hasQA) r+=`<h3 class="sub">What is a QA round?</h3><div class="sp-steps"><p>The quality assurance (QA) rounds for this project are set out in the Scope of Work. Here is how each one works.</p><ul class="arrows"><li>Steadfast provides a staging link</li><li>${co} reviews for issues or inaccuracies</li><li>Feedback is submitted together</li><li>Steadfast makes the fixes and republishes</li></ul></div>`;
+    r+=`<h3 class="sub" style="margin-top:44px">What we need from ${co}</h3><div class="sp-cardbox"><ul class="arrows">${["One designated decision-maker who owns approvals and consolidates feedback into a single response per round",
+      "Final, approved copy and all references, claims and required regulatory language when design begins, unless writing is in this scope",
+      d.b.m?"Routing each MLR submission and returning comments within the timing above":`Feedback within ${tl.fb} business days of each review`,
+      "Any product imagery, or approval of stock licensing costs before purchase"].map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`;
+    h+=sec("card",r);
+  }
+
+  // Why Steadfast (Complex)
+  if(L(3)) h+=`<section class="sp-sec sp-dark"><div class="wrapw"><h2>Why work with Steadfast?</h2><div class="why">
+      <div><i>&rarr;</i><b>Complex science is our wheelhouse.</b><p>Nearly 20 years in life sciences have taught us how to make sophisticated information clear, compelling, and useful without compromising its substance.</p></div>
+      <div><i>&rarr;</i><b>No templates. No shortcuts.</b><p>Just thoughtful work that raises the bar. We tighten the story, refine the visuals, and build a foundation you won't need to revisit for years.</p></div>
+      <div><i>&rarr;</i><b>A senior team, start to finish.</b><p>Bespoke, human-led design from a senior-level, U.S.-based team, so the people who plan the work are the people who make it.</p></div></div>
+      <div class="facts"><div>Bespoke, human-led design with 18+ years in life sciences</div><div>Senior-level, U.S.-based team, headquartered in Raleigh, NC</div></div>
+      <a class="visit" href="${FIRM.site}" target="_blank" rel="noopener">Visit the Steadfast website &rarr;</a></div></section>`;
+
+  // Terms & Conditions
+  const acc=TERMS.find(g=>/acceptance/i.test(g.h)), linkRates=s=>esc(s).replace(/defined here/g,`<a href="#rates">defined here</a>`);
+  let t=head("Terms + Conditions",`<p>Please review the following terms and conditions carefully to help us deliver a smooth and efficient experience for your project from start to finish.</p>`)+`<div class="sp-terms">`;
+  for(const g of TERMS){ if(g===acc) continue; const items=g.items.map(([a,b])=>`<div><h4>${esc(a)}</h4><p>${linkRates(b)}</p></div>`);
+    if(/billing/i.test(g.h)) items.push(`<div id="rates"><h4>Rates</h4><p>${esc(RATES_TXT)}</p></div>`);
+    t+=`<h3 class="sub">${esc(g.h)}</h3><div class="grid">${items.join("")}</div>`; }
+  if(!TERMS.some(g=>/billing/i.test(g.h))) t+=`<div class="grid"><div id="rates"><h4>Rates</h4><p>${esc(RATES_TXT)}</p></div></div>`;
+  h+=sec("alt",t+`</div>`);
+
+  // Acceptance of Proposal: the Firm signs on issue; the client signs on the published page
+  const accText=acc&&acc.items[0]?acc.items[0][1]:"This proposal, with Steadfast's standard Terms & Conditions, is the agreement between the Firm and the Client for everything it includes. Both parties acknowledge acceptance by signing below. Electronic signatures are legal and binding.";
+  const fld=(k,v,right)=>`<div class="sp-field"><div class="v">${v||""}</div><div class="k"><span>${k}</span>${right?`<span>${right}</span>`:""}</div></div>`;
+  const firmName=(prop.firmName||"").trim(), firmTitle=(prop.firmTitle||"").trim();
+  h+=sec("card",head("Acceptance of Proposal",`<p>${esc(accText)}</p>`)+`<div class="sp-sign">
+    <div><h3>The Firm</h3><div class="who"><b>${FIRM.name}</b><span>${FIRM.addr}</span></div>${fld("Full name",firmName?`<span class="script">${esc(firmName)}</span>`:DRAFT("Signer"))}${fld("Title",firmTitle?`<span class="script">${esc(firmTitle)}</span>`:"")}${fld("Signature",firmName?`<span class="script">${esc(firmName)}</span><span class="date">${esc(tok["Proposal.Date"])}</span>`:"","Date")}</div>
+    <div><h3>The Client</h3><div class="who"><b>${co}${partner?`, in partnership with ${esc(partner)}`:""}</b><span>${contact?esc(contact):""}</span></div><div id="sp-sign-slot">${fld("Full name","")}${fld("Title","")}${fld("Signature","","Date")}<p class="sp-note">${esc(contact||"The client")} signs here on the published page.</p></div></div></div>`);
+  h+=`<footer class="sp-foot"><div class="mark">S</div>Crafting one-of-a-kind experiences since 2008 &nbsp;&middot;&nbsp; <a href="${FIRM.site}" target="_blank" rel="noopener">steadfastdesignfirm.com</a></footer>`;
+  return `<div class="sp">${h}</div>`;
 }
-function copySection(k){
+
+/* Live preview: its own tab, rewritten as the scope, the timeline or the proposal details change. */
+const PROP_FONTS=`<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@400;500;600&family=Zalando+Sans+Expanded:wght@400;500;600&family=Google+Sans+Flex:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500&display=swap">`;
+let pvWin=null, pvTimer=0;
+function openPreview(){
   if(!scope.length){toast("Nothing in the scope yet");return;}
-  const sec=propSections().S[k]; if(!sec) return;
-  const done=()=>toast(sec.label+" copied. Paste it into PandaDoc.");
-  if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
-    navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([sec.html],{type:"text/html"}),"text/plain":new Blob([sec.text],{type:"text/plain"})})]).then(done).catch(()=>copyText(sec.text,sec.label+" copied as plain text"));
-  } else copyText(sec.text,sec.label+" copied as plain text");
+  pvWin=window.open("","sowkit-preview");
+  if(!pvWin){ // pop-ups blocked: show it in a panel over the kit instead
+    let ov=document.getElementById("pvov");
+    if(!ov){ ov=document.createElement("div"); ov.id="pvov"; ov.className="pvov"; ov.innerHTML=`<div class="pvbar"><span class="eyebrow">Proposal preview</span><span class="small muted">Pop-ups are blocked, so the preview opens here. Close it to keep editing; it stays current.</span><button class="sm" onclick="closePreview()">Close</button></div><iframe title="Proposal preview"></iframe>`; document.body.appendChild(ov); }
+    ov.hidden=false; pvWin=ov.querySelector("iframe").contentWindow;
+  }
+  pvWin.document.open();
+  pvWin.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Preview</title>${PROP_FONTS}<link rel="stylesheet" href="${location.origin}/assets/proposal.css"><style>.sp-pv{position:sticky;top:0;z-index:9;background:#f4e3b5;color:#5c4100;font:500 13px/1.4 "Google Sans Flex",Arial,sans-serif;padding:8px 16px;text-align:center}</style></head><body><div class="sp-pv">Preview. It updates as you edit the Scope Builder. Nothing here is published.</div><div id="sp-root"></div></body></html>`);
+  pvWin.document.close(); refreshPreview(true); pvWin.focus();
 }
-const TEMPLATE_NAME={L1:"Steadfast Proposal | Simple (L1)",L2:"Steadfast Proposal | Mid-range (L2)",L3:"Steadfast Proposal | Complex (L3)"};
-function renderPaste(){
-  const box=document.getElementById("p-paste"); if(!box) return;
-  if(!scope.length){ box.innerHTML=""; return; }
-  const {tier,S,tokens}=propSections();
-  box.innerHTML=`<p class="small" style="margin:14px 0 8px"><b>1.</b> In PandaDoc, create a document from <b>${TEMPLATE_NAME[tier]}</b> and add the client contact as the recipient. <b>2.</b> In the Variables panel, enter these values once; they fill in everywhere:</p>
-   <div class="scroll"><table class="tbl vars"><tbody>${tokens.filter(t=>!/^Client\.(FirstName|LastName|Email)$/.test(t.name)).map(t=>`<tr><td class="small"><code>${t.name}</code></td><td>${esc(t.value)||'<span class="muted small">(leave blank)</span>'}</td><td class="r">${t.value?`<button class="sm" onclick='copyText(${JSON.stringify(t.value)},"Copied ${t.name}")'>Copy</button>`:""}</td></tr>`).join("")}</tbody></table></div>
-   <p class="small" style="margin:14px 0 8px"><b>3.</b> Paste each section where the template says to:</p>
-   <div class="acts">${Object.entries(S).map(([k,s])=>`<button class="sm${k==="budget"?" pri":""}" onclick="copySection('${k}')">Copy ${s.label}</button>`).join("")}</div>`;
+function closePreview(){ const ov=document.getElementById("pvov"); if(ov) ov.hidden=true; pvWin=null; }
+function refreshPreview(now){
+  if(!pvWin||pvWin.closed||!scope.length) return;
+  clearTimeout(pvTimer);
+  pvTimer=setTimeout(()=>{ try{
+    const r=pvWin.document.getElementById("sp-root"); if(!r) return;
+    const open=[...r.querySelectorAll("details[open]")].map(x=>x.dataset.k);
+    r.innerHTML=proposalPage();
+    for(const k of open){ const x=r.querySelector(`details[data-k="${k}"]`); if(x) x.open=true; }
+    pvWin.document.title="Preview | "+(prop.title.trim()||"Proposal");
+  }catch(e){} }, now?0:200);
+}
+
+/* Publish: encrypt in the browser with the proposal password, then post the ciphertext. The password
+   derives two values: the AES key (never leaves the browser) and a sign token, whose hash the server keeps
+   so only someone holding the password can sign. */
+const PROP_ITER=250000;
+const b64e = buf => { const u=new Uint8Array(buf); let s=""; for(let k=0;k<u.length;k+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(k,k+0x8000)); return btoa(s); };
+const hexOf = buf => [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+const slugify = s => String(s||"").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g,"").replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60).replace(/-+$/,"");
+async function propKeys(pw,salt,iter){
+  const km=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveBits"]);
+  const bits=new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},km,512));
+  return {key:await crypto.subtle.importKey("raw",bits.slice(0,32),"AES-GCM",false,["encrypt","decrypt"]), auth:bits.slice(32)};
+}
+let propCSS=null;
+async function getPropCSS(){ if(propCSS) return propCSS; const r=await fetch("assets/proposal.css",{cache:"no-store"}); if(!r.ok) throw new Error("Couldn't load the proposal styles"); return propCSS=await r.text(); }
+function publishGaps(){ const g=[];
+  if(!scope.length) g.push("rows in the scope");
+  if(!prop.title.trim()) g.push("a project title"); if(!prop.company.trim()) g.push("the client company");
+  if(!(prop.first||"").trim()||!(prop.last||"").trim()) g.push("the contact's name"); if(!prop.overview.trim()) g.push("the project overview");
+  if(!(prop.firmName||"").trim()) g.push("who signs for Steadfast");
+  return g; }
+function genPw(){ const a="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", r=crypto.getRandomValues(new Uint8Array(12)); const s=[...r].map(x=>a[x%a.length]).join(""); document.getElementById("pub-pw").value=s.slice(0,4)+"-"+s.slice(4,8)+"-"+s.slice(8); }
+function openPublish(){
+  const g=publishGaps(); if(g.length){ toast("Before publishing, add "+g.join(", ")); return; }
+  document.getElementById("pub-origin").textContent=location.host+"/";
+  const s=document.getElementById("pub-slug"); s.value=slugify(prop.title)+(+prop.version>1?"-v"+(+prop.version):"");
+  document.getElementById("pub-pw").value=""; document.getElementById("pub-over").checked=false; document.getElementById("pub-err").textContent="";
+  document.getElementById("pub-form").hidden=false; document.getElementById("pub-done").hidden=true;
+  document.getElementById("pubm").hidden=false; document.getElementById("pub-pw").focus();
+}
+function closePublish(){ document.getElementById("pubm").hidden=true; }
+async function doPublish(){
+  const slug=document.getElementById("pub-slug").value.trim(), pw=document.getElementById("pub-pw").value, over=document.getElementById("pub-over").checked;
+  const err=document.getElementById("pub-err"), btn=document.getElementById("pub-btn"); err.textContent="";
+  if(!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) { err.textContent="Use lowercase letters, numbers and single hyphens for the address."; return; }
+  if(pw.length<8) { err.textContent="Use a password of at least 8 characters, or press Generate."; return; }
+  btn.disabled=true; btn.textContent="Publishing";
+  try{
+    const tier=propTier(), doc=JSON.stringify({v:1,html:`<style>${await getPropCSS()}</style>`+proposalPage(),title:prop.title.trim(),company:prop.company.trim(),contact:[prop.first,prop.last].join(" ").trim(),tier,publishedAt:new Date().toISOString()});
+    const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), {key,auth}=await propKeys(pw,salt,PROP_ITER);
+    const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,enc.encode(doc));
+    const body={action:"publish",slug,overwrite:over,title:prop.title.trim(),company:prop.company.trim(),tier,
+      cipher:{v:1,iter:PROP_ITER,salt:b64e(salt),iv:b64e(iv),ct:b64e(ct)},authHash:hexOf(await crypto.subtle.digest("SHA-256",auth))};
+    const r=await fetch("/api/proposals",{method:"POST",headers:{"content-type":"application/json","x-team-password":savedPw()},body:JSON.stringify(body)});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===409&&j.code==="exists") throw new Error("A proposal is already published at this address. Tick Replace to overwrite it, or change the address.");
+    if(r.status===409&&j.code==="signed") throw new Error("The proposal at this address has been signed, so it can't be replaced. Publish the new version at a new address, such as "+slug+"-v2.");
+    if(r.status===404) throw new Error("Publishing runs on the live site (steadfast-sow-kit.netlify.app), not on a local copy.");
+    if(!r.ok) throw new Error(j.error||("The server answered "+r.status+"."));
+    const url=location.origin+"/"+slug;
+    document.getElementById("pub-form").hidden=true; document.getElementById("pub-done").hidden=false;
+    document.getElementById("pub-url").textContent=url; document.getElementById("pub-url").href=url; document.getElementById("pub-pwshow").textContent=pw;
+    loadPublished();
+  }catch(e){ err.textContent=e.message||String(e); }
+  btn.disabled=false; btn.textContent="Publish";
+}
+async function loadPublished(){
+  const box=document.getElementById("p-pub"); if(!box) return;
+  try{
+    const r=await fetch("/api/proposals",{headers:{"x-team-password":savedPw()},cache:"no-store"});
+    if(r.status===404){ box.innerHTML=`<p class="small muted">Published proposals show here on the live site.</p>`; return; }
+    const j=await r.json(); if(!r.ok) throw new Error(j.error||r.status);
+    const fd=s=>s?new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+    box.innerHTML=j.proposals.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Proposal</th><th>Address</th><th>Published</th><th>Status</th><th></th></tr></thead><tbody>${j.proposals.map(p=>{ const u=location.origin+"/"+p.slug;
+      return `<tr><td><b>${esc(p.title||p.slug)}</b><div class="small muted">${esc(p.company||"")}${p.tier?" &middot; "+esc(TIER_NAME[p.tier]||p.tier):""}</div></td><td class="small"><a href="${esc(u)}" target="_blank" rel="noopener">/${esc(p.slug)}</a></td><td class="small">${fd(p.updatedAt||p.publishedAt)}</td><td class="small">${p.signedAt?`<b style="color:var(--ok)">Signed ${fd(p.signedAt)}</b>`:"Awaiting signature"}</td>
+        <td class="r" style="white-space:nowrap"><button class="sm" onclick='copyText(${JSON.stringify(u)},"Link copied")'>Copy link</button>${p.signedAt?"":` <button class="sm" onclick='unpublish(${JSON.stringify(p.slug)})'>Unpublish</button>`}</td></tr>`; }).join("")}</tbody></table></div>`:`<p class="small muted">Nothing published yet.</p>`;
+  }catch(e){ box.innerHTML=`<p class="small muted">Couldn't load published proposals (${esc(e.message||e)}).</p>`; }
+}
+async function unpublish(slug){
+  if(!confirm(`Take down /${slug}? The link stops working for the client.`)) return;
+  const r=await fetch("/api/proposals?slug="+encodeURIComponent(slug),{method:"DELETE",headers:{"x-team-password":savedPw()}});
+  const j=await r.json().catch(()=>({})); toast(r.ok?"Unpublished /"+slug:(j.error||"Couldn't unpublish")); loadPublished();
 }
 
 function copyTimeline(){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=timelineText(); document.getElementById("out").textContent=s; copyText(s,"Timeline copied"); }
@@ -1045,11 +1247,12 @@ function start(){
   const st=document.getElementById("src"); if(st) st.textContent = DATA.items.length+" line items loaded";
   const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
   for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
-  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); renderBuilder(); renderProp(); route();
+  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); renderBuilder(); renderProp(); route(); loadPublished();
 }
 function lock(){ forgetPw(); location.reload(); }
 (function init(){
   ["q","fcat","flvl"].forEach(id=>document.getElementById(id).addEventListener("input",renderCatalog));
+  document.addEventListener("keydown", e=>{ if(e.key!=="Escape") return; if(!document.getElementById("pubm").hidden) closePublish(); else if(document.getElementById("pvov")&&!document.getElementById("pvov").hidden) closePreview(); });
   document.getElementById("gateform").addEventListener("submit", e=>{ e.preventDefault(); unlock(document.getElementById("pw").value, document.getElementById("remember").checked); });
   if(!window.isSecureContext || !window.crypto || !crypto.subtle){ document.getElementById("gateerr").textContent="This page needs a secure address (https or a local file). Open it from the published site."; document.getElementById("gatebtn").disabled=true; return; }
   const pw=savedPw(); if(pw){ document.getElementById("pw").value=pw; unlock(pw, !!(function(){try{return localStorage.getItem("sowkit.pw")}catch(e){return null}})()); }

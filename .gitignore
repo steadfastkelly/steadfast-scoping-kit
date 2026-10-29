@@ -7,3 +7,4 @@ data/catalog.backup-*.xlsx
 
 # import copy of the catalog for Google Sheets (internal pricing)
 Steadfast Services Catalog (import).xlsx
+node_modules/

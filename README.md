@@ -31,17 +31,31 @@ Two optional Catalog columns override the defaults per row; leave them blank to 
 - `Lead time (weeks)`: a fixed length for that row.
 - `MLR review`: Yes or No, to override whether the row goes through MLR.
 
-## Proposals in PandaDoc
+## Proposals: preview, publish, sign
 
-Our PandaDoc plan has no API, so proposals start from three PandaDoc templates: Steadfast Proposal | Simple (L1), Mid-range (L2) and Complex (L3). Their content lives in Google Drive as "Steadfast Proposal | ... | PandaDoc template content"; it is styled and saved as a template in PandaDoc once. Terms and acceptance text live in the template, so update the templates when the Terms tab changes.
+The Proposal panel in the Scope Builder builds the client-facing proposal from the scope, the timeline and the proposal details. The layout follows the Complex (L3) proposal; Mid-range and Simple use fewer sections. The format is picked from the scope (Simple under $15,000 with one phase, Complex from $50,000 or with a site build, Mid-range between), and the AM can override it.
 
-For each proposal, the Proposal panel in the Scope Builder:
+| Format | Sections |
+|---|---|
+| Simple (L1) | Project Overview, Budget, Timeline, Payment Schedule, Terms + Conditions, Acceptance |
+| Mid-range (L2) | adds Scope of Work and Review + Feedback |
+| Complex (L3) | Plan & Investment (summary, payment schedule, then Scope of Work, Budget and Timeline as expandable sections), Post-Launch Services when the scope has monthly work, Review + Feedback, Why Steadfast |
 
-1. Picks the template from the scope (Simple under $15,000 with one phase, Complex from $50,000 or with a site build, Mid-range between; the AM can override).
-2. Lists the variable values (project title, dates, total, weeks) to enter once in PandaDoc's Variables panel. Client name fields fill from the recipient.
-3. Copies each section ready to paste: Project Overview, Scope of Work (L2 and L3), Budget, Timeline and Payment Schedule.
+- **Preview Proposal** opens the proposal in its own tab, or in a panel over the kit when pop-ups are blocked. It redraws as the scope, timeline or details change.
+- **Publish Proposal** asks for a web address (from the project title) and a password. The proposal is encrypted in the browser with that password (AES-GCM, PBKDF2-SHA256), and only the ciphertext goes to the server. It is then live at `steadfast-sow-kit.netlify.app/<address>`. Send the link and the password separately.
+- **The client** opens the link, enters the password, reads, and signs in the Acceptance section: full name, title, a drawn or typed signature, and a consent box. The signature is encrypted with the same key. The page then shows the signed record with a document ID, and the client can save a PDF.
+- **Published proposals** under the panel lists each proposal with its status. An unsigned proposal can be replaced or unpublished. A signed one can't be changed; publish a new version at a new address.
 
-If the plan ever gains API access, `pandadocPayload()` in index.html already builds a complete linked draft for PandaDoc's API.
+How it runs: two Netlify Functions in `netlify/functions` and the site's Netlify Blobs store `proposals`. Nothing else needs setting up.
+
+- `proposals.mjs` serves `/api/proposals`. Publishing, listing and unpublishing need the team password (the `SITE_PASSWORD` variable). Signing needs a token derived from the proposal password; the server keeps only its hash.
+- `proposal-page.mjs` serves `/<address>`. Static files come first, so the kit itself is unaffected.
+
+The client page's code is `assets/viewer.js`, and its styles are `assets/proposal.css`. The styles are copied into each proposal when it is published, so a signed proposal keeps its look.
+
+Steadfast's signature block is pre-filled with the signer named in the panel (default: Taylor Tsantles). Signing records the signer's name, title, email, signature image, the time, and the document's fingerprint. The server adds the IP address and browser.
+
+`proposalMarkdown()` and `pandadocPayload()` in index.html still build a PandaDoc draft, for a plan with API access.
 
 ## Changing the password
 

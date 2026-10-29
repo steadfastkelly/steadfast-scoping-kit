@@ -1,0 +1,8 @@
+{
+  "name": "steadfast-sow-kit",
+  "private": true,
+  "description": "Netlify Functions for published proposals (see netlify/functions).",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
