@@ -535,9 +535,10 @@ function clearScope(){ scope=[]; saveScope(); renderBuilder(); }
 function scopeTotals(){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const e of scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=i.h[k]*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 function warnings(){
   const bases=new Set(scope.map(e=>bySku[e.sku].base)); const w=[];
-  const site = [...bases].some(b=>/Web Page Development|Site Foundation|Homepage Design|Page Template|Template Website|Landing Page/.test(b));
+  const site = [...bases].some(b=>/Web Page Development|Site Foundation|Homepage Design|Homepage Development|Page Template|Template Website|Landing Page/.test(b));
   if(site && !bases.has("Site Foundation") && !bases.has("Landing Page") && !bases.has("Template Website")) w.push("This looks like a site build without Site Foundation. Add it once.");
   if(site && !bases.has("QA, Accessibility & Launch")) w.push("No QA, Accessibility & Launch row. Every build carries one.");
+  if(bases.has("Homepage Design") && !bases.has("Homepage Development")) w.push("Homepage Design with no Homepage Development row. Add it at the same level so the homepage build is priced.");
   if(site && !bases.has("Account Management, Website Build") && !bases.has("Landing Page") && !bases.has("Template Website")) w.push("No Account Management, Website Build row. Full sites carry 60 or 90 account hours.");
   const t=scopeTotals().tot;
   if(t>10000 && !bases.has("Account Management") && !bases.has("Account Management, Website Build")) w.push("Scope is over $10,000 with no Account Management row. Add the tier that matches the total.");
@@ -594,7 +595,7 @@ const TL_TIER={ // order inside a phase: lower tiers finish before higher ones s
   "Post-Launch Support & Training":1,"QA, Accessibility & Launch":0,"Accessibility Audit & Remediation":0};
 const TL_MLR_BASES=new Set(["Messaging & Content Document","Medical Writing & Narrative","Copywriting",
   "Campaign Development","Brand Extension Piece","Homepage Design","Web Page Design","Update to Existing Work","Landing Page","One-Pager or Leave-Behind","Brochure","Sales Aid","Guide or Report","Print Ad","Deck Design","Medical Illustration","Short Animation","Explainer or MOA Video","Digital Ad Set","HTML Email","Social Post","Social Launch Package","Booth Design","Banner or Placement Graphic","Clinical Trial Materials Kit","Congress Presentation","Live-Action Video","Interactive Booth Experience",
-  "Web Page Development","Template Website","Content Population & Migration","Interactive Visual Aid","Rep CRM Certification","Localization Management",
+  "Web Page Development","Homepage Development","Template Website","Content Population & Migration","Interactive Visual Aid","Rep CRM Certification","Localization Management",
   "Monthly Social Management","Monthly Email Program","Paid Media Management"]);
 const TL_MLR=[
   {id:"unknown",label:"Not known yet (new client)"},
