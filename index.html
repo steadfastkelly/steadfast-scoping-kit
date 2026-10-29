@@ -573,11 +573,12 @@ function clearScope(){ scope=[]; saveScope(); renderBuilder(); }
 function scopeTotals(){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const e of scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=i.h[k]*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 function warnings(){
   const bases=new Set(scope.map(e=>bySku[e.sku].base)); const w=[];
-  const site = [...bases].some(b=>/Web Page Development|Site Foundation|Homepage Design|Homepage Development|Page Template|Template Website|Landing Page/.test(b));
-  if(site && !bases.has("Site Foundation") && !bases.has("Landing Page") && !bases.has("Template Website")) w.push("This looks like a site build without Site Foundation. Add it once.");
-  if(site && !bases.has("QA, Accessibility & Launch")) w.push("No QA, Accessibility & Launch row. Every build carries one.");
+  const site = [...bases].some(b=>/Web Page Development|Site Foundation|Homepage Design|Homepage Development|Page Template|Template Website|Landing Page|Single-Page Website/.test(b));
+  const selfContained = ["Landing Page","Single-Page Website","Template Website"].some(b=>bases.has(b)); // carry their own foundation, QA and launch
+  if(site && !bases.has("Site Foundation") && !selfContained) w.push("This looks like a site build without Site Foundation. Add it once.");
+  if(site && !selfContained && !bases.has("QA, Accessibility & Launch")) w.push("No QA, Accessibility & Launch row. Every build carries one.");
   if(bases.has("Homepage Design") && !bases.has("Homepage Development")) w.push("Homepage Design with no Homepage Development row. Add it at the same level so the homepage build is priced.");
-  if(site && !bases.has("Account Management, Website Build") && !bases.has("Landing Page") && !bases.has("Template Website")) w.push("No Account Management, Website Build row. Full sites carry 60 or 90 account hours.");
+  if(site && !bases.has("Account Management, Website Build") && !selfContained) w.push("No Account Management, Website Build row. Full sites carry 60 or 90 account hours.");
   const t=scopeTotals().tot;
   if(t>10000 && !bases.has("Account Management") && !bases.has("Account Management, Website Build")) w.push("Scope is over $10,000 with no Account Management row. Add the tier that matches the total.");
   if([...bases].some(b=>/Print|Booth|Banner|One-Pager|Brochure|Sales Aid|Guide/.test(b)) && !bases.has("Pass-Through Costs")) w.push("Print or event work usually needs Pass-Through Costs at cost. Name the item in the description.");
@@ -626,7 +627,7 @@ const TL_HANDOFF=0.2;
 const TL_TIER={ // order inside a phase: lower tiers finish before higher ones start; the same tier runs side by side (default 1)
   "Discovery & Strategy Brief":0,"Working Session":0,"Website & Brand Audit":0,"Market & KOL Research Study":0,"Physician Survey & Readout":0,"Brand Evolution Summit":0,
   "Wireframes":2,"Copywriting":2,"Medical Writing & Narrative":2,
-  "Brand Identity":0,"Logo":0,"Campaign Development":0,"Homepage Design":0,"Additional Revision Round":3,
+  "Brand Identity":0,"Brand Visual Direction":0,"Logo":0,"Campaign Development":0,"Homepage Design":0,"Additional Revision Round":3,
   "Brand Guidelines":2,"Template System":2,"Brand Asset Onboarding":2,
   "Site Foundation":0,"Template Website":0,"CMS Upgrade or Platform Migration":0,
   "Content Population & Migration":2,"Localization Management":2,"Rep CRM Certification":2,
@@ -722,8 +723,8 @@ function tlBuild(){
   // What could slow it down
   if(m && tl.mlr==="unknown" && gatedTotal) flags.unshift({k:"risk",t:"The client's MLR process isn't confirmed. This plan assumes a weekly committee and shows the range from a fast reviewer to a twice-a-month one. At kickoff, ask how often they submit, how long review takes, and who on their side owns submission."});
   if(m && gatedTotal && !bases.has("PRC Submission Support")) flags.push({k:"risk",t:"No PRC Submission Support row. The client's team packages references and submits to MLR themselves. If nobody on their side is actively managing it, each missed submission window pushes everything after it."});
-  const needsCopy=[...bases].some(b=>/Web Page Design|Homepage Design|Landing Page|One-Pager|Brochure|Sales Aid|Guide or Report|HTML Email|Deck Design|Template Website|Interactive Visual Aid|Clinical Trial Materials/.test(b));
-  const writes=[...bases].some(b=>/Copywriting|Messaging & Content Document|Medical Writing/.test(b));
+  const needsCopy=[...bases].some(b=>/Web Page Design|Homepage Design|Landing Page|Single-Page Website|One-Pager|Brochure|Sales Aid|Guide or Report|HTML Email|Deck Design|Template Website|Interactive Visual Aid|Clinical Trial Materials/.test(b));
+  const writes=[...bases].some(b=>/Copywriting|Messaging & Content Document|Medical Writing|Website Narrative/.test(b));
   const firstMake=["Design","Build & Integration"].find(p=>p in phaseStart);
   if(needsCopy && !writes && firstMake) flags.push({k:"risk",t:`No writing in the scope, so the client supplies the copy. It needs to be final${m?", and MLR-approved,":""} by week ${wk(phaseStart[firstMake]+1)}, when ${firstMake} starts.`});
   if(bases.has("Content Population & Migration") && "Build & Integration" in phaseStart) flags.push({k:"info",t:`Content Population & Migration needs approved content in hand by week ${wk(phaseStart["Build & Integration"]+1)}.`});
@@ -976,7 +977,7 @@ function proposalPage(){
   const notIn=[...new Set(d.items.map(x=>x.i.note).filter(Boolean))];
   const stages=SECTION_ORDER.filter(s=>d.once.some(x=>x.i.section===s));
   const bySec={}; for(const x of d.once) bySec[x.i.section]=(bySec[x.i.section]||0)+x.i.price*x.e.qty;
-  const hasQA=d.items.some(x=>/QA, Accessibility|Landing Page|Template Website/.test(x.i.base));
+  const hasQA=d.items.some(x=>/QA, Accessibility|Landing Page|Single-Page Website|Template Website/.test(x.i.base));
 
   // Cover and the client strip
   h+=`<header class="sp-cover"><div class="arcs"><i></i><i></i><i></i><i></i></div><div class="wrapw"><div class="top"><span class="mark">S</span><span class="eb">Prepared by Steadfast for ${co}${partner?`, in partnership with ${esc(partner)}`:""}</span></div><h1>${title}</h1><div class="sub">Proposal <span class="pill">v${esc(prop.version||1)}</span></div></div></header>`;
