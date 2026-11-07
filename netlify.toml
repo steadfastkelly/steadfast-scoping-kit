@@ -1,8 +1,9 @@
 # Every deploy rebuilds data/catalog.enc.js from the Google Sheet (see tools/encrypt_data.py).
 # Netlify installs requirements.txt (and package.json, for the functions) before the build command runs.
+# Only the files listed in tools/stage-site.sh are published (into _site/); the rest of the repo is not served.
 [build]
-  command = "python3 tools/encrypt_data.py --from-sheet"
-  publish = "."
+  command = "python3 tools/encrypt_data.py --from-sheet && sh tools/stage-site.sh"
+  publish = "_site"
 
 # Published proposals: /api/proposals and /<address> (netlify/functions), stored in Netlify Blobs.
 [functions]

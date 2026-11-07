@@ -8,3 +8,16 @@ data/catalog.backup-*.xlsx
 # import copy of the catalog for Google Sheets (internal pricing)
 Steadfast Services Catalog (import).xlsx
 node_modules/
+
+# site agent backups and screenshots: full copies of public pages, client names included
+docs/steadfast-agents/backups/
+docs/steadfast-agents/qa/**/*.png
+
+# Netlify build output (tools/stage-site.sh)
+_site/
+
+# Internal work: internal pricing, client names, signed-SOW replays. Kept out of git while the
+# GitHub repo is public. Once the repo is private, delete these three lines and commit them.
+docs/
+webflow-quiz/
+webflow-intake-forms/

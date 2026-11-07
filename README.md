@@ -9,6 +9,7 @@ The account manager kit for building scopes at 2026 rates: The Brief, seven pack
 - `data/catalog.enc.js` is the catalog, encrypted with the team password. It is the only data file the site reads. Netlify rebuilds it from the Sheet on every deploy; the copy in the repo is the fallback if the Sheet can't be read.
 - `tools/encrypt_data.py` reads the Sheet (or the local workbook), encrypts it and writes `catalog.enc.js`.
 - `netlify.toml` tells Netlify to run that script on every build. `requirements.txt` lists what it needs.
+- `tools/stage-site.sh` then copies only the files the site loads (`index.html`, `assets/viewer.js`, `assets/proposal.css`, `data/catalog.enc.js`) into `_site/`, and Netlify publishes that folder. Nothing else in the repo is served. If the site starts loading a new file, add it to that script.
 - `tools/publish-menu.gs` is the Apps Script behind the Sheet's **Steadfast → Publish to kit** menu.
 - `data/catalog.xlsx` and `data/pandadoc-import.csv` are local only (see `.gitignore`).
 
