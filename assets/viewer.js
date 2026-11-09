@@ -46,7 +46,9 @@
 
   function showSigned(slot, rec, signedAt) {
     const w = when(signedAt);
-    slot.innerHTML = field("Full name", esc(rec.name)) + field("Title", esc(rec.title)) +
+    // A proposal with several options records the one the client chose. Older signed records have none.
+    const opt = rec.option && rec.option.name ? `<p class="sp-chosen">Option accepted: <b>${esc(rec.option.name)}</b>${Number.isFinite(rec.option.total) ? `, $${Math.round(rec.option.total).toLocaleString("en-US")}` : ""}</p>` : "";
+    slot.innerHTML = opt + field("Full name", esc(rec.name)) + field("Title", esc(rec.title)) +
       field("Signature", `<img src="${esc(rec.signature)}" alt="Signature of ${esc(rec.name)}"><span class="date">${esc(w.date)}</span>`, "Date") +
       `<div class="sp-done"><b>Accepted.</b> Signed electronically by ${esc(rec.name)}${rec.email ? ` (${esc(rec.email)})` : ""} on ${esc(w.date)} at ${esc(w.time)}.<br><span class="sp-note">Document ID ${esc(String(D.docHash).slice(0, 16).toUpperCase())}</span>
        <div class="sp-padbar sp-noprint" style="margin-top:12px"><button class="sp-btn sm" type="button" id="sp-print">Save a copy (PDF)</button></div></div>`;
@@ -55,7 +57,10 @@
 
   function showForm(slot) {
     const company = DOC.company || "the client";
+    const OPTS = Array.isArray(DOC.options) && DOC.options.length > 1 ? DOC.options : null;
+    const money = n => "$" + Math.round(n).toLocaleString("en-US");
     slot.innerHTML = `<form class="sp-form sp-noprint" id="sp-sf" autocomplete="on">
+      ${OPTS ? `<fieldset class="sp-pick"><legend>Which option do you accept?</legend>${OPTS.map(o => `<label><input type="radio" name="sp-opt" value="${esc(o.id)}"><span>${esc(o.name)}</span><span class="num">${money(o.total)}</span></label>`).join("")}</fieldset>` : ""}
       <label>Full name<input type="text" id="sp-name" autocomplete="name" value="${esc(DOC.contact || "")}" required></label>
       <label>Title<input type="text" id="sp-title" autocomplete="organization-title" required></label>
       <label>Email (for your records)<input type="email" id="sp-email" autocomplete="email"></label>
@@ -94,16 +99,18 @@
       e.preventDefault();
       const err = $("sp-serr"), go = $("sp-go"); err.textContent = "";
       const name = $("sp-name").value.trim(), title = $("sp-title").value.trim(), email = $("sp-email").value.trim();
+      const picked = OPTS ? OPTS.find(o => o.id === (document.querySelector('input[name="sp-opt"]:checked') || {}).value) : null;
+      if (OPTS && !picked) { err.textContent = "Choose the option you accept."; return; }
       if (!name || !title) { err.textContent = "Add your full name and title."; return; }
       const signature = await signatureImage();
       if (!signature) { err.textContent = typed ? "Type your name above to create the signature." : "Draw your signature in the box, or choose Type it instead."; return; }
       if (!$("sp-ok").checked) { err.textContent = "Tick the box to confirm you accept the proposal and agree to sign electronically."; return; }
       go.disabled = true; go.textContent = "Signing";
       try {
-        const rec = { v: 1, name, title, email, signature, method: typed ? "typed" : "drawn", consent: true, signedAtClient: new Date().toISOString(), docHash: D.docHash, company: DOC.company || "" };
+        const rec = { v: 1, name, title, email, signature, method: typed ? "typed" : "drawn", consent: true, signedAtClient: new Date().toISOString(), docHash: D.docHash, company: DOC.company || "", ...(picked ? { option: { id: picked.id, name: picked.name, total: picked.total } } : {}) };
         const iv = crypto.getRandomValues(new Uint8Array(12));
         const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, KEY, enc.encode(JSON.stringify(rec)));
-        const r = await fetch("/api/proposals", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "sign", slug: D.slug, auth: AUTH, docHash: D.docHash, sig: { iv: b64e(iv), ct: b64e(ct) } }) });
+        const r = await fetch("/api/proposals", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "sign", slug: D.slug, auth: AUTH, docHash: D.docHash, sig: { iv: b64e(iv), ct: b64e(ct) }, ...(picked ? { option: picked.id } : {}) }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j.error || "Something went wrong. Try again.");
         D.sig = { signedAt: j.signedAt }; showSigned(slot, rec, j.signedAt);

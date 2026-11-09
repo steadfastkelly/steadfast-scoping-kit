@@ -203,3 +203,36 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
   .sp-cover,.sp-dark,.sp-foot,.sp-tag,.sp-acc .lt{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .sp-sign,.sp-field{break-inside:avoid}
 }
+
+/* Options, risks, voices and the option picker (November 2026). New class names only: this file is also linked
+   live from every published proposal, so changing an existing rule would restyle proposals already signed. */
+.sp-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:8px}
+.sp-opt{background:var(--sp-card);border-top:3px solid var(--sp-line);padding:24px 22px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.sp-sec.card .sp-opt{background:var(--sp-bg)}
+.sp-opt.lead{border-top-color:var(--sp-ink)}
+.sp-opt h3{font-size:1.45rem;font-weight:400}
+.sp-opt .s{color:var(--sp-fg2);font-size:.94rem}
+.sp-opt .v{font-size:1.9rem;font-weight:500;margin-top:4px}
+.sp-opt dl{margin:4px 0 0;display:grid;gap:0}
+.sp-opt dl>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--sp-line);font-size:.9rem}
+.sp-opt dt{color:var(--sp-fg2)} .sp-opt dd{margin:0;text-align:right}
+.sp-opt .df{margin-top:6px;padding-top:12px;border-top:1px solid var(--sp-fg)}
+.sp-opt .df ul{margin-top:8px;font-size:.9rem}
+.sp-wv{display:inline-block;font-family:var(--sp-label);font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--sp-fg2);border-radius:99px;padding:3px 9px;color:var(--sp-fg)}
+.sp-risk td:nth-child(2){white-space:nowrap}
+.sp-voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.sp-voice{margin:0;background:var(--sp-bg);border-top:3px solid var(--sp-ink);padding:26px 24px;display:grid;gap:16px;align-content:start}
+.sp-voice img{width:72px;height:72px;border-radius:50%;object-fit:cover}
+.sp-voice blockquote{margin:0;font-family:var(--sp-display);font-size:1.15rem;line-height:1.4}
+.sp-voice figcaption{display:grid;gap:2px;font-size:.9rem}
+.sp-voice figcaption span{color:var(--sp-fg2)}
+.sp-voice .dis{font-size:.82rem;font-style:italic;margin-top:6px}
+.sp-pick{border:0;padding:0;margin:0;display:grid;gap:8px}
+.sp-pick legend{font-family:var(--sp-label);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sp-fg2);margin-bottom:6px;padding:0}
+.sp-pick label{display:grid!important;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border:1px solid var(--sp-line);border-radius:8px;cursor:pointer;font-family:var(--sp-body)!important;font-size:.95rem!important;letter-spacing:0!important;text-transform:none!important;color:var(--sp-fg)!important;min-height:48px}
+.sp-pick label:has(input:checked){border-color:var(--sp-fg);box-shadow:inset 0 0 0 1px var(--sp-fg)}
+.sp-pick input{width:18px;height:18px;margin:0;accent-color:var(--sp-ink)}
+.sp-pick .num{font-family:var(--sp-mono);white-space:nowrap}
+.sp-chosen{margin:0 0 14px;padding:12px 14px;border-left:3px solid var(--sp-ink);background:var(--sp-panel);font-size:.95rem}
+@media (max-width:760px){.sp-opt dl>div{font-size:.86rem}.sp-risk td:nth-child(2){white-space:normal}}
+@media print{.sp-opt,.sp-voice{break-inside:avoid}}

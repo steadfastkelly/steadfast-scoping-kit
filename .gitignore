@@ -1,5 +1,6 @@
 data/catalog.xlsx
 data/pandadoc-import.csv
+data/pandadoc-catalog-map.json
 data/snapshot.js
 .DS_Store
 _to_delete/

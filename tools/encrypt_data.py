@@ -84,7 +84,9 @@ def build_data(tables):
             lead=(num(r.get("Lead time (weeks)")) or None) if str(r.get("Lead time (weeks)", "")).strip() else None, mlr=yesno(r.get("MLR review")),
             price=num(r["Flat price (2026)"]), unit=r.get("Unit", ""), billing=r.get("Billing", ""), rounds=r.get("Rev rounds", ""), basis=r.get("Price basis", ""),
             use=r.get("When to use", ""), find=", ".join(finder.get(bs, [])),
-            h=dict(S=num(r.get("Strategy h", 0)), D=num(r.get("Design h", 0)), V=num(r.get("Dev h", 0)), A=num(r.get("Account h", 0)), C=num(r.get("Copy h", 0)), M=num(r.get("Medical copy h", 0)))))
+            # Optional: who delivers it when it needs an integrated partner (internal; the kit flags the row to AMs)
+            partner=str(r.get("Partner", "") or "").strip(),
+            h=dict(S=num(r.get("Strategy h", 0)), D=num(r.get("Design h", 0)), V=num(r.get("Dev h", 0)), A=num(r.get("Account h", 0)), C=num(r.get("Copy h", 0)), M=num(r.get("Medical copy h", 0)), P=num(r.get("Partner h", 0)))))
     cats = []; seen = set()
     for i in items:
         if i["cat"] not in seen: seen.add(i["cat"]); cats.append(dict(code=i["cat"], name=i["category"]))
@@ -100,13 +102,18 @@ def build_data(tables):
     for r in rows("Level Definitions"):
         rounds = {m.group(1): int(m.group(2)) for m in re.finditer(r"(Template|Level \d):\s*(\d+)", str(r["Revision rounds by level"]))}
         levels.append(dict(name=r["Service type"], test=r["Level test (what makes it Level 1, 2 or 3)"], rounds=rounds))
-    terms = None; rates = None; g = {}; go = []
+    # Terms: rows marked "Opt-in" in the optional Applies column go only into proposals that tick the large-program
+    # box; their Group "Assumptions and Risks" rows are the risk table (Heading = risk, Text = likelihood | how handled).
+    terms = None; rates = None; g = {}; go = []; opt = {}; oo = []
     for r in rows("Terms"):
         if r["Group"] == "Rates": rates = r["Text"]; continue
-        if r["Group"] not in g: g[r["Group"]] = []; go.append(r["Group"])
-        g[r["Group"]].append([r["Heading"], r["Text"]])
+        optin = str(r.get("Applies", "") or "").strip().lower().startswith("opt")
+        d, o = (opt, oo) if optin else (g, go)
+        if r["Group"] not in d: d[r["Group"]] = []; o.append(r["Group"])
+        d[r["Group"]].append([r["Heading"], r["Text"]])
     if go: terms = [dict(h=h, items=g[h]) for h in go]
-    return dict(items=items, cats=cats, packs=packs, levels=levels, terms=terms, rates=rates)
+    optTerms = [dict(h=h, items=opt[h]) for h in oo] or None
+    return dict(items=items, cats=cats, packs=packs, levels=levels, terms=terms, rates=rates, optTerms=optTerms)
 
 def main():
     if "--from-sheet" in sys.argv:

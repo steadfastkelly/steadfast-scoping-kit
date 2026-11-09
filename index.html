@@ -59,6 +59,26 @@ button.sm{padding:6px 11px;font-size:.78rem}
 button:hover{opacity:.8}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
 input[type=search],select,input[type=number]{font:inherit;font-size:.9rem;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+/* Dropdowns match the other fields, with the arrow inset evenly from the right edge rather than against it. */
+select,.propgrid select{-webkit-appearance:none;appearance:none;padding-right:36px;background-image:var(--chev);background-repeat:no-repeat;background-position:right 12px center;background-size:11px 7px;min-height:36px;cursor:pointer}
+:root{--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%23706c65' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%23a39e96' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}}
+.optbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.optbar .opt{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 12px;border:1px solid var(--line);background:var(--panel)}
+.optbar .opt.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.optbar .opt small{font-family:var(--mono);font-size:.72rem;opacity:.8}
+.optedit{display:grid;grid-template-columns:minmax(160px,1fr) minmax(220px,2fr);gap:10px 14px;margin-bottom:14px}
+.optedit label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
+.optedit input{font:inherit;font-family:var(--body);font-size:.9rem;letter-spacing:0;text-transform:none;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);width:100%}
+.optedit .acts{grid-column:1/-1;margin-top:0}
+.tbl select.wv{font-size:.8rem;padding:5px 30px 5px 8px;min-height:30px;background-position:right 10px center}
+.chip.prt{background:transparent;border:1px solid var(--fg2);color:var(--fg)}
+.prtline{font-size:.78rem;color:var(--fg2);margin-top:2px}
+.vox{background:var(--panel);border-radius:10px;padding:14px;margin-top:10px}
+.vox .propgrid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.chk{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;font-family:var(--body)!important;font-size:.88rem!important;letter-spacing:0!important;text-transform:none!important;color:var(--fg)!important}
+.chk input{width:auto!important}
+@media (max-width:600px){.optedit{grid-template-columns:1fr}}
 input[type=search]{flex:1;min-width:200px}
 input[type=number]{width:62px;text-align:right;font-family:var(--mono)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -174,6 +194,13 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 .g-ongoingbar{background:repeating-linear-gradient(90deg,var(--tone2) 0 8px,transparent 8px 12px)}
 .g-ms{position:absolute;top:50%;width:12px;height:12px;background:var(--fg);transform:translate(-50%,-50%) rotate(45deg)}
 .g-launch .g-lab{font-weight:600}
+.g-wave{background:var(--bg2)} .g-wave .g-lab span{font-weight:600}
+.g-wavebar{height:8px;background:var(--fg);opacity:.85}
+.g-load .g-track{height:56px;background:none}
+.g-ld{position:absolute;bottom:0;background:var(--tone2);border-right:1px solid var(--panel)} .g-ld.over{background:var(--bad)}
+.g-cap{position:absolute;left:0;right:0;border-top:2px dashed var(--fg)}
+.g-tgt{position:absolute;top:0;bottom:0;border-left:2px dashed var(--bad);pointer-events:none}
+.g-key .k-tgt::before{width:0;height:10px;border-left:2px dashed var(--bad);border-radius:0}
 .g-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
 .g-key span::before{content:"";display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .g-key .k-prod::before{background:var(--fg)} .g-key .k-rev::before{background:var(--tone2)} .g-key .k-mlr::before{background:var(--warn)}
@@ -336,9 +363,11 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 <!-- ============ BUILDER ============ -->
 <section class="view" id="v-builder">
   <div class="head"><span class="eyebrow">Scope builder</span><h1>The scope, priced and houred.</h1><p>Add rows from the catalog or a package. Set quantities. The export is the line-item block for the proposal; the narrative in front of it is yours.</p></div>
+  <div class="optbar" id="optbar"></div>
+  <div class="optedit" id="optedit" hidden></div>
   <div id="warns"></div>
   <div class="tot" id="tots"></div>
-  <div class="scroll"><table class="tbl" id="btbl"><thead><tr><th>Line item</th><th>Level</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr></thead><tbody id="bbody"></tbody></table></div>
+  <div class="scroll"><table class="tbl" id="btbl"><thead id="bhead"></thead><tbody id="bbody"></tbody></table></div>
   <div class="tlbox">
     <div class="head" style="margin:0 0 14px"><span class="eyebrow">Timeline</span><h2>Rough lead time, start to launch.</h2><p class="small">Each row's length comes from its hours and review rounds. Phases run in order, and any phase with promotional work ends in an MLR stage sized to the client's process. Hatched bars show how far it can stretch if review runs long.</p></div>
     <div class="tlset">
@@ -350,10 +379,15 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
         <label>Rounds to approval<input type="number" id="tl-cyc" min="1" step="1" onchange="setTl('cyc',this.value)"></label>
       </span>
       <label>Client feedback<span><input type="number" id="tl-fb" min="1" step="1" onchange="setTl('fb',this.value)"> days</span></label>
+      <label>Target launch<input type="date" id="tl-target" onchange="setTl('target',this.value)"></label>
+      <label class="chk"><input type="checkbox" id="tl-waves" onchange="setTl('waves',this.checked)"> Run in two waves</label>
+      <label id="tl-wbbox" hidden>Wave B starts<input type="date" id="tl-wb" onchange="setTl('wb',this.value)"></label>
+      <label class="chk"><input type="checkbox" id="tl-streams" onchange="setTl('streams',this.checked)"> Parallel workstreams</label>
+      <label id="tl-capbox" hidden>Team size<span><input type="number" id="tl-cap" min="0" step="1" placeholder="Any" onchange="setTl('cap',this.value)"> people</span></label>
     </div>
     <div class="tot" id="tl-sum"></div>
     <div class="scroll"><div id="tl"></div></div>
-    <div class="g-key small muted"><span class="k-prod">Production</span><span class="k-rev">Client review rounds</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span></div>
+    <div class="g-key small muted"><span class="k-prod">Production</span><span class="k-rev">Client review rounds</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span><span class="k-tgt">Target launch</span></div>
     <div id="tl-flags" style="margin-top:14px"></div>
   </div>
   <div class="tlbox">
@@ -372,7 +406,10 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <label>Signing for Steadfast<input id="p-firmName" oninput="setProp('firmName',this.value)"></label>
       <label>Their title<input id="p-firmTitle" oninput="setProp('firmTitle',this.value)"></label>
       <label class="wide">Key objectives (optional, one per box; start with a short label and a colon to title it)<span class="objs"><input id="p-obj0" oninput="setProp('obj0',this.value)"><input id="p-obj1" oninput="setProp('obj1',this.value)"><input id="p-obj2" oninput="setProp('obj2',this.value)"></span></label>
+      <label class="wide chk"><input type="checkbox" id="p-bigTerms" onchange="setProp('bigTerms',this.checked)"> Add the large-program terms and the Assumptions and Risks section (for multi-month launch programs only)</label>
+      <label class="wide chk"><input type="checkbox" id="p-showVoices" onchange="setProp('showVoices',this.checked)"> Show a voices section (endorsements). Only entries with a written approval on file appear.</label>
     </div>
+    <div id="p-voices" class="vox" hidden></div>
     <p class="small muted" id="p-tierhint" style="margin-top:8px"></p>
     <div class="toolbar" style="margin:14px 0 0"><button class="pri" onclick="openPreview()">Preview Proposal</button><button onclick="openPublish()">Publish Proposal</button></div>
     <div class="head" style="margin:28px 0 10px"><span class="eyebrow">Published proposals</span></div>
@@ -405,6 +442,19 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 </main>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal" id="impm" hidden onclick="if(event.target===this)closeImport()">
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="imp-h">
+    <form onsubmit="event.preventDefault();doImport()">
+      <div><div class="eyebrow">Import a scope</div><h2 id="imp-h">Load a scope file.</h2></div>
+      <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together.</p>
+      <label>Scope file<input type="file" id="imp-file" accept=".json,application/json" onchange="readImportFile(this)"></label>
+      <label>Or paste it<textarea id="imp-text" rows="6" spellcheck="false" style="font-family:var(--mono);font-size:.78rem;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);text-transform:none;letter-spacing:0"></textarea></label>
+      <label class="rm"><input type="checkbox" id="imp-replace"> Replace every option in the builder (otherwise the import is added as new options)</label>
+      <div class="err" id="imp-err" aria-live="polite"></div>
+      <div class="acts"><button type="submit" class="pri">Import</button><button type="button" onclick="closeImport()">Cancel</button></div>
+    </form>
+  </div>
+</div>
 <div class="modal" id="pubm" hidden onclick="if(event.target===this)closePublish()">
   <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="pub-h">
     <form id="pub-form" onsubmit="event.preventDefault();doPublish()">
@@ -412,8 +462,10 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <p class="small muted">The proposal is encrypted in this browser with the password you set here, so only someone with the password can read or sign it. Send the link and the password separately.</p>
       <label>Web address<span class="mrow"><span class="small muted" id="pub-origin"></span><input id="pub-slug" required autocomplete="off" spellcheck="false"></span></label>
       <label>Proposal password<span class="mrow"><input id="pub-pw" required minlength="8" autocomplete="off" spellcheck="false" class="num"><button type="button" class="sm" onclick="genPw()">Generate</button></span></label>
+      <label>Engagement task <span class="muted">(optional)</span><span class="mrow"><input id="pub-task" autocomplete="off" spellcheck="false" placeholder="ClickUp task link or id, like 86bcp24xe" aria-describedby="pub-err"></span></label>
+      <p class="small muted">With a task linked, publishing marks it "proposal sent" with the value and the link, and the client's signature marks it "signed".</p>
       <label class="rm"><input type="checkbox" id="pub-over"> Replace the unsigned proposal already at this address</label>
-      <div class="err" id="pub-err"></div>
+      <div class="err" id="pub-err" aria-live="polite"></div>
       <div class="acts"><button type="submit" class="pri" id="pub-btn">Publish</button><button type="button" onclick="closePublish()">Cancel</button></div>
     </form>
     <div id="pub-done" hidden>
@@ -428,8 +480,14 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 
 <script>
 let DATA = null; // filled by loadData()
-const RATE = {S:250,D:170,V:200,A:120,C:150,M:250};
-const ROLE = {S:"Strategy",D:"Design",V:"Dev",A:"Account",C:"Copy",M:"Medical copy"};
+// P: hours an integrated partner delivers (medical or scientific consulting), priced at the industry-norm rate below.
+// Internal only; the client sees the line price. DRAFT rate until Kelly approves it.
+const RATE = {S:250,D:170,V:200,A:120,C:150,M:250,P:300};
+const ROLE = {S:"Strategy",D:"Design",V:"Dev",A:"Account",C:"Copy",M:"Medical copy",P:"Partner"};
+const H0 = () => ({S:0,D:0,V:0,A:0,C:0,M:0,P:0});
+// The Catalog's Partner column: who delivers the partner part of a row. Text starting "Optional" means we can do it ourselves.
+const partnerOptional = i => /^optional/i.test(i.partner||"");
+const prtLabel = i => partnerOptional(i) ? "Partner optional" : "Needs a partner";
 const LVL = {T:"Template",L1:"Level 1",L2:"Level 2",L3:"Level 3","":"Flat"};
 const money = n => "$" + Math.round(n).toLocaleString("en-US");
 let bySku = {};
@@ -487,6 +545,39 @@ const TERMS_DEFAULT = [
   ["Acceptance of Proposal","This contract, in conjunction with Steadfast's standard Terms & Conditions, constitutes the sole agreement between the Client and the Firm regarding all items included in this proposal. The Firm, as sender, and the Client, as recipient, will acknowledge acceptance of these terms by signing below. Electronic signatures are considered legal and binding."]]}
 ];
 let TERMS = TERMS_DEFAULT;
+/* Large-program terms: added only to proposals that tick the box (multi-month launch programs). DRAFT wording until Kelly
+   approves it; then it moves to the Sheet's Terms tab with Applies = "Opt-in", which replaces these defaults. */
+const OPT_TERMS_DEFAULT = [
+ {h:"Program Terms", items:[
+  ["MLR Review Rounds","Each piece includes up to two rounds of medical, legal and regulatory (MLR) comments. More rounds are billed at the rates defined here. The schedule allows 10 business days for MLR comments on each submission. If a review takes longer, the dates after it move by the same amount."],
+  ["Label Changes","The final approved label may change pieces that are already approved. Updating approved work to match the final label is a change order, priced from our catalog. It is not a revision round."],
+  ["Pause and Restart","If the Client pauses the work for more than 30 days, the Firm bills for the work completed to that point. Restarting carries a remobilization fee of $7,500 and a new schedule, agreed in writing. If the pause lasts more than 90 days, either party may end the agreement under Cancellation."],
+  ["Program Payments","The deposit and the monthly installments hold a dedicated team for this program. Installments are due on their scheduled dates, even when a review or an approval takes longer than planned."],
+  ["Confidentiality and Portfolio","The Firm keeps the Client's unpublished information confidential, including product data, the label and launch plans. The Firm shows work from this program in its portfolio only with the Client's written approval, and never before the work is public."],
+  ["Subcontractors","The Firm may bring in specialist partners, such as scientific consultants, under confidentiality terms at least as strict as these. The Firm names each one to the Client before they start and is responsible for their work."]]}
+];
+// Assumptions and Risks: each risk, how likely it is, and the term that handles it. {client} becomes the client's name. DRAFT.
+const RISKS_DEFAULT = {
+  assumptions:["{client} sets up its MLR review in Veeva before the first submission.","{client} names one decision-maker who collects and sends feedback.",
+    "Branded pieces are made ready for launch. None is published or shared outside {client} before FDA approval.",
+    "Unbranded disease education stays separate from branded work, with its own look and its own MLR review.",
+    "The final label arrives after approval, so some approved pieces will need updates."],
+  risks:[
+    ["MLR review takes longer than planned. {client}'s review team is new.","High","Two rounds of MLR comments per piece are included. More are billed by the hour. If a review takes more than 10 business days, later dates move by the same amount. See MLR Review Rounds."],
+    ["The final label changes pieces that are already approved.","High","Updates to match the final label are a change order, not a revision round. See Label Changes."],
+    ["The BLA date moves, or {client} pauses the work.","Medium","Work done to that point is billed. A pause of more than 30 days carries a restart fee and a new schedule. See Pause and Restart."],
+    ["Feedback takes longer than planned.","Medium","{client} responds within 3 business days. Delays can add fees if we must move other work. See Timeline & Communication."],
+    ["Payments arrive late.","Low","A deposit on signing, then monthly installments on fixed dates. See Payment Terms and Program Payments."]]
+};
+let OPT_TERMS = OPT_TERMS_DEFAULT;
+// From the Sheet, an opt-in group named "Assumptions and Risks" is the risk table: Heading = the risk, Text = "Likelihood | How it's handled".
+const optTermGroups = () => OPT_TERMS.filter(g=>!/assumption|risk/i.test(g.h));
+function risksData(){
+  const g=OPT_TERMS.find(g=>/assumption|risk/i.test(g.h)); if(!g) return RISKS_DEFAULT;
+  const risks=[], assumptions=[];
+  for(const [h,t] of g.items){ const p=String(t).split("|").map(s=>s.trim()); if(/^assumption/i.test(h)) assumptions.push(p.join(" ")); else risks.push([h,p[0]||"",p.slice(1).join(" ")||""]); }
+  return {assumptions,risks};
+}
 let RATES_TXT = "Rates defined here (2026): Strategy $250/h, Design $170/h, Development $200/h, Account Management $120/h, Copywriting $150/h, Medical copywriting $250/h. Rush work (under 5 business days) at 1.5x.";
 function termsText(){
   let s="Terms & Conditions\n\n";
@@ -501,6 +592,8 @@ function renderTerms(){
   for(const g of TERMS){ h+=`<h3>${g.h}</h3>`;
     for(const [t,b] of g.items){ const txt=t+"\n"+b; h+=`<div class="blk"><button class="sm cp" onclick='copyText(${JSON.stringify(txt)},"Copied: ${t}")'>Copy</button><h4>${t}</h4><p>${b}</p></div>`; } }
   h+=`<div class="blk"><button class="sm cp" onclick='copyText(RATES_TXT,"Rates copied")'>Copy</button><h4>Rates defined here</h4><p>${RATES_TXT}</p></div>`;
+  h+=`<h3>Large-program terms (opt-in)</h3><p class="small muted" style="margin-bottom:10px">Added to a proposal only when the AM ticks "Add the large-program terms" in the Proposal panel. For multi-month launch programs.</p>`;
+  for(const g of optTermGroups()){ for(const [t,b] of g.items){ const txt=t+"\n"+b; h+=`<div class="blk"><button class="sm cp" onclick='copyText(${JSON.stringify(txt)},"Copied: ${t}")'>Copy</button><h4>${t}</h4><p>${b}</p></div>`; } }
   h+=`<h3>Signature</h3><div class="blk"><button class="sm cp" onclick='copyText(sigText(),"Signature block copied")'>Copy</button><div class="sig">
    <div><span class="eyebrow">The Firm</span><p><b>Steadfast Design Firm</b><br>220 S. White Street #3, Wake Forest, NC 27587</p><div class="ln"></div><div class="lb">Full name: Taylor Tsantles</div><div class="ln"></div><div class="lb">Title: President &amp; Chief Strategist</div><div class="ln"></div><div class="lb">Signature &amp; date</div></div>
    <div><span class="eyebrow">The Client</span><p><b>[Client company name]</b><br>[Client address]</p><div class="ln"></div><div class="lb">Full name</div><div class="ln"></div><div class="lb">Title</div><div class="ln"></div><div class="lb">Signature &amp; date</div></div></div></div>`;
@@ -519,9 +612,10 @@ function hoursLine(i){ const t=Object.values(i.h).reduce((a,b)=>a+b,0); if(!t) r
   return `<div class="hrs">${Object.keys(RATE).filter(k=>i.h[k]).map(k=>`<span>${ROLE[k]} <b>${i.h[k]}</b></span>`).join("")}<span>Total <b>${t} h</b></span></div>`; }
 function rowHTML(i){
   const ind = /norm|Derived|no hour/i.test(i.basis) ? `<span class="chip basis-i" title="${i.basis}">industry norm</span>` : "";
-  return `<div class="row" id="r-${i.sku}"><div class="top" onclick="toggleRow('${i.sku}')" style="cursor:pointer"><span class="nm">${i.name}</span><span class="chip">${i.category}</span>${ind}<span class="pr">${money(i.price)}${i.unit==="month"?" /mo":""}</span></div>
+  const prt = i.partner ? `<span class="chip prt" title="${esc(i.partner)}">${prtLabel(i)}</span>` : "";
+  return `<div class="row" id="r-${i.sku}"><div class="top" onclick="toggleRow('${i.sku}')" style="cursor:pointer"><span class="nm">${i.name}</span><span class="chip">${i.category}</span>${ind}${prt}<span class="pr">${money(i.price)}${i.unit==="month"?" /mo":""}</span></div>
    <div class="lv">${i.lname?LVL[i.level]+": "+i.lname:i.use}</div>
-   <div class="more">${clientHTML(i)}<p class="small muted" style="margin-top:14px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${leadText(i)?`<p class="small muted" style="margin-top:4px"><b>Lead time:</b> ${leadText(i)}</p>`:""}${hoursLine(i)}
+   <div class="more">${clientHTML(i)}${i.partner?`<div class="cmp" style="margin-top:14px"><b>Integrated partner.</b> ${esc(i.partner)} ${i.h.P?`The price includes the partner's hours at the industry-norm rate of $${RATE.P}/h (Partner hours below).`:"The price is the same whoever delivers it."} Confirm who delivers it before the proposal goes out. Name a partner to the client only once they have agreed.</div>`:""}<p class="small muted" style="margin-top:14px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${leadText(i)?`<p class="small muted" style="margin-top:4px"><b>Lead time:</b> ${leadText(i)}</p>`:""}${hoursLine(i)}
    <div class="acts"><button class="sm pri" onclick="addItem('${i.sku}',1)">Add to scope</button><button class="sm" onclick='copyText(${JSON.stringify(clientText(i,1))},"Client copy copied")'>Copy client copy</button></div></div></div>`;
 }
 /* Client copy, in Taylor's order: description, includes, deliverables, note. Falls back to the older one-paragraph description. */
@@ -547,7 +641,7 @@ function renderCatalog(){
 }
 
 /* ---------- Packages ---------- */
-function packTotals(p){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const li of p.items){const i=bySku[li.sku]; tot+=i.price*li.qty; for(const k in h)h[k]+=i.h[k]*li.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
+function packTotals(p){ let tot=0,h=H0(); for(const li of p.items){const i=bySku[li.sku]; tot+=i.price*li.qty; for(const k in h)h[k]+=(i.h[k]||0)*li.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 // Weeks to launch for a package on its own, with standard feedback and no MLR (the builder adds MLR for the client).
 function packWeeks(p){ const keep=[scope,tl]; scope=p.items.map(li=>({sku:li.sku,qty:li.qty})); tl=Object.assign({},tl,{mlr:"none",fb:7}); const w=Math.ceil(tlBuild().launch); [scope,tl]=keep; return w; }
 function renderPacks(){
@@ -561,16 +655,87 @@ function renderPacks(){
 }
 
 /* ---------- Builder ---------- */
-let scope=[]; // {sku, qty}
-function saveScope(){ try{localStorage.setItem("sowkit.scope",JSON.stringify(scope));}catch(e){} }
-function loadScopeLocal(){ try{const s=JSON.parse(localStorage.getItem("sowkit.scope")||"[]"); if(Array.isArray(s)) scope=s.filter(x=>bySku[x.sku]);}catch(e){} }
-function addItem(sku,qty){ const e=scope.find(x=>x.sku===sku); if(e) e.qty+=qty; else scope.push({sku,qty}); saveScope(); renderBuilder(); toast("Added: "+bySku[sku].name); }
+/* The builder holds one or more named options (scopes). `scope` is always the active option's rows, so everything
+   below that reads `scope` works on the option being edited. A row is {sku, qty, wave}; wave is "A", "B" or ""
+   (runs the length of the program). The same SKU can sit in both waves, so a row's key is SKU plus wave.
+   Stored in localStorage["sowkit.opts"]; a scope saved before options existed becomes "Option 1". */
+let scope=[];
+let opts={v:1,active:0,list:[]};
+const newId = () => "o"+Math.random().toString(36).slice(2,8);
+const curOpt = () => opts.list[opts.active];
+const leadOpt = () => opts.list.find(o=>o.lead) || opts.list[0];
+const multi = () => opts.list.filter(o=>o.rows.length).length>1;
+const sameRow = (x,sku,wave) => x.sku===sku && (x.wave||"")===(wave||"");
+function withScope(rows,fn){ const keep=scope; scope=rows; try{ return fn(); } finally{ scope=keep; } }
+function saveScope(){ if(opts.list.length) curOpt().rows=scope; try{ localStorage.setItem("sowkit.opts",JSON.stringify(opts)); localStorage.setItem("sowkit.scope",JSON.stringify(scope)); }catch(e){} }
+function cleanRows(rows){ return (Array.isArray(rows)?rows:[]).filter(x=>x&&bySku[x.sku]).map(x=>({sku:String(x.sku),qty:Math.max(1,parseInt(x.qty)||1),wave:/^[AB]$/.test(x.wave)?x.wave:"",...(STREAMS.includes(x.stream)?{stream:x.stream}:{})})); }
+// Workstream for a row: "" follows the automatic choice (streamOf), anything else pins it.
+function setStream(n,v){ const e=scope[n]; if(!e) return; if(v) e.stream=v; else delete e.stream; saveScope(); renderBuilder(); }
+function loadScopeLocal(){
+  try{ const o=JSON.parse(localStorage.getItem("sowkit.opts")||"null"); if(o&&Array.isArray(o.list)&&o.list.length) opts=o; }catch(e){}
+  if(!opts.list.length){ let s=[]; try{ s=JSON.parse(localStorage.getItem("sowkit.scope")||"[]"); }catch(e){} opts={v:1,active:0,list:[{id:newId(),name:"Option 1",lead:true,summary:"",rows:s}]}; }
+  for(const o of opts.list){ o.rows=cleanRows(o.rows); o.id=o.id||newId(); o.name=o.name||"Option"; o.summary=o.summary||""; }
+  if(!opts.list.some(o=>o.lead)) opts.list[0].lead=true;
+  opts.active=Math.min(Math.max(0,opts.active|0),opts.list.length-1); scope=curOpt().rows;
+}
+function addItem(sku,qty,wave){ wave=wave||""; const e=scope.find(x=>sameRow(x,sku,wave)); if(e) e.qty+=qty; else scope.push({sku,qty,wave}); saveScope(); renderBuilder(); toast("Added: "+bySku[sku].name); }
 function addBrief(){ const b=DATA.items.find(i=>i.base==="Discovery & Strategy Brief"&&i.level==="L1"); addItem(b.sku,1); location.hash="#builder"; }
-function loadPack(n,replace){ const p=DATA.packs[n]; if(replace) scope=[]; for(const li of p.items) {const e=scope.find(x=>x.sku===li.sku); if(e) e.qty+=li.qty; else scope.push({sku:li.sku,qty:li.qty});} saveScope(); renderBuilder(); location.hash="#builder"; toast((replace?"Loaded: ":"Added: ")+p.name); }
-function setQty(sku,v){ const e=scope.find(x=>x.sku===sku); if(!e) return; e.qty=Math.max(0,parseInt(v)||0); if(e.qty===0) scope=scope.filter(x=>x.sku!==sku); saveScope(); renderBuilder(); }
-function removeItem(sku){ scope=scope.filter(x=>x.sku!==sku); saveScope(); renderBuilder(); }
+function loadPack(n,replace){ const p=DATA.packs[n]; if(replace) scope=[]; for(const li of p.items) {const e=scope.find(x=>sameRow(x,li.sku,"")); if(e) e.qty+=li.qty; else scope.push({sku:li.sku,qty:li.qty,wave:""});} saveScope(); renderBuilder(); location.hash="#builder"; toast((replace?"Loaded: ":"Added: ")+p.name); }
+function setQty(n,v){ const e=scope[n]; if(!e) return; e.qty=Math.max(0,parseInt(v)||0); if(e.qty===0) scope=scope.filter((x,k)=>k!==n); saveScope(); renderBuilder(); }
+function setWave(n,w){ const e=scope[n]; if(!e) return; const twin=scope.find((x,k)=>k!==n&&sameRow(x,e.sku,w)); if(twin){ twin.qty+=e.qty; scope=scope.filter((x,k)=>k!==n); } else e.wave=w; saveScope(); renderBuilder(); }
+function removeItem(n){ scope=scope.filter((x,k)=>k!==n); saveScope(); renderBuilder(); }
 function clearScope(){ scope=[]; saveScope(); renderBuilder(); }
-function scopeTotals(){ let tot=0,h={S:0,D:0,V:0,A:0,C:0,M:0}; for(const e of scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=i.h[k]*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
+
+/* Options: add, copy, rename, choose the lead, delete */
+function pickOpt(n){ saveScope(); opts.active=n; scope=curOpt().rows; saveScope(); renderBuilder(); }
+function newOpt(copy){ saveScope(); const src=curOpt(); const o={id:newId(),name:copy?src.name+" (copy)":"Option "+(opts.list.length+1),lead:false,summary:"",rows:copy?src.rows.map(x=>({...x})):[]}; opts.list.push(o); opts.active=opts.list.length-1; scope=o.rows; saveScope(); renderBuilder(); }
+function setOpt(k,v){ const o=curOpt(); if(k==="lead"){ opts.list.forEach(x=>x.lead=false); o.lead=true; } else o[k]=v; saveScope(); if(k==="lead") renderBuilder(); else { renderOptBar(); renderPropTier(); } }
+function delOpt(){ if(opts.list.length<2) return; const o=curOpt(); if(!confirm(`Delete the option "${o.name}" and its ${o.rows.length} rows?`)) return; opts.list.splice(opts.active,1); if(!opts.list.some(x=>x.lead)) opts.list[0].lead=true; opts.active=0; scope=curOpt().rows; saveScope(); renderBuilder(); }
+function renderOptBar(){
+  const bar=document.getElementById("optbar"); if(!bar) return;
+  bar.innerHTML=opts.list.map((o,n)=>`<button class="opt${n===opts.active?" on":""}" onclick="pickOpt(${n})" aria-pressed="${n===opts.active}"><span>${esc(o.name)}${o.lead&&opts.list.length>1?" &#9733;":""}</span><small>${money(scopeTotals(o.rows.filter(e=>bySku[e.sku].billing!=="recurring")).tot)}</small></button>`).join("")+
+    `<button class="sm" onclick="newOpt(false)">New option</button><button class="sm" onclick="newOpt(true)">Copy this option</button><button class="sm" onclick="openImport()">Import</button><button class="sm" onclick="exportOpts()">Export</button>`;
+  const ed=document.getElementById("optedit"); ed.hidden=opts.list.length<2; if(ed.hidden) return;
+  const o=curOpt(), act=document.activeElement&&ed.contains(document.activeElement)?document.activeElement.id:"";
+  if(act) return; // don't redraw under the cursor
+  ed.innerHTML=`<label>Option name (the client sees it)<input id="o-name" value="${esc(o.name)}" oninput="setOpt('name',this.value)"></label><label>One line for the client: what this option is<input id="o-summary" value="${esc(o.summary)}" placeholder="Both sites at full depth, plus every Wave B piece" oninput="setOpt('summary',this.value)"></label>
+    <div class="acts">${o.lead?`<span class="small muted">This is the lead option. The proposal leads with it and its price heads Plan &amp; Investment.</span>`:`<button class="sm" onclick="setOpt('lead',true)">Make this the lead option</button>`}<button class="sm" onclick="delOpt()">Delete this option</button></div>`;
+}
+
+/* Import and export of scope files */
+function openImport(){ document.getElementById("imp-text").value=""; document.getElementById("imp-file").value=""; document.getElementById("imp-err").textContent=""; document.getElementById("imp-replace").checked=false; document.getElementById("impm").hidden=false; }
+function closeImport(){ document.getElementById("impm").hidden=true; }
+let impName="";
+function readImportFile(inp){ const f=inp.files&&inp.files[0]; if(!f) return; impName=f.name.replace(/\.json$/i,"").replace(/[-_]+/g," "); const r=new FileReader(); r.onload=()=>{ document.getElementById("imp-text").value=r.result; }; r.readAsText(f); }
+// Returns {list:[{name,lead,summary,rows}], skipped:[sku], merged:n} or throws with a message the AM can act on.
+function parseImport(text,fallbackName){
+  let j; try{ j=JSON.parse(text); }catch(e){ throw new Error("That isn't valid JSON. Check the file or the pasted text."); }
+  const raw = Array.isArray(j) ? [{name:fallbackName||"Imported option",rows:j}] : Array.isArray(j.options) ? j.options : Array.isArray(j.rows) ? [j] : null;
+  if(!raw||!raw.length) throw new Error('Expected a list of rows like [{"sku":"STF-STR-001-L3","qty":1}], or {"options":[...]}.');
+  const skipped=new Set(); let merged=0;
+  const list=raw.map((o,n)=>{ const rows=[];
+    for(const x of (o.rows||[])){ if(!x||!x.sku) continue; const sku=String(x.sku).trim(); if(!bySku[sku]){ skipped.add(sku); continue; }
+      const wave=/^[AB]$/i.test(x.wave||"")?String(x.wave).toUpperCase():"", qty=Math.max(1,parseInt(x.qty)||1);
+      const stream=STREAMS.includes(x.stream)?x.stream:"", e=rows.find(r=>sameRow(r,sku,wave)); if(e){ e.qty+=qty; merged++; } else rows.push({sku,qty,wave,...(stream?{stream}:{})}); }
+    return {id:newId(),name:String(o.name||(raw.length>1?"Option "+(n+1):fallbackName||"Imported option")).slice(0,60),lead:!!o.lead,summary:String(o.summary||"").slice(0,200),rows}; });
+  return {list,skipped:[...skipped],merged};
+}
+function doImport(){
+  const err=document.getElementById("imp-err"); err.textContent="";
+  let r; try{ r=parseImport(document.getElementById("imp-text").value,impName); }catch(e){ err.textContent=e.message; return; }
+  if(!r.list.some(o=>o.rows.length)){ err.textContent="None of those SKUs are in the catalog."+(r.skipped.length?" Not found: "+r.skipped.join(", "):""); return; }
+  saveScope();
+  if(document.getElementById("imp-replace").checked){ opts={v:1,active:0,list:r.list}; }
+  else { if(!curOpt().rows.length) opts.list.splice(opts.active,1); if(opts.list.some(o=>o.lead)) r.list.forEach(o=>o.lead=false); opts.list.push(...r.list); }
+  if(!opts.list.some(o=>o.lead)) opts.list[0].lead=true;
+  opts.active=opts.list.indexOf(r.list.find(o=>o.lead)||r.list[0]); if(opts.active<0) opts.active=0;
+  scope=curOpt().rows; saveScope(); closeImport(); impName=""; renderBuilder();
+  const rows=r.list.reduce((a,o)=>a+o.rows.length,0);
+  toast(`Imported ${plural(r.list.length,"option")}, ${rows} rows`);
+  if(r.skipped.length||r.merged) document.getElementById("out").textContent=`IMPORT REPORT\n${r.skipped.length?"Not in the catalog, so left out: "+r.skipped.join(", ")+"\n":""}${r.merged?r.merged+" repeated rows (same SKU and wave) were added together.\n":""}`;
+}
+function exportOpts(){ saveScope(); const s=JSON.stringify({v:1,options:opts.list.map(o=>({name:o.name,lead:!!o.lead,summary:o.summary||"",rows:o.rows.map(x=>({sku:x.sku,qty:x.qty,...(x.wave?{wave:x.wave}:{}),...(x.stream?{stream:x.stream}:{})}))}))},null,1); document.getElementById("out").textContent=s; copyText(s,"All options copied as JSON"); }
+function scopeTotals(rows){ let tot=0,h=H0(); for(const e of rows||scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=(i.h[k]||0)*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 function warnings(){
   const bases=new Set(scope.map(e=>bySku[e.sku].base)); const w=[];
   const site = [...bases].some(b=>/Web Page Development|Site Foundation|Homepage Design|Homepage Development|Page Template|Template Website|Landing Page|Single-Page Website/.test(b));
@@ -582,14 +747,30 @@ function warnings(){
   const t=scopeTotals().tot;
   if(t>10000 && !bases.has("Account Management") && !bases.has("Account Management, Website Build")) w.push("Scope is over $10,000 with no Account Management row. Add the tier that matches the total.");
   if([...bases].some(b=>/Print|Booth|Banner|One-Pager|Brochure|Sales Aid|Guide/.test(b)) && !bases.has("Pass-Through Costs")) w.push("Print or event work usually needs Pass-Through Costs at cost. Name the item in the description.");
+  const its=scope.map(e=>bySku[e.sku]), need=[...new Set(its.filter(i=>i.partner&&!partnerOptional(i)).map(i=>i.base))], may=[...new Set(its.filter(i=>i.partner&&partnerOptional(i)).map(i=>i.base))];
+  if(need.length) w.push(`${need.length===1?"One row needs":need.length+" rows need"} an integrated partner: ${need.join(", ")}. The price includes their hours as Partner hours at the industry-norm rate ($${RATE.P}/h). No partner is booked yet. Confirm who delivers each one before the proposal goes out, and keep partner names out of the client copy until they have agreed.`);
+  if(may.length) w.push(`A partner can help deliver: ${may.join(", ")}. Open the row in the Catalog to see who. The price is the same either way.`);
+  if(wavesOn() && scope.some(e=>!e.wave && !spanRow(bySku[e.sku]))) w.push("Some production rows have no wave. They run in Wave A on the timeline. Set each row's wave so the client sees where it falls.");
   return w;
 }
+const spanRow = i => /^Account Management/.test(i.base)||i.base==="PRC Submission Support"||i.billing==="recurring"||i.section==="Pass-through";
+const wavesOn = () => !!tl.waves;
+const WAVE = {A:"Wave A",B:"Wave B","":"Program"};
+function waveTotals(rows){ const a=scopeTotals((rows||scope).filter(e=>e.wave!=="B")).tot, b=scopeTotals((rows||scope).filter(e=>e.wave==="B")).tot; return {a,b}; }
 function renderBuilder(){
   const cnt=document.getElementById("cnt"); cnt.style.display=scope.length?"inline-block":"none"; cnt.textContent=scope.length;
-  const t=scopeTotals();
-  document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">Scope total</div></div><div class="t"><div class="v">${t.th} h</div><div class="k">Production hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
+  const t=scopeTotals(), wv=wavesOn();
+  renderOptBar();
+  const wt=wv?waveTotals():null;
+  document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">${multi()?esc(curOpt().name):"Scope total"}</div></div>${wt?`<div class="t"><div class="v">${money(wt.a)}</div><div class="k">Wave A + program</div></div><div class="t"><div class="v">${money(wt.b)}</div><div class="k">Wave B</div></div>`:""}<div class="t"><div class="v">${t.th} h</div><div class="k">Production hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
   document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
-  document.getElementById("bbody").innerHTML = scope.map(e=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+b,0)*e.qty; return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td><td class="r"><input type="number" id="q-${i.sku}" min="0" value="${e.qty}" onchange="setQty('${i.sku}',this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem('${i.sku}')">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="7" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
+  const sv=!!tl.streams, cols=7+(wv?1:0)+(sv?1:0);
+  document.getElementById("bhead").innerHTML = `<tr><th>Line item</th><th>Level</th>${wv?"<th>Wave</th>":""}${sv?"<th>Workstream</th>":""}<th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr>`;
+  document.getElementById("bbody").innerHTML = scope.map((e,n)=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+(b||0),0)*e.qty;
+    const wsel = wv ? `<td><select class="wv" aria-label="Wave for ${esc(i.name)}" onchange="setWave(${n},this.value)">${["A","B",""].map(w=>`<option value="${w}"${(e.wave||"")===w?" selected":""}>${w?WAVE[w]:"Whole program"}</option>`).join("")}</select></td>` : "";
+    const auto = sv && !spanRow(i) ? streamOf({...e,stream:""},i) : "";
+    const ssel = sv ? `<td>${spanRow(i)?`<span class="small muted">Whole program</span>`:`<select class="wv" aria-label="Workstream for ${esc(i.name)}" onchange="setStream(${n},this.value)"><option value="">Auto: ${auto}</option>${STREAMS.map(s=>`<option value="${s}"${e.stream===s?" selected":""}>${s}</option>`).join("")}</select>`}</td>` : "";
+    return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div>${i.partner?`<div class="prtline"><span class="chip prt">${prtLabel(i)}</span> ${esc(i.partner)}</div>`:""}</td><td class="small">${i.lname||"flat"}</td>${wsel}${ssel}<td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
   if(scope.length) document.getElementById("out").textContent = buildExport("items");
   renderTimeline(); renderPropTier();
 }
@@ -598,8 +779,8 @@ const SECTION_ORDER=["Analysis & Strategy","Design","Build & Integration","QA, L
 function buildExport(kind){
   const t=scopeTotals(); const g=groupBySection(); const secs=SECTION_ORDER.filter(s=>g[s]);
   if(kind==="hours"){
-    let s="HOURS FOR PRODUCTION (2026 card)\n"; for(const sec of secs){ s+="\n"+sec+"\n"; for(const e of g[sec]){const i=bySku[e.sku]; s+=`  ${e.qty>1?e.qty+" x ":""}${i.name}: `+Object.keys(RATE).filter(k=>i.h[k]).map(k=>`${ROLE[k]} ${i.h[k]*e.qty}`).join(", ")+"\n";} }
-    s+=`\nTOTAL ${t.th} h: `+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`${ROLE[k]} ${t.h[k]}`).join(", ")+"\nThese hours are what the price funds. Past them the line loses money.";
+    let s="HOURS FOR PRODUCTION (2026 card)\n"; for(const sec of secs){ s+="\n"+sec+"\n"; for(const e of g[sec]){const i=bySku[e.sku]; s+=`  ${e.qty>1?e.qty+" x ":""}${i.name}${e.wave&&wavesOn()?" ("+WAVE[e.wave]+")":""}: `+Object.keys(RATE).filter(k=>i.h[k]).map(k=>`${ROLE[k]} ${i.h[k]*e.qty}`).join(", ")+(i.partner?"  [needs an integrated partner]":"")+"\n";} }
+    s+=`\nTOTAL ${t.th} h: `+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`${ROLE[k]} ${t.h[k]}`).join(", ")+"\nThese hours are what the price funds. Past them the line loses money."+(t.h.P?`\nPartner hours (${t.h.P} h) are delivered by an integrated partner and priced at the industry-norm rate of $${RATE.P}/h. Get the partner's quote and keep their cost under that.`:"");
     return s;
   }
   if(kind==="skeleton"){
@@ -644,10 +825,15 @@ const TL_MLR=[
   {id:"twice",label:"Twice a month, reviewed within 2 weeks",cad:2,turn:2,cyc:2},
   {id:"monthly",label:"Monthly committee",cad:4,turn:2,cyc:2},
   {id:"custom",label:"Custom"}];
-let tl={v:2,start:"",mlr:"unknown",fb:7,cad:2,turn:2,cyc:2};
+// target: the launch date the client needs (flags any miss); waves: run Wave B rows as their own waterfall from wb.
+let tl={v:2,start:"",mlr:"unknown",fb:7,cad:2,turn:2,cyc:2,target:"",waves:false,wb:"",streams:false,cap:0};
 function saveTl(){ try{localStorage.setItem("sowkit.tl",JSON.stringify(tl));}catch(e){} }
 function loadTl(){ try{const s=JSON.parse(localStorage.getItem("sowkit.tl")||"{}"); if(!s.v) delete s.fb; Object.assign(tl,s,{v:2});}catch(e){} } // v1 defaulted feedback to 5 days
-function setTl(k,v){ tl[k]= k==="start"||k==="mlr" ? v : Math.max(0,parseFloat(v)||0); saveTl(); renderTimeline(); }
+function setTl(k,v){ tl[k]= ["start","mlr","target","wb"].includes(k) ? v : k==="waves"||k==="streams" ? !!v : Math.max(0,parseFloat(v)||0); saveTl(); if(k==="waves"||k==="streams") renderBuilder(); else renderTimeline(); }
+const DAY=864e5;
+const tlWeekOf = date => (tl.start&&date) ? (new Date(date+"T12:00:00")-new Date(tl.start+"T12:00:00"))/DAY/7 : null;
+// Wave B's start in weeks from kickoff: the date set in the builder, or week 14 (about three months in) without one.
+const tlWaveB = () => { const w=tlWeekOf(tl.wb); return w!==null&&w>=0 ? w : 13; };
 
 const tlPhaseOf = i => i.base==="Additional Revision Round" ? "Design" : i.section;
 const tlIsMLR = i => (i.mlr===true||i.mlr===false) ? i.mlr : TL_MLR_BASES.has(i.base);
@@ -659,7 +845,7 @@ function tlMlr(){
   if(tl.mlr==="unknown"){ const P=id=>TL_MLR.find(x=>x.id===id); return {lo:tlStage(P("fast")).lo, mid:tlStage(P("weekly")).mid, hi:tlStage(P("twice")).hi}; }
   return tlStage(tl.mlr==="custom" ? tl : TL_MLR.find(x=>x.id===tl.mlr));
 }
-function tlProd(i,qty){ let w=0; for(const k of ["S","D","V","C","M"]){ const h=(i.h[k]||0)*qty; if(h) w=Math.max(w, h/(TL_CAP*(h>150?2:1))); } return Math.max(w,0.4); }
+function tlProd(i,qty){ let w=0; for(const k of ["S","D","V","C","M","P"]){ const h=(i.h[k]||0)*qty; if(h) w=Math.max(w, h/(TL_CAP*(h>150?2:1))); } return Math.max(w,0.4); }
 function tlItem(i,qty,fb){
   fb = fb ?? tl.fb;
   if(i.lead) return {prod:i.lead,rev:0,total:i.lead,rounds:0,over:true,gate:i.lead};
@@ -678,25 +864,25 @@ function leadText(i){
   return `About ${n} week${n>1?"s":""}${d.over?" (set in the Sheet)":d.rounds?`, including ${d.rounds} client review round${d.rounds>1?"s":""}`:""}${tlIsMLR(i)?", plus MLR review for clients who have it":""}.`;
 }
 
-function tlBuild(){
-  const m=tlMlr(), rows=[], flags=[]; let t=0, slip=0, done=0; // t: where the next phase may start; done: when everything so far is finished
-  const all=scope.map(e=>({e,i:bySku[e.sku]})), bases=new Set(all.map(x=>x.i.base));
-  const phaseStart={}; let gatedTotal=0;
+// One waterfall of phases from week t0. tag ("Wave A", "Wave B" or "") labels its rows when the plan runs in waves.
+function tlRun(all,t0,m,tag){
+  const rows=[], flags=[]; let t=t0, slip=0, done=t0; // t: where the next phase may start; done: when everything so far is finished
+  const phaseStart={}; let gatedTotal=0; const pre=tag?tag+": ":"";
   for(const ph of TL_PHASES){
     const list=all.filter(x=>tlPhaseOf(x.i)===ph && x.i.billing!=="recurring");
     if(!list.length) continue;
     if(ph==="QA, Launch & Support") t=Math.max(t,done); // QA waits for the build to be finished
-    phaseStart[ph]=t; const head={type:"phase",label:ph,start:t,end:t}; rows.push(head);
+    phaseStart[ph]=t; const head={type:"phase",label:pre+ph,tag,start:t,end:t}; rows.push(head);
     // A tier starts once the tier before it has its direction approved (production plus the first review round);
     // its remaining rounds overlap the next tier. The phase ends when every row is done.
     let ts=t, pe=t;
     for(const tier of [...new Set(list.map(x=>TL_TIER[x.i.base]??1))].sort((a,b)=>a-b)){
       let te=ts, tg=ts;
       for(const x of list.filter(x=>(TL_TIER[x.i.base]??1)===tier)){
-        const d=tlItem(x.i,x.e.qty);
-        rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:""),start:ts,end:ts+d.total,prod:d.prod,rev:d.rev,rounds:d.rounds,mlr:!!m&&tlIsMLR(x.i)});
-        te=Math.max(te,ts+d.total); tg=Math.max(tg,ts+d.gate);
-        if(d.total>10) flags.push({k:"info",t:`${x.i.name} runs about ${wk(d.total)} weeks on its own. Consider staging it so part of it can go to review sooner.`});
+        const d=tlItem(x.i,x.e.qty), st=tlPlace(ts,prodHours(x),d.prod);
+        rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:""),tag,base:x.i.base,start:st,end:st+d.total,gate:st+d.gate,prod:d.prod,rev:d.rev,rounds:d.rounds,hrs:prodHours(x),mlr:!!m&&tlIsMLR(x.i)});
+        te=Math.max(te,st+d.total); tg=Math.max(tg,st+d.gate);
+        if(d.total>10) flags.push({k:"info",t:`${pre}${x.i.name} runs about ${wk(d.total)} weeks on its own. Consider staging it so part of it can go to review sooner.`});
       }
       pe=Math.max(pe,te); ts=tg;
     }
@@ -706,12 +892,135 @@ function tlBuild(){
     if(m && gated.length){
       const pieces=gated.reduce((a,x)=>a+x.e.qty,0);
       t=pe; gatedTotal+=gated.length; // MLR approves the finished work, so it waits for the whole phase
-      rows.push({type:"mlr",label:`MLR review, ${ph}`,start:t,end:t+m.mid,hi:t+m.hi+slip,lo:t+m.lo,n:gated.length});
-      flags.push({k:"mlr",t:`MLR review after ${ph}: ${pieces>1?pieces+" pieces submitted together":"1 piece"}, about ${wk(m.mid)} week${wk(m.mid)>1?"s":""} (${wk(m.lo)} to ${wk(m.hi)}). Work after this stage waits for approval.`});
+      rows.push({type:"mlr",label:`MLR review, ${pre}${ph}`,tag,start:t,end:t+m.mid,hi:t+m.hi+slip,lo:t+m.lo,n:gated.length});
+      flags.push({k:"mlr",t:`MLR review after ${pre}${ph}: ${pieces>1?pieces+" pieces submitted together":"1 piece"}, about ${wk(m.mid)} week${wk(m.mid)>1?"s":""} (${wk(m.lo)} to ${wk(m.hi)}). Work after this stage waits for approval.`});
       slip+=m.hi-m.mid; t+=m.mid; done=Math.max(done,t);
     }
   }
-  const launch=done;
+  return {rows,flags,done,slip,phaseStart,gatedTotal};
+}
+
+/* ---------- Parallel workstreams ----------
+   For a program with several teams. Each row belongs to a workstream (picked from the deliverable, or set per row);
+   each workstream runs its own waterfall and MLR, starting when the work it depends on has its direction approved:
+   Strategy at kickoff; Brand & campaign once messaging has its direction; Websites once the brief does; Visual aid,
+   Other materials and Wave B once the campaign does. Websites run the way launch sites are built: content and design
+   go to MLR together, the build starts from approved templates, and QA runs alongside a final MLR review on staging.
+   With two sites, each site has its own team, so the site rows are split between them. */
+// "At approval": pieces tied to the approval itself (announcement email, approval ad, launch-day site updates).
+// They are scheduled and staffed like the rest, last in line, but they finish before approval, not by the target,
+// so they don't set the launch date. Only rows set to it by hand go there.
+const STREAM_APPROVAL="At approval";
+const STREAMS=["Strategy & messaging","Brand & campaign","Websites","Visual aid","Other materials","Wave B",STREAM_APPROVAL];
+const STREAM_STRAT=new Set(["Discovery & Strategy Brief","Working Session","Market & KOL Research Study","Physician Survey & Readout","Messaging & Content Document","Medical Writing & Narrative","Advisory Board Support","Medical & Scientific Consultation","Channel Strategy","Naming","Brand Evolution Summit","Website & Brand Audit"]);
+const STREAM_BRAND=new Set(["Brand Identity","Brand Visual Direction","Logo","Brand Guidelines","Template System","Campaign Development","Medical Illustration","Brand Asset Onboarding","Figma Design System"]);
+const STREAM_SITE=new Set(["Website Architecture & Sitemap","Wireframes","Website Narrative & Content","Site Foundation","Homepage Design","Homepage Development","Web Page Design","Web Page Development","Page Template","Site Feature or Integration","Content Population & Migration","QA, Accessibility & Launch","Accessibility Audit & Remediation","Email Platform Setup & Automation","Launch Measurement Plan & Setup","CMS Upgrade or Platform Migration","Localization Management","Web Application or Dashboard"]);
+const STREAM_VA=new Set(["Interactive Visual Aid","Rep CRM Certification"]);
+function streamOf(e,i){
+  if(e.stream && STREAMS.includes(e.stream)) return e.stream;
+  if(wavesOn() && e.wave==="B") return "Wave B";
+  if(STREAM_VA.has(i.base)) return "Visual aid";
+  if(STREAM_SITE.has(i.base)) return "Websites";
+  if(STREAM_STRAT.has(i.base)) return "Strategy & messaging";
+  if(STREAM_BRAND.has(i.base)) return "Brand & campaign";
+  return "Other materials";
+}
+const prodHours = x => ["S","D","V","C","M","P"].reduce((a,k)=>a+(x.i.h[k]||0)*x.e.qty,0);
+// Leveling: with a team size set, a row starts at the first half-week where its production fits beside the work
+// already placed. Workstreams are placed in order (strategy first, Wave B last), so later ones queue for people.
+// TL_CAL is the people booked per week; null (the default, and always outside workstream mode) means no limit.
+let TL_CAL=null;
+function tlPlace(ts,hrs,prod){
+  if(!TL_CAL||!hrs) return ts;
+  const len=Math.max(0.4,prod||0.4), rate=hrs/len/TL_CAP, cap=tl.cap;
+  const fits=s=>{ for(let w=Math.floor(s); w<Math.ceil(s+len); w++){ const ov=Math.min(s+len,w+1)-Math.max(s,w), have=TL_CAL[w]||0; if(ov>0 && have>0.01 && have+rate*ov>cap+1e-6) return false; } return true; };
+  let s=ts; while(!fits(s) && s<ts+104) s+=0.5;
+  for(let w=Math.floor(s); w<Math.ceil(s+len); w++){ const ov=Math.min(s+len,w+1)-Math.max(s,w); if(ov>0) TL_CAL[w]=(TL_CAL[w]||0)+rate*ov; }
+  return s;
+}
+// How many sites are built: the most of any one-per-site row (homepage, foundation, QA).
+const siteCount = list => Math.max(1,...list.filter(x=>/^(Homepage Design|Homepage Development|QA, Accessibility & Launch)$/.test(x.i.base)).map(x=>x.e.qty));
+// Rows of one group laid out by tier (see TL_TIER); returns the rows, when they all end, and when the last tier's direction is approved.
+function tlTiers(list,t,m,tag,mult){
+  const rows=[]; let ts=t, end=t, gate=t;
+  for(const tier of [...new Set(list.map(x=>TL_TIER[x.i.base]??1))].sort((a,b)=>a-b)){
+    let te=ts, tg=ts;
+    for(const x of list.filter(x=>(TL_TIER[x.i.base]??1)===tier)){ const d=tlItem(x.i,x.e.qty), hrs=prodHours(x)*(mult||1), st=tlPlace(ts,hrs,d.prod);
+      rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:"")+(mult>1?` (each of ${mult} sites)`:""),tag,base:x.i.base,start:st,end:st+d.total,gate:st+d.gate,prod:d.prod,rev:d.rev,rounds:d.rounds,hrs,mlr:!!m&&tlIsMLR(x.i)});
+      te=Math.max(te,st+d.total); tg=Math.max(tg,st+d.gate); }
+    end=Math.max(end,te); gate=Math.max(gate,tg); ts=tg;
+  }
+  return {rows,end,gate};
+}
+function tlSite(list,t0,m){
+  const tag="Websites", n=siteCount(list), per=list.map(x=>({e:{...x.e,qty:Math.max(1,Math.ceil(x.e.qty/n))},i:x.i}));
+  const ph=p=>per.filter(x=>tlPhaseOf(x.i)===p), rows=[], flags=[]; let slip=0, gatedTotal=0;
+  const add=(label,g)=>{ if(!g.rows.length) return; const s=Math.min(...g.rows.map(r=>r.start)); rows.push({type:"phase",label:"Websites: "+label,tag,start:s,end:g.end},...g.rows); };
+  const content=tlTiers(ph("Analysis & Strategy"),t0,m,tag,n); add("Content",content);
+  const design=tlTiers(ph("Design"),content.rows.length?content.gate:t0,m,tag,n); add("Design",design);
+  let approved=Math.max(content.end,design.end);
+  const gated1=[...ph("Analysis & Strategy"),...ph("Design")].filter(x=>tlIsMLR(x.i));
+  if(m && gated1.length){ rows.push({type:"mlr",label:"MLR review, Websites: content and design together",tag,start:approved,end:approved+m.mid,hi:approved+m.hi,lo:approved+m.lo,n:gated1.length}); gatedTotal+=gated1.length; slip+=m.hi-m.mid; approved+=m.mid; }
+  const build=ph("Build & Integration"), infra=tlTiers(build.filter(x=>!tlIsMLR(x.i)),content.rows.length?content.gate:t0,m,tag,n);
+  const dev=tlTiers(build.filter(x=>tlIsMLR(x.i)),Math.max(design.rows.length?design.gate:t0,infra.rows.length?infra.gate:t0),m,tag,n);
+  const bg={rows:[...infra.rows,...dev.rows],end:Math.max(infra.end,dev.end)}; add("Build from approved templates",bg);
+  // The build can't finish before content and design are MLR-approved: half a week to fold in the comments.
+  const built=Math.max(bg.end,approved+(gated1.length&&m?0.5:0));
+  const qa=tlTiers(ph("QA, Launch & Support"),built,m,tag,n); add("QA and final review on staging",qa);
+  let done=Math.max(built,qa.end);
+  const gated2=build.filter(x=>tlIsMLR(x.i));
+  if(m && gated2.length){ rows.push({type:"mlr",label:"MLR review, Websites: final review on staging",tag,start:built,end:built+m.mid,hi:built+m.hi+slip,lo:built+m.lo,n:gated2.length}); gatedTotal+=gated2.length; slip+=m.hi-m.mid; done=Math.max(done,built+m.mid); }
+  if(n>1) flags.push({k:"info",t:`Websites: ${n} sites built side by side by ${n} teams. The site rows show one site's share.`});
+  return {rows,flags,done,slip,gatedTotal};
+}
+function tlStreams(work,m){
+  const by={}; for(const x of work){ (by[streamOf(x.e,x.i)]=by[streamOf(x.e,x.i)]||[]).push(x); }
+  const out={}, flags=[], rows=[]; let slip=0, gatedTotal=0, phaseStart={};
+  const gateOf=(r,re)=>{ const it=(r?.rows||[]).find(x=>x.type==="item"&&re.test(x.base||"")); return it?it.gate:null; };
+  const run=(name,t0)=>{ if(!by[name]) return null; const r=name==="Websites"?tlSite(by[name],t0,m):tlRun(by[name],t0,m,name); out[name]={...r,t0}; return r; };
+  const s=run("Strategy & messaging",0);
+  const brief=gateOf(s,/Discovery & Strategy Brief|Working Session|Brand Evolution Summit/) ?? 0;
+  const msg=gateOf(s,/Messaging & Content Document/) ?? brief;
+  const c=run("Brand & campaign",msg);
+  const camp=gateOf(c,/Campaign Development/) ?? (c?c.done:msg);
+  run("Websites",brief); run("Visual aid",camp); run("Other materials",camp);
+  const wbStart=Math.max(camp,tlWaveB()); run("Wave B",wbStart); run(STREAM_APPROVAL,wbStart);
+  if(by["Wave B"] && wbStart>tlWaveB()+0.5) flags.push({k:"risk",t:`Wave B waits for the campaign direction (week ${Math.ceil(camp)}), later than the Wave B date you set (week ${Math.floor(tlWaveB())+1}). Wave B pieces are built from the campaign.`});
+  let launch=0, hi=0;
+  for(const name of STREAMS){ const r=out[name]; if(!r) continue;
+    rows.push({type:"wave",label:name===STREAM_APPROVAL?"At approval (ready before FDA approval)":name,tag:name,start:r.t0,end:r.done},...r.rows); flags.push(...r.flags);
+    gatedTotal+=r.gatedTotal; if(r.phaseStart) for(const [k,v] of Object.entries(r.phaseStart)) if(!(k in phaseStart)) phaseStart[k]=v;
+    if(name===STREAM_APPROVAL) continue; launch=Math.max(launch,r.done); hi=Math.max(hi,r.done+r.slip); }
+  const ap=out[STREAM_APPROVAL];
+  if(ap) flags.unshift({k:"info",t:`At-approval pieces are ready by week ${Math.ceil(ap.done)}${tl.start?" ("+fmtDate(tlDate(ap.done))+")":""}${ap.slip>0.5?`, week ${Math.ceil(ap.done+ap.slip)} if MLR runs long`:""}. They are tied to FDA approval, so they don't set the launch date or count against the target.`});
+  const last=STREAMS.filter(n=>out[n]&&n!==STREAM_APPROVAL).sort((a,b)=>out[b].done-out[a].done)[0];
+  if(last) flags.unshift({k:"info",t:`Workstreams run side by side. ${last} finishes last (week ${Math.ceil(out[last].done)}), so it sets the launch date.`});
+  if(tl.fb>3) flags.push({k:"info",t:`The terms ask the client for feedback within 3 business days. This plan assumes ${tl.fb}. Set Client feedback to 3 to plan on the contract.`});
+  return {rows,flags,done:launch,slip:hi-launch,phaseStart,gatedTotal};
+}
+// People needed each week: each row's production hours spread over its production weeks, at TL_CAP hours a person.
+function tlLoad(rows){
+  const W=Math.ceil(Math.max(1,...rows.map(r=>r.end||0))), wk=new Array(W).fill(0);
+  for(const r of rows){ if(r.type!=="item"||!r.hrs) continue; const len=Math.max(0.4,r.prod||0.4), a=r.start, b=r.start+len;
+    for(let w=Math.floor(a); w<Math.ceil(b) && w<W; w++){ const ov=Math.min(b,w+1)-Math.max(a,w); if(ov>0) wk[w]+=r.hrs*ov/len; } }
+  return wk.map(h=>h/TL_CAP);
+}
+function tlBuild(){
+  const m=tlMlr(), all=scope.map(e=>({e,i:bySku[e.sku]})), bases=new Set(all.map(x=>x.i.base));
+  const work=all.filter(x=>!spanRow(x.i)), waves=wavesOn() && work.some(x=>x.e.wave==="B");
+  let rows=[], flags=[], launch=0, slip=0, gatedTotal=0, phaseStart={};
+  if(tl.streams && work.length){ TL_CAL=tl.cap>0?[]:null; try{ const r=tlStreams(work,m); ({rows,flags,slip,phaseStart,gatedTotal}=r); launch=r.done; } finally{ TL_CAL=null; } }
+  else if(!waves){ const r=tlRun(work,0,m,""); ({rows,flags,slip,phaseStart,gatedTotal}=r); launch=r.done; }
+  else {
+    const bw=tlWaveB(), a=tlRun(work.filter(x=>x.e.wave!=="B"),0,m,"Wave A"), b=tlRun(work.filter(x=>x.e.wave==="B"),bw,m,"Wave B");
+    rows=[{type:"wave",label:"Wave A",tag:"Wave A",start:0,end:a.done},...a.rows,{type:"wave",label:"Wave B",tag:"Wave B",start:bw,end:b.done},...b.rows];
+    flags=[...a.flags,...b.flags]; gatedTotal=a.gatedTotal+b.gatedTotal; phaseStart=a.phaseStart;
+    launch=Math.max(a.done,b.done); const hi=Math.max(a.done+a.slip,b.done+b.slip); slip=hi-launch;
+    if(a.done>bw+0.5) flags.unshift({k:"risk",t:`Wave A runs to week ${Math.ceil(a.done)}, past Wave B's start at week ${Math.floor(bw)+1}. Both waves are in production at once for ${plural(Math.ceil(a.done-bw),"week")}. Check staffing for that stretch.`});
+    const aDesign=a.rows.filter(r=>/Design$/.test(r.label)&&(r.type==="mlr"||r.type==="phase")).reduce((x,r)=>Math.max(x,r.end),0);
+    if(aDesign>bw+0.5) flags.unshift({k:"risk",t:`Wave B starts at week ${Math.floor(bw)+1}, but Wave A's messaging and campaign design are not approved until week ${Math.ceil(aDesign)}. Wave B pieces are built from that work, so either Wave B starts later or it starts on unapproved direction and expect rework.`});
+    if(a.done>b.done) flags.unshift({k:"risk",t:`Wave A finishes after Wave B (week ${Math.ceil(a.done)} against ${Math.ceil(b.done)}), so Wave A sets the launch date.`});
+  }
   for(const x of all){
     const i=x.i;
     if(/^Account Management/.test(i.base)||i.base==="PRC Submission Support") rows.push({type:"span",label:i.name,start:0,end:Math.max(launch,1)});
@@ -735,7 +1044,25 @@ function tlBuild(){
   if(bases.has("Rush Surcharge")) flags.push({k:"info",t:"A rush surcharge is in the scope. This chart shows the standard pace; agree in writing which stages compress and what the client commits to turning around faster."});
   if(scope.length) flags.push({k:"info",t:`Assumes client feedback within ${tl.fb} business days each round (our past projects ran from 2 days to 6 weeks, with a median near 7). A slow round adds that time to the row and everything after it.`});
   if(scope.length) flags.push({k:"info",t:"Week 1 is when work starts. On past projects that was 1 to 3 weeks after signing, depending on the studio's queue."});
-  return {rows,flags,launch,slip,m};
+  // Holidays: the model counts every week as a working week.
+  if(tl.start && scope.length){ const s=new Date(tl.start+"T12:00:00"), e=new Date(s.getTime()+(launch+slip)*7*DAY); let n=0;
+    for(let y=s.getFullYear(); y<=e.getFullYear(); y++){ const h=new Date(y,11,22,12); if(h>=s&&h<=e) n++; }
+    if(n) flags.push({k:"risk",t:`The plan crosses the winter holidays${n>1?" "+n+" times":""} and counts them as working weeks. Expect to lose about ${n>1?n*1.5:"1.5"} weeks, from both our side and the client's reviewers.`}); }
+  // The client's date: does the launch reach it?
+  const tw=tlWeekOf(tl.target);
+  if(tw!==null && scope.length){
+    const fmt=w=>fmtDate(tlDate(w)), tgt=fmtDate(new Date(tl.target+"T12:00:00"));
+    if(launch>tw+0.01){
+      const late=rows.filter(r=>(r.type==="item"||r.type==="mlr")&&r.end>tw&&r.tag!==STREAM_APPROVAL).sort((a,b)=>b.end-a.end).slice(0,4).map(r=>r.label+(r.tag&&!r.label.includes(r.tag)?" ("+r.tag+")":"")+", week "+Math.ceil(r.end));
+      flags.unshift({k:"risk",t:`Misses the target of ${tgt}. Launch lands ${fmt(launch)}, about ${plural(Math.ceil(launch-tw),"week")} late. Latest rows: ${late.join("; ")}.`});
+    } else if(launch+slip>tw+0.01) flags.unshift({k:"mlr",t:`Reaches the target of ${tgt} at the expected review pace (launch ${fmt(launch)}). If MLR runs long, launch moves to ${fmt(launch+slip)}, past the target.`});
+    else flags.unshift({k:"info",t:`Reaches the target of ${tgt} with room to spare: launch ${fmt(launch)}, ${fmt(launch+slip)} if MLR runs long.`});
+  }
+  // Staffing: people needed each week against the team the studio can put on it
+  const load=tlLoad(rows), peak=load.reduce((a,v,k)=>v>a.v?{v,k}:a,{v:0,k:0});
+  if(tl.streams && tl.cap>0 && peak.v>tl.cap+0.05){ const over=load.filter(v=>v>tl.cap+0.05).length;
+    flags.unshift({k:"risk",t:`Needs up to ${peak.v.toFixed(1)} people in production (week ${peak.k+1}), more than the ${tl.cap} you set, for ${plural(over,"week")}. Either staff up for those weeks, add a partner team, or this plan runs longer.`}); }
+  return {rows,flags,launch,slip,m,target:tw,load,peak};
 }
 
 const tlDate = w => { if(!tl.start) return null; const d=new Date(tl.start+"T12:00:00"); d.setDate(d.getDate()+Math.floor(w)*7); return d; };
@@ -746,11 +1073,13 @@ function renderTimeline(){
   const sel=document.getElementById("tl-mlr");
   if(sel && !sel.options.length) sel.innerHTML=TL_MLR.map(o=>`<option value="${o.id}">${o.label}</option>`).join("");
   if(sel) sel.value=tl.mlr;
-  for(const k of ["start","fb","cad","turn","cyc"]){ const el=document.getElementById("tl-"+k); if(el && document.activeElement!==el) el.value=tl[k]; }
+  for(const k of ["start","fb","cad","turn","cyc","target","wb","cap"]){ const el=document.getElementById("tl-"+k); if(el && document.activeElement!==el) el.value=k==="cap"&&!tl.cap?"":tl[k]??""; }
+  document.getElementById("tl-waves").checked=!!tl.waves; document.getElementById("tl-wbbox").hidden=!tl.waves;
+  document.getElementById("tl-streams").checked=!!tl.streams; document.getElementById("tl-capbox").hidden=!tl.streams;
   document.getElementById("tl-custom").hidden = tl.mlr!=="custom";
   if(!scope.length){ box.innerHTML=`<p class="small muted">Add rows to see the timeline.</p>`; document.getElementById("tl-flags").innerHTML=""; return; }
-  const {rows,flags,launch,slip}=tlBuild();
-  const W=Math.max(4,Math.ceil(Math.max(...rows.map(r=>Math.max(r.end,r.hi||0)))));
+  const {rows,flags,launch,slip,target,load,peak}=tlBuild();
+  const W=Math.max(4,Math.ceil(Math.max(target||0,...rows.map(r=>Math.max(r.end,r.hi||0)))));
   const pct = w => (w/W*100).toFixed(3)+"%";
   const step = [1,2,4,8,13,26].find(n=>W/n<=10) || 52;
   let axis=""; for(let w=0;w<W;w+=step){ const d=tlDate(w); axis+=`<span style="left:${pct(w)}">${d?tlFmt(d):"Wk "+(w+1)}</span>`; }
@@ -761,11 +1090,14 @@ function renderTimeline(){
     return `<div class="g-bar g-${r.type}bar" style="left:${pct(r.start)};width:${pct(Math.max(r.end-r.start,0.15))}"></div>`;
   };
   const when = r => r.type==="launch" ? (r.hi>r.start+0.5?`Week ${Math.ceil(r.start)}, up to ${Math.ceil(r.hi)}`:`Week ${Math.ceil(r.start)}`) : r.type==="mlr" ? `${tlRange(r.start,r.end)}, up to ${Math.ceil(r.hi)}` : r.type==="ongoing" ? `From week ${Math.floor(r.start)+1}` : tlRange(r.start,r.end);
-  box.innerHTML=`<div class="gantt" style="--w:${W}"><div class="g-row g-axis"><div class="g-lab"></div><div class="g-track">${axis}</div></div>`+
-    rows.map(r=>`<div class="g-row g-${r.type}"><div class="g-lab"><span>${r.label}</span><small>${when(r)}</small></div><div class="g-track">${bar(r)}</div></div>`).join("")+`</div>`;
+  // People needed each week (workstream mode), against the team size when one is set
+  const top=Math.max(peak.v,tl.cap||0,1);
+  const loadRow = tl.streams ? `<div class="g-row g-load"><div class="g-lab"><span>People needed</span><small>Peak ${peak.v.toFixed(1)}, week ${peak.k+1}</small></div><div class="g-track">${load.map((v,w)=>`<div class="g-ld${tl.cap&&v>tl.cap+0.05?" over":""}" style="left:${pct(w)};width:${pct(1)};height:${(v/top*100).toFixed(1)}%" title="Week ${w+1}: ${v.toFixed(1)} people"></div>`).join("")}${tl.cap?`<div class="g-cap" style="bottom:${(tl.cap/top*100).toFixed(1)}%" title="Team size: ${tl.cap}"></div>`:""}</div></div>` : "";
+  box.innerHTML=`<div class="gantt" style="--w:${W}"><div class="g-row g-axis"><div class="g-lab"></div><div class="g-track">${axis}</div></div>${loadRow}`+
+    rows.map(r=>`<div class="g-row g-${r.type==="wave"?"phase g-wave":r.type}"><div class="g-lab"><span>${r.label}</span><small>${when(r)}</small></div><div class="g-track">${r.type==="wave"?`<div class="g-bar g-wavebar" style="left:${pct(r.start)};width:${pct(Math.max(r.end-r.start,0.15))}"></div>`:bar(r)}${target!=null&&target>=0?`<div class="g-tgt" style="left:${pct(target)}"></div>`:""}</div></div>`).join("")+`</div>`;
   const sum=document.getElementById("tl-sum");
   const end=launch, d1=tlDate(end), d2=tlDate(end+slip);
-  sum.innerHTML = launch>0 ? `<div class="t"><div class="v">${Math.ceil(end)} wks</div><div class="k">To launch</div></div>${slip>0.5?`<div class="t"><div class="v">${Math.ceil(end+slip)} wks</div><div class="k">If MLR runs long</div></div>`:""}${d1?`<div class="t"><div class="v">${tlFmt(d1)}${slip>0.5?" to "+tlFmt(d2):""}</div><div class="k">Launch date</div></div>`:""}` : "";
+  sum.innerHTML = launch>0 ? `<div class="t"><div class="v">${Math.ceil(end)} wks</div><div class="k">To launch</div></div>${slip>0.5?`<div class="t"><div class="v">${Math.ceil(end+slip)} wks</div><div class="k">If MLR runs long</div></div>`:""}${d1?`<div class="t"><div class="v">${tlFmt(d1)}${slip>0.5?" to "+tlFmt(d2):""}</div><div class="k">Launch date</div></div>`:""}${tl.streams?`<div class="t"><div class="v">${peak.v.toFixed(1)}</div><div class="k">Peak people${tl.cap?" (team "+tl.cap+")":""}</div></div>`:""}` : "";
   document.getElementById("tl-flags").innerHTML = flags.map(f=>`<div class="cmp ${f.k}">${f.t}</div>`).join("");
   refreshPreview();
 }
@@ -774,7 +1106,8 @@ function timelineText(){
   let s=`TIMELINE (rough, in weeks from kickoff${tl.start?", kickoff "+tlFmt(tlDate(0)):""})\nMLR: ${o.label}${tl.mlr==="custom"?` (submissions every ${tl.cad} weeks, ${tl.turn} weeks to review, ${tl.cyc} rounds)`:""}. Client feedback within ${tl.fb} business days per round.\n`;
   for(const r of rows){
     const span=r.end-r.start;
-    if(r.type==="phase") s+=`\n${r.label.toUpperCase()}  ${wk(span)} week${wk(span)>1?"s":""}, ${tlRange(r.start,r.end)}\n`;
+    if(r.type==="wave") s+=`\n=== ${r.label.toUpperCase()}  ${tlRange(r.start,r.end)} ===\n`;
+    else if(r.type==="phase") s+=`\n${r.label.toUpperCase()}  ${wk(span)} week${wk(span)>1?"s":""}, ${tlRange(r.start,r.end)}\n`;
     else if(r.type==="item") s+=`  ${r.label}  ${tlRange(r.start,r.end)}\n`;
     else if(r.type==="mlr") s+=`MLR REVIEW  ${tlRange(r.start,r.end)}, up to week ${Math.ceil(r.hi)}\n`;
     else if(r.type==="span") s+=`\nThroughout: ${r.label}`;
@@ -791,14 +1124,39 @@ function timelineText(){
    Every tier carries Project Overview, Budget, Timeline, Payment Schedule, Terms & Conditions and
    Acceptance of Proposal. Client name, dates and totals are PandaDoc variables, filled after creation,
    so they stay linked everywhere they appear. */
-let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director"};
+let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director",
+  bigTerms:false,showVoices:false,voicesTitle:"Retina Voices",voices:[]};
 function saveProp(){ try{localStorage.setItem("sowkit.prop",JSON.stringify(prop));}catch(e){} }
-function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} }
-function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else prop[k]=v; saveProp(); renderPropTier(); }
+function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} if(!Array.isArray(prop.voices)) prop.voices=[]; }
+
+/* Voices (endorsements), per proposal. Never write, draft or paraphrase a quote for a real person: every quote is
+   pasted exactly as the person approved it in writing. An entry shows in the proposal only when it is ticked to show
+   AND has the quote, name, title, who approved it, the date and a link to the written approval. The approval fields
+   stay in the kit and are never published. */
+const VOICE_FIELDS=[["name","Name"],["title","Title"],["institution","Institution"],["quote","Quote, exactly as approved in writing","wide"],["photo","Photo URL (optional)"],["alt","Photo description (alt text)"],
+  ["disclosure","Disclosed relationships (shown to the client)","wide"],["approvedBy","Approved by"],["approvedDate","Approved on","date"],["approvalLink","Where the written approval lives (link)"]];
+const voiceReady = v => !!(v&&v.show&&[v.quote,v.name,v.title,v.approvedBy,v.approvedDate,v.approvalLink].every(s=>String(s||"").trim()));
+const shownVoices = () => prop.showVoices ? prop.voices.filter(voiceReady) : [];
+function setVoice(n,k,v){ const x=prop.voices[n]; if(!x) return; x[k]=v; saveProp(); if(k==="show") renderVoices(); else { const st=document.getElementById("vx-st-"+n); if(st) st.innerHTML=voiceStatus(x); } refreshPreview(); }
+function addVoice(){ prop.voices.push({show:false}); saveProp(); renderVoices(); }
+function delVoice(n){ if(!confirm("Remove this voice from the proposal?")) return; prop.voices.splice(n,1); saveProp(); renderVoices(); refreshPreview(); }
+function voiceStatus(v){ const miss=[["quote","quote"],["name","name"],["title","title"],["approvedBy","who approved"],["approvedDate","approval date"],["approvalLink","approval link"]].filter(([k])=>!String(v[k]||"").trim()).map(x=>x[1]);
+  return miss.length ? `Hidden. Missing: ${miss.join(", ")}.` : v.show ? `<b style="color:var(--ok)">Shows in the proposal.</b>` : "Hidden. Tick Show to include it."; }
+function renderVoices(){
+  const box=document.getElementById("p-voices"); if(!box) return; box.hidden=!prop.showVoices; if(box.hidden) return;
+  box.innerHTML=`<div class="propgrid"><label class="wide">Section title<input value="${esc(prop.voicesTitle||"")}" oninput="setProp('voicesTitle',this.value)"></label></div>
+   <p class="small muted" style="margin:10px 0">Paste each quote exactly as the person approved it in writing. Never write or reword a quote for someone. Before you ask anyone, check whether they consult for the client, sit on its advisory boards, or work with a competitor, and record it under Disclosed relationships. With no entry ready, the section stays hidden.</p>`+
+   prop.voices.map((v,n)=>`<div class="card" style="margin-bottom:10px;background:var(--bg)"><div class="propgrid">${VOICE_FIELDS.map(([k,l,t])=>`<label class="${t==="wide"?"wide":""}">${l}${k==="quote"||k==="disclosure"?`<textarea rows="${k==="quote"?3:2}" oninput="setVoice(${n},'${k}',this.value)">${esc(v[k]||"")}</textarea>`:`<input${t==="date"?' type="date"':""} value="${esc(v[k]||"")}" oninput="setVoice(${n},'${k}',this.value)">`}</label>`).join("")}</div>
+   <div class="acts"><label class="chk"><input type="checkbox"${v.show?" checked":""} onchange="setVoice(${n},'show',this.checked)"> Show</label><span class="small muted" id="vx-st-${n}">${voiceStatus(v)}</span><button class="sm" onclick="delVoice(${n})">Remove</button></div></div>`).join("")+
+   `<button class="sm" onclick="addVoice()">Add a voice</button>`;
+}
+// A new company or title means a new engagement, so the remembered ClickUp task must not carry over to it.
+function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else { if((k==="company"||k==="title")&&prop[k]!==v) prop.clickupTask=""; prop[k]=v; } saveProp(); if(k==="showVoices") renderVoices(); renderPropTier(); }
 function renderProp(){
   for(const k of ["title","company","partner","first","last","email","date","version","tier","overview","firmName","firmTitle"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
   prop.obj.forEach((v,n)=>{ const el=document.getElementById("p-obj"+n); if(el && document.activeElement!==el) el.value=v; });
-  renderPropTier();
+  for(const k of ["bigTerms","showVoices"]){ const el=document.getElementById("p-"+k); if(el) el.checked=!!prop[k]; }
+  renderVoices(); renderPropTier();
 }
 function renderPropTier(){ refreshPreview(); const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
 // Auto tier: Simple under $15,000 with one phase, Complex from $50,000 or with a full site build, Mid-range between.
@@ -843,6 +1201,16 @@ function proposalData(){
 }
 
 const wkSpan = r => Math.max(1,Math.ceil(r.end)-Math.floor(r.start)); // matches the "Weeks a to b" range
+// "Not in scope" from each row's Note. A note that names something this proposal does include (Wireframes, Medical
+// writing) would read as a contradiction to the client, so it says where that item is instead.
+function notInScope(items){
+  const bases=[...new Set(items.map(x=>x.i.base))], seen=new Map();
+  const terms=b=>{ const two=b.split(" ").slice(0,2); return [b, ...(two.length===2&&!two.includes("&")?[two.join(" ")]:[])]; };
+  for(const x of items){ const n=x.i.note; if(!n||seen.has(n)) continue;
+    const hit=bases.filter(b=>b!==x.i.base && terms(b).some(s=>n.toLowerCase().includes(s.toLowerCase())));
+    seen.set(n, hit.length ? `${n} (This proposal includes ${hit.join(" and ")}.)` : n); }
+  return [...seen.values()];
+}
 function proposalMarkdown(){
   const d=proposalData(), {tier}=d, L=n=>["L1","L2","L3"].indexOf(tier)>=n-1, out=[];
   const p=s=>out.push(s,"");
@@ -891,7 +1259,7 @@ function proposalMarkdown(){
     p(tier==="L3"?`### Ongoing Services (optional, monthly from launch)`:`### Ongoing Services (monthly)`);
     p(`<!-- pandadoc:pricing-table name="Monthly" -->\n${head}\n${rows(d.monthly)}\n\n* Total: ${usd(d.perMonth)}\n<!-- pandadoc:end-pricing-table -->`);
   }
-  const notIn=[...new Set(d.items.map(x=>x.i.note).filter(Boolean))];
+  const notIn=notInScope(d.items);
   if(notIn.length){ p(`### Not in Scope`); p(notIn.map(s=>"- "+s).join("\n")); }
   // Timeline, from the builder's waterfall
   p(`## Timeline`);
@@ -963,7 +1331,25 @@ const DRAFT = s => `<span class="draft">${esc(s)}</span>`;
 const cap = s => s ? s[0].toUpperCase()+s.slice(1) : "";
 const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 
-function proposalPage(){
+// With several options, the proposal is built on the lead option and compares the others in its Options section.
+const propSource = () => multi() ? leadOpt() : (curOpt().rows.length ? curOpt() : opts.list.find(o=>o.rows.length)||curOpt());
+function proposalPage(){ return withScope(propSource().rows, proposalPageOne); }
+const propOptions = () => multi() ? [...opts.list.filter(o=>o.rows.length)].sort((a,b)=>(b.lead?1:0)-(a.lead?1:0)) : [];
+// What an option changes against the lead, in plain words, by deliverable.
+function optDiff(a,b){
+  const agg=rows=>{ const m={}; for(const e of rows){ const i=bySku[e.sku]; (m[i.base]=m[i.base]||{})[e.sku]=(m[i.base][e.sku]||0)+e.qty; } return m; };
+  const A=agg(a.rows), B=agg(b.rows), out=[], sum=o=>Object.values(o||{}).reduce((s,v)=>s+v,0);
+  for(const base of new Set([...Object.keys(A),...Object.keys(B)])){
+    const x=A[base], y=B[base], qa=sum(x), qb=sum(y);
+    if(!qa){ out.push(`Adds ${base}${qb>1?` (${qb})`:""}`); continue; }
+    if(!qb){ out.push(`Leaves out ${base}`); continue; }
+    const kx=Object.keys(x), ky=Object.keys(y);
+    if(kx.length===1&&ky.length===1&&kx[0]!==ky[0]) out.push(`${base}: ${bySku[ky[0]].lname||LVL[bySku[ky[0]].level]}, instead of ${bySku[kx[0]].lname||LVL[bySku[kx[0]].level]}`);
+    else if(qa!==qb) out.push(`${base}: ${qb} instead of ${qa}`);
+  }
+  return out;
+}
+function proposalPageOne(){
   const d=proposalData(), tier=d.tier, L=n=>["L1","L2","L3"].indexOf(tier)>=n-1, tok=Object.fromEntries(d.tokens.map(t=>[t.name,t.value]));
   const company=prop.company.trim(), partner=prop.partner.trim(), contact=[prop.first,prop.last].map(s=>(s||"").trim()).filter(Boolean).join(" ");
   const co=company?esc(company):DRAFT("Client company"), title=prop.title.trim()?esc(prop.title.trim()):DRAFT("Project title");
@@ -974,7 +1360,7 @@ function proposalPage(){
   const nm=({e,i})=>esc(clientName(i))+(e.qty>1?` <span class="num">&times; ${e.qty}</span>`:"");
   const per=x=>x.i.billing==="recurring"?" / mo":"";
   const keyDeliv=[...new Set(d.once.flatMap(x=>x.i.deliv||[]))].slice(0,10);
-  const notIn=[...new Set(d.items.map(x=>x.i.note).filter(Boolean))];
+  const notIn=notInScope(d.items);
   const stages=SECTION_ORDER.filter(s=>d.once.some(x=>x.i.section===s));
   const bySec={}; for(const x of d.once) bySec[x.i.section]=(bySec[x.i.section]||0)+x.i.price*x.e.qty;
   const hasQA=d.items.some(x=>/QA, Accessibility|Landing Page|Single-Page Website|Template Website/.test(x.i.base));
@@ -990,36 +1376,55 @@ function proposalPage(){
   let o=head("Project Overview",ov);
   if(obj.length) o+=`<div class="sp-cardbox"><h3 class="sub">Key Objectives</h3><div class="sp-obj">${obj.map((t,k)=>{ const m=t.match(/^([^:]{2,40}):\s*(.+)$/); return `<div><span class="eb">${String(k+1).padStart(2,"0")}${m?` &nbsp;|&nbsp; ${esc(m[1])}`:""}</span><p>${esc(m?m[2]:t)}</p></div>`; }).join("")}</div></div>`;
   if(!L(3) && keyDeliv.length) o+=`<div class="sp-cardbox"><h3 class="sub">Key Deliverables</h3><ul class="dots">${keyDeliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
-  h+=sec("alt",o);
+  h+=sec("alt",o)+"<!--sp-options-->";
 
   // Building blocks shared by the tiers
   const itemsHTML=list=>SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
     return `<div class="sp-stage">${esc(s)}</div>`+g.map(x=>{ const i=x.i;
-      return `<div class="sp-item"><div><h4>${nm(x)}</h4>${i.lname?`<div class="lv">${esc(cap(i.lname))}</div>`:""}<div class="pr">${money0(i.price*x.e.qty)}${per(x)}</div></div>
+      return `<div class="sp-item"><div><h4>${nm(x)}</h4>${wavesOn()&&x.e.wave?`<div class="lv"><span class="sp-wv">${WAVE[x.e.wave]}</span></div>`:""}${i.lname?`<div class="lv">${esc(cap(i.lname))}</div>`:""}<div class="pr">${money0(i.price*x.e.qty)}${per(x)}</div></div>
         <div><p>${esc(cDesc(i))}</p>${(i.incl&&i.incl.length)||(i.deliv&&i.deliv.length)?`<div class="cols">${i.incl&&i.incl.length?`<div><span class="eb">Includes</span><ul class="dots">${i.incl.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:""}${i.deliv&&i.deliv.length?`<div><span class="eb">Deliverables</span><ul class="dots">${i.deliv.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:""}</div>`:""}${i.note?`<p class="note">Note: ${esc(i.note)}</p>`:""}</div></div>`; }).join(""); }).join("");
   const budgetTbl=(list,label,total,suffix)=>`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Item</th><th>Deliverables</th><th class="r">Price</th></tr></thead><tbody>`+
     SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
       return `<tr class="stage"><td colspan="3">${esc(s)}</td></tr>`+g.map(x=>`<tr><td><b>${nm(x)}</b><div class="d">${esc(tier==="L1"?cDesc(x.i):cap(x.i.lname||""))}</div></td><td class="dl">${(x.i.deliv||[]).map(esc).join("<br>")}</td><td class="r">${money0(x.i.price*x.e.qty)}${suffix}</td></tr>`).join(""); }).join("")+
     `<tr class="tot"><td colspan="2">${label}</td><td class="r">${money0(total)}${suffix}</td></tr></tbody></table></div>`;
   const notInHTML=notIn.length?`<div class="sp-cardbox"><h3 class="sub">Not in scope</h3><ul class="dots">${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
-  const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr");
+  const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr"||r.type==="wave");
   const W=Math.max(weeks,...tlRows.map(r=>Math.ceil(r.hi||r.end)));
   const tlTbl=`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Stage</th><th>Timing</th>${tl.start?"<th>Dates</th>":""}<th class="r">Length</th><th style="width:30%"></th></tr></thead><tbody>`+
     tlRows.map(r=>{ const a=tlDate(r.start), b=tlDate(Math.max(r.start,r.end-0.01));
-      return `<tr><td><b>${esc(r.type==="mlr"?`${company||"Client"} MLR review`:r.label)}</b>${r.type==="mlr"&&r.hi>r.end+0.5?`<div class="d">Up to week ${Math.ceil(r.hi)} if review runs long</div>`:""}</td><td>${tlRange(r.start,r.end)}</td>${tl.start?`<td>${a?tlFmt(a):""}${b&&wkSpan(r)>1?" to "+tlFmt(b):""}</td>`:""}<td class="r">${plural(wkSpan(r),"week")}</td>
+      return `<tr${r.type==="wave"?' class="stage"':""}><td><b>${esc(r.type==="mlr"?`${company||"Client"} MLR review${r.tag?", "+r.tag:""}`:r.label)}</b>${r.type==="mlr"&&r.hi>r.end+0.5?`<div class="d">Up to week ${Math.ceil(r.hi)} if review runs long</div>`:""}</td><td>${tlRange(r.start,r.end)}</td>${tl.start?`<td>${a?tlFmt(a):""}${b&&wkSpan(r)>1?" to "+tlFmt(b):""}</td>`:""}<td class="r">${plural(wkSpan(r),"week")}</td>
         <td class="bar"><div style="position:relative;height:8px;background:var(--sp-line);border-radius:4px"><i style="position:absolute;top:0;bottom:0;border-radius:4px;left:${(r.start/W*100).toFixed(2)}%;width:${Math.max(2,(r.end-r.start)/W*100).toFixed(2)}%;background:${r.type==="mlr"?"var(--sp-fg2)":"var(--sp-ink)"}"></i></div></td></tr>`; }).join("")+
     `<tr class="tot"><td>Launch / final files</td><td>Week ${weeks}</td>${tl.start?`<td>${launch?tlFmt(launch):""}</td>`:""}<td class="r"></td><td></td></tr></tbody></table></div>`;
   const tlLine=`<p style="margin-top:18px">Work begins ${kick?fmtDate(kick):"at kickoff"}, with launch planned for ${launch?fmtDate(launch):"week "+weeks}. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.</p>`;
   const payIntro=d.oneTime<15000?"A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.":`A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in ${d.pay.length-1} equal monthly installments, so payment follows the work as it happens.`;
   const payHTML=`<p>${payIntro}</p><div class="scroll" style="margin-top:22px"><table class="sp-tbl"><tbody>${d.pay.map(([a,b,c])=>`<tr><td><b>${a}</b></td><td class="due">${b==="On signature"?"Due upon signing":b}</td><td class="r">${money0(c)}</td></tr>`).join("")}<tr class="tot"><td colspan="2">Total</td><td class="r">${money0(d.oneTime)}</td></tr></tbody></table></div>${d.monthly.length?`<p style="margin-top:18px">Ongoing services are invoiced monthly from launch at ${money0(d.perMonth)} per month.</p>`:""}`;
 
+  // Options: each one side by side, lead first, then what each changes against the lead and its full scope on request
+  const optList=propOptions(); let optHTML="";
+  if(optList.length>1){
+    const leadO=optList[0];
+    let q=head("Your Options",`<p>We priced ${optList.length===2?"two":optList.length===3?"three":optList.length} ways to run this work. Each one is a complete scope with its own price, timeline and payment schedule.</p><p>We recommend the ${esc(leadO.name)}, and the rest of this proposal describes it. You choose one option when you sign.</p>`);
+    q+=`<div class="sp-opts">`+optList.map((o,k)=>{
+      const od=withScope(o.rows,()=>proposalData()), ow=Math.max(1,Math.ceil(od.b.launch)), ol=withScope(o.rows,()=>tlDate(od.b.launch)), wt=waveTotals(o.rows), diff=k?optDiff(leadO,o):[];
+      const inst=od.pay.length-1;
+      return `<div class="sp-opt${k?"":" lead"}"><span class="eb">Option ${k+1}${k?"":" &nbsp;|&nbsp; Recommended"}</span><h3>${esc(o.name)}</h3>${o.summary?`<p class="s">${esc(o.summary)}</p>`:""}
+        <div class="v num">${money0(od.oneTime)}</div>
+        <dl>${wavesOn()&&wt.b?`<div><dt>Wave A and program</dt><dd class="num">${money0(wt.a)}</dd></div><div><dt>Wave B</dt><dd class="num">${money0(wt.b)}</dd></div>`:""}
+          <div><dt>Launch</dt><dd>${ol?fmtDate(ol):`Week ${ow}`}</dd></div><div><dt>Timeline</dt><dd>${plural(ow,"week")}</dd></div>
+          <div><dt>Payments</dt><dd>${od.pay.length?`${money0(od.pay[0][2])} on signing, then ${plural(inst,"monthly payment")}`:""}</dd></div></dl>
+        ${diff.length?`<div class="df"><span class="eb">Compared with Option 1</span><ul class="dots">${diff.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:k?"":`<div class="df"><span class="eb">What it covers</span><ul class="dots">${[...new Set(od.once.map(x=>x.i.base))].slice(0,8).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`}</div>`; }).join("")+`</div>`;
+    q+=`<div style="margin-top:40px">`+optList.map((o,k)=>{ const od=withScope(o.rows,()=>proposalData());
+      return `<details class="sp-acc" data-k="opt-${esc(o.id)}"><summary><span class="lt">${k+1}</span><h3>${esc(o.name)}: scope, budget and payments</h3><span class="ex"></span></summary><div class="body">${withScope(o.rows,()=>itemsHTML(od.once)+budgetTbl(od.once,"Total",od.oneTime,""))}<h3 class="sub" style="margin-top:28px">Payment schedule</h3><div class="scroll"><table class="sp-tbl"><tbody>${od.pay.map(([a,b,c])=>`<tr><td><b>${a}</b></td><td class="due">${b==="On signature"?"Due upon signing":b}</td><td class="r">${money0(c)}</td></tr>`).join("")}<tr class="tot"><td colspan="2">Total</td><td class="r">${money0(od.oneTime)}</td></tr></tbody></table></div></div></details>`; }).join("")+`</div>`;
+    optHTML=sec("card",q);
+  }
+
   if(L(3)){
     // 02 Plan & Investment: the summary band, the payment schedule, then the detail in lettered sections
-    const ph=stages.filter(x=>TL_PHASES.includes(x)); const lead=`<p>Our proposed scope covers the full process${ph.length>1?`, from ${ph[0].toLowerCase()} through ${ph[ph.length-1].toLowerCase()}`:""}, in about ${plural(weeks,"week")} from kickoff to launch.</p><p>The investment below is for the scope as written. The detail behind each line, the full budget and the timeline sit in the sections that follow, so ${co} can see exactly what each stage delivers.</p>`;
+    const ph=stages.filter(x=>TL_PHASES.includes(x)); const lead=`<p>${optList.length>1?`This is the ${esc(optList[0].name)}, the option we recommend. It covers`:"Our proposed scope covers"} the full process${ph.length>1?`, from ${ph[0].toLowerCase()} through ${ph[ph.length-1].toLowerCase()}`:""}, in about ${plural(weeks,"week")} from kickoff to launch.</p><p>The investment below is for the scope as written. The detail behind each line, the full budget and the timeline sit in the sections that follow, so ${co} can see exactly what each stage delivers.</p>`;
     const months=weeks>=9?Math.round(weeks/4.33):0;
     let p=head("Plan &amp; Investment",lead);
     p+=`<div class="sp-sum"><div><span class="sp-tag">Deliverables</span><ul class="dots">${keyDeliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-      <div><span class="sp-tag">Budget</span><table class="sp-mini"><tbody>${stages.map(s=>`<tr><td>${esc(s)}</td><td>${money0(bySec[s])}</td></tr>`).join("")}<tr class="tot"><td>Total</td><td>${money0(d.oneTime)}</td></tr></tbody></table>${d.monthly.length?`<p class="sp-note">Plus optional post-launch services from ${money0(d.perMonth)} per month.</p>`:""}</div>
+      <div><span class="sp-tag">Budget</span><table class="sp-mini"><tbody>${stages.map(s=>`<tr><td>${esc(s)}</td><td>${money0(bySec[s])}</td></tr>`).join("")}<tr class="tot"><td>Total</td><td>${money0(d.oneTime)}</td></tr></tbody></table>${wavesOn()&&waveTotals().b?`<p class="sp-note">Wave A and program ${money0(waveTotals().a)}. Wave B ${money0(waveTotals().b)}.</p>`:""}${d.monthly.length?`<p class="sp-note">Plus optional post-launch services from ${money0(d.perMonth)} per month.</p>`:""}</div>
       <div><span class="sp-tag">Timeline</span><div class="sp-big"><div class="v">${months||weeks}</div><div class="k">${months?"Months":"Weeks"}</div><div class="s">Kickoff to launch${kick?`<br>${tlFmt(kick)} to ${tlFmt(launch)}`:""}</div></div></div></div>`;
     p+=`<div class="sp-cardbox" style="border-top:0"><h3 class="sub">Payment Schedule</h3>${payHTML}</div>`;
     p+=`<div style="margin-top:56px"><details class="sp-acc" data-k="scope"><summary><span class="lt">A</span><h3>Scope of Work</h3><span class="ex"></span></summary><div class="body">${itemsHTML(d.once)}</div></details>
@@ -1052,6 +1457,20 @@ function proposalPage(){
     h+=sec("card",r);
   }
 
+  // Assumptions and Risks (large-program proposals only): each risk, how likely it is, and the term that handles it
+  if(prop.bigTerms){
+    const R=risksData(), cl=s=>esc(String(s).replace(/\{client\}/g,company||"The client"));
+    let r=head("Assumptions and Risks",`<p>A launch program runs for months and depends on dates neither of us fully controls. Here is what we assume, what could go wrong, and how this agreement handles each case.</p>`);
+    if(R.assumptions.length) r+=`<h3 class="sub">What we assume</h3><div class="sp-cardbox"><ul class="arrows">${R.assumptions.map(a=>`<li>${cl(a)}</li>`).join("")}</ul></div>`;
+    r+=`<h3 class="sub" style="margin-top:40px">Risks and how we handle them</h3><div class="scroll"><table class="sp-tbl sp-risk"><thead><tr><th>Risk</th><th>How likely</th><th>How this agreement handles it</th></tr></thead><tbody>${R.risks.map(([a,b,c])=>`<tr><td><b>${cl(a)}</b></td><td>${cl(b)}</td><td>${cl(c)}</td></tr>`).join("")}</tbody></table></div>`;
+    h+=sec("alt",r);
+  }
+
+  // Voices: endorsements with a written approval on file. Hidden when there are none.
+  const vx=shownVoices();
+  if(vx.length) h+=sec("card",head(esc(prop.voicesTitle||"Retina Voices"),`<p>In their own words, from people who know the work.</p>`)+`<div class="sp-voices">${vx.map(v=>{ const ph=/^https:\/\//i.test(v.photo||"")?`<img src="${esc(v.photo)}" alt="${esc(v.alt||("Photo of "+v.name))}" loading="lazy">`:"";
+      return `<figure class="sp-voice">${ph}<blockquote><p>${esc(v.quote.trim())}</p></blockquote><figcaption><b>${esc(v.name)}</b><span>${esc([v.title,v.institution].filter(s=>String(s||"").trim()).join(", "))}</span>${String(v.disclosure||"").trim()?`<span class="dis">Disclosure: ${esc(v.disclosure.trim())}</span>`:""}</figcaption></figure>`; }).join("")}</div>`);
+
   // Why Steadfast (Complex)
   if(L(3)) h+=`<section class="sp-sec sp-dark"><div class="wrapw"><h2>Why work with Steadfast?</h2><div class="why">
       <div><i>&rarr;</i><b>Complex science is our wheelhouse.</b><p>Nearly 20 years in life sciences have taught us how to make sophisticated information clear, compelling, and useful without compromising its substance.</p></div>
@@ -1067,24 +1486,26 @@ function proposalPage(){
     if(/billing/i.test(g.h)) items.push(`<div id="rates"><h4>Rates</h4><p>${esc(RATES_TXT)}</p></div>`);
     t+=`<h3 class="sub">${esc(g.h)}</h3><div class="grid">${items.join("")}</div>`; }
   if(!TERMS.some(g=>/billing/i.test(g.h))) t+=`<div class="grid"><div id="rates"><h4>Rates</h4><p>${esc(RATES_TXT)}</p></div></div>`;
+  if(prop.bigTerms) for(const g of optTermGroups()) t+=`<h3 class="sub">${esc(g.h)}</h3><div class="grid">${g.items.map(([a,b])=>`<div><h4>${esc(a)}</h4><p>${linkRates(b)}</p></div>`).join("")}</div>`;
   h+=sec("alt",t+`</div>`);
 
   // Acceptance of Proposal: the Firm signs on issue; the client signs on the published page
   const accText=acc&&acc.items[0]?acc.items[0][1]:"This proposal, with Steadfast's standard Terms & Conditions, is the agreement between the Firm and the Client for everything it includes. Both parties acknowledge acceptance by signing below. Electronic signatures are legal and binding.";
   const fld=(k,v,right)=>`<div class="sp-field"><div class="v">${v||""}</div><div class="k"><span>${k}</span>${right?`<span>${right}</span>`:""}</div></div>`;
   const firmName=(prop.firmName||"").trim(), firmTitle=(prop.firmTitle||"").trim();
-  h+=sec("card",head("Acceptance of Proposal",`<p>${esc(accText)}</p>`)+`<div class="sp-sign">
+  const accOpt=optList.length>1?`<p>Choose one option when you sign. The option you choose, with its scope, price, timeline and payment schedule, is what you accept. The other options are not part of the agreement.</p>`:"";
+  h+=sec("card",head("Acceptance of Proposal",`<p>${esc(accText)}</p>${accOpt}`)+`<div class="sp-sign">
     <div><h3>The Firm</h3><div class="who"><b>${FIRM.name}</b><span>${FIRM.addr}</span></div>${fld("Full name",firmName?`<span class="script">${esc(firmName)}</span>`:DRAFT("Signer"))}${fld("Title",firmTitle?`<span class="script">${esc(firmTitle)}</span>`:"")}${fld("Signature",firmName?`<span class="script">${esc(firmName)}</span><span class="date">${esc(tok["Proposal.Date"])}</span>`:"","Date")}</div>
-    <div><h3>The Client</h3><div class="who"><b>${co}${partner?`, in partnership with ${esc(partner)}`:""}</b><span>${contact?esc(contact):""}</span></div><div id="sp-sign-slot">${fld("Full name","")}${fld("Title","")}${fld("Signature","","Date")}<p class="sp-note">${esc(contact||"The client")} signs here on the published page.</p></div></div></div>`);
+    <div><h3>The Client</h3><div class="who"><b>${co}${partner?`, in partnership with ${esc(partner)}`:""}</b><span>${contact?esc(contact):""}</span></div><div id="sp-sign-slot">${optList.length>1?`<p class="sp-note" style="margin-bottom:14px">The client picks one of the ${optList.length} options here, then signs.</p>`:""}${fld("Full name","")}${fld("Title","")}${fld("Signature","","Date")}<p class="sp-note">${esc(contact||"The client")} signs here on the published page.</p></div></div></div>`);
   h+=`<footer class="sp-foot"><div class="mark">S</div>Crafting one-of-a-kind experiences since 2008 &nbsp;&middot;&nbsp; <a href="${FIRM.site}" target="_blank" rel="noopener">steadfastdesignfirm.com</a></footer>`;
-  return `<div class="sp">${h}</div>`;
+  return `<div class="sp">${h.replace("<!--sp-options-->",optHTML)}</div>`;
 }
 
 /* Live preview: its own tab, rewritten as the scope, the timeline or the proposal details change. */
 const PROP_FONTS=`<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@400;500;600&family=Zalando+Sans+Expanded:wght@400;500;600&family=Google+Sans+Flex:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500&display=swap">`;
 let pvWin=null, pvTimer=0;
 function openPreview(){
-  if(!scope.length){toast("Nothing in the scope yet");return;}
+  if(!propSource().rows.length){toast("Nothing in the scope yet");return;}
   pvWin=window.open("","sowkit-preview");
   if(!pvWin){ // pop-ups blocked: show it in a panel over the kit instead
     let ov=document.getElementById("pvov");
@@ -1097,7 +1518,7 @@ function openPreview(){
 }
 function closePreview(){ const ov=document.getElementById("pvov"); if(ov) ov.hidden=true; pvWin=null; }
 function refreshPreview(now){
-  if(!pvWin||pvWin.closed||!scope.length) return;
+  if(!pvWin||pvWin.closed||!propSource().rows.length) return;
   clearTimeout(pvTimer);
   pvTimer=setTimeout(()=>{ try{
     const r=pvWin.document.getElementById("sp-root"); if(!r) return;
@@ -1122,8 +1543,13 @@ async function propKeys(pw,salt,iter){
 }
 let propCSS=null;
 async function getPropCSS(){ if(propCSS) return propCSS; const r=await fetch("assets/proposal.css",{cache:"no-store"}); if(!r.ok) throw new Error("Couldn't load the proposal styles"); return propCSS=await r.text(); }
+// The options the client chooses from at signing: id, name and total. Sent to the server in plain text with the
+// publish (like the total already is), so the signed record and ClickUp use the server's figure, not the browser's.
+const optMeta = () => propOptions().map(o=>({id:o.id,name:o.name.trim().slice(0,80),total:scopeTotals(o.rows.filter(e=>bySku[e.sku].billing!=="recurring")).tot}));
 function publishGaps(){ const g=[];
-  if(!scope.length) g.push("rows in the scope");
+  if(!propSource().rows.length) g.push("rows in the scope");
+  const om=optMeta(); if(om.some(o=>!o.name)) g.push("a name for every option");
+  if(new Set(om.map(o=>o.name.toLowerCase())).size<om.length) g.push("a different name for each option");
   if(!prop.title.trim()) g.push("a project title"); if(!prop.company.trim()) g.push("the client company");
   if(!(prop.first||"").trim()||!(prop.last||"").trim()) g.push("the contact's name"); if(!prop.overview.trim()) g.push("the project overview");
   if(!(prop.firmName||"").trim()) g.push("who signs for Steadfast");
@@ -1134,21 +1560,28 @@ function openPublish(){
   document.getElementById("pub-origin").textContent=location.host+"/";
   const s=document.getElementById("pub-slug"); s.value=slugify(prop.title)+(+prop.version>1?"-v"+(+prop.version):"");
   document.getElementById("pub-pw").value=""; document.getElementById("pub-over").checked=false; document.getElementById("pub-err").textContent="";
+  document.getElementById("pub-task").value=prop.clickupTask||"";
   document.getElementById("pub-form").hidden=false; document.getElementById("pub-done").hidden=true;
   document.getElementById("pubm").hidden=false; document.getElementById("pub-pw").focus();
 }
 function closePublish(){ document.getElementById("pubm").hidden=true; }
+// A ClickUp task id ("86bcp24xe"), a task link ("https://app.clickup.com/t/86bcp24xe") or "#86bcp24xe" all become the id.
+function taskIdOf(s){ s=String(s||"").trim(); if(!s) return ""; const m=s.match(/\/t\/([A-Za-z0-9]+)/); const id=(m?m[1]:s.replace(/^#/,"")).toLowerCase(); return /^[a-z0-9]{6,12}$/.test(id)?id:null; }
 async function doPublish(){
   const slug=document.getElementById("pub-slug").value.trim(), pw=document.getElementById("pub-pw").value, over=document.getElementById("pub-over").checked;
   const err=document.getElementById("pub-err"), btn=document.getElementById("pub-btn"); err.textContent="";
   if(!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) { err.textContent="Use lowercase letters, numbers and single hyphens for the address."; return; }
   if(pw.length<8) { err.textContent="Use a password of at least 8 characters, or press Generate."; return; }
+  const task=taskIdOf(document.getElementById("pub-task").value);
+  if(task===null) { err.textContent="Paste the ClickUp task link or its id, like 86bcp24xe, or leave the field empty."; return; }
   btn.disabled=true; btn.textContent="Publishing";
   try{
-    const tier=propTier(), doc=JSON.stringify({v:1,html:`<style>${await getPropCSS()}</style>`+proposalPage(),title:prop.title.trim(),company:prop.company.trim(),contact:[prop.first,prop.last].join(" ").trim(),tier,publishedAt:new Date().toISOString()});
+    const src=propSource().rows, tier=withScope(src,propTier), options=optMeta(), leadTotal=withScope(src,()=>proposalData().oneTime);
+    const doc=JSON.stringify({v:1,html:`<style>${await getPropCSS()}</style>`+proposalPage(),title:prop.title.trim(),company:prop.company.trim(),contact:[prop.first,prop.last].join(" ").trim(),tier,publishedAt:new Date().toISOString(),...(options.length?{options}:{})});
     const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), {key,auth}=await propKeys(pw,salt,PROP_ITER);
     const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,enc.encode(doc));
     const body={action:"publish",slug,overwrite:over,title:prop.title.trim(),company:prop.company.trim(),tier,
+      clickupTask:task,total:leadTotal,...(options.length?{options}:{}),sentBy:(prop.firmName||"").trim(),version:+prop.version||1,
       cipher:{v:1,iter:PROP_ITER,salt:b64e(salt),iv:b64e(iv),ct:b64e(ct)},authHash:hexOf(await crypto.subtle.digest("SHA-256",auth))};
     const r=await fetch("/api/proposals",{method:"POST",headers:{"content-type":"application/json","x-team-password":savedPw()},body:JSON.stringify(body)});
     const j=await r.json().catch(()=>({}));
@@ -1157,6 +1590,7 @@ async function doPublish(){
     if(r.status===404) throw new Error("Publishing runs on the live site (steadfast-sow-kit.netlify.app), not on a local copy.");
     if(!r.ok) throw new Error(j.error||("The server answered "+r.status+"."));
     const url=location.origin+"/"+slug;
+    prop.clickupTask=task||""; saveProp();
     document.getElementById("pub-form").hidden=true; document.getElementById("pub-done").hidden=false;
     document.getElementById("pub-url").textContent=url; document.getElementById("pub-url").href=url; document.getElementById("pub-pwshow").textContent=pw;
     loadPublished();
@@ -1170,8 +1604,8 @@ async function loadPublished(){
     if(r.status===404){ box.innerHTML=`<p class="small muted">Published proposals show here on the live site.</p>`; return; }
     const j=await r.json(); if(!r.ok) throw new Error(j.error||r.status);
     const fd=s=>s?new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
-    box.innerHTML=j.proposals.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Proposal</th><th>Address</th><th>Published</th><th>Status</th><th></th></tr></thead><tbody>${j.proposals.map(p=>{ const u=location.origin+"/"+p.slug;
-      return `<tr><td><b>${esc(p.title||p.slug)}</b><div class="small muted">${esc(p.company||"")}${p.tier?" &middot; "+esc(TIER_NAME[p.tier]||p.tier):""}</div></td><td class="small"><a href="${esc(u)}" target="_blank" rel="noopener">/${esc(p.slug)}</a></td><td class="small">${fd(p.updatedAt||p.publishedAt)}</td><td class="small">${p.signedAt?`<b style="color:var(--ok)">Signed ${fd(p.signedAt)}</b>`:"Awaiting signature"}</td>
+    box.innerHTML=j.proposals.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Proposal</th><th>Address</th><th>Published</th><th>Status</th><th>Task</th><th></th></tr></thead><tbody>${j.proposals.map(p=>{ const u=location.origin+"/"+p.slug, t=/^[a-z0-9]{6,12}$/.test(p.clickupTask||"")?p.clickupTask:"";
+      return `<tr><td><b>${esc(p.title||p.slug)}</b><div class="small muted">${esc(p.company||"")}${p.tier?" &middot; "+esc(TIER_NAME[p.tier]||p.tier):""}</div></td><td class="small"><a href="${esc(u)}" target="_blank" rel="noopener">/${esc(p.slug)}</a></td><td class="small">${fd(p.updatedAt||p.publishedAt)}</td><td class="small">${p.signedAt?`<b style="color:var(--ok)">Signed ${fd(p.signedAt)}</b>${p.signedOption?`<div class="small">${esc(p.signedOption)}, ${money(p.total||0)}</div>`:""}`:"Awaiting signature"+(Array.isArray(p.options)&&p.options.length>1?`<div class="small muted">${p.options.length} options</div>`:"")}</td><td class="small num">${t?`<a href="https://app.clickup.com/t/${t}" target="_blank" rel="noopener" title="Open the engagement task in ClickUp">${t}</a>`:`<span class="muted">none</span>`}</td>
         <td class="r" style="white-space:nowrap"><button class="sm" onclick='copyText(${JSON.stringify(u)},"Link copied")'>Copy link</button>${p.signedAt?"":` <button class="sm" onclick='unpublish(${JSON.stringify(p.slug)})'>Unpublish</button>`}</td></tr>`; }).join("")}</tbody></table></div>`:`<p class="small muted">Nothing published yet.</p>`;
   }catch(e){ box.innerHTML=`<p class="small muted">Couldn't load published proposals (${esc(e.message||e)}).</p>`; }
 }
@@ -1207,15 +1641,17 @@ function fromWorkbook(wb){
     return { sku, name:r["Line item name (PandaDoc)"], base:r["Base deliverable"], cat:sku.split("-")[1], category:r["Service type"], section:r["SOW section"],
       level: LVCODE[String(r["Level"])] ?? "", lname:r["Level name"], desc:r["Description (customer-facing)"], cdesc:String(r["Client description"]||"").trim(), incl:bl(r["Includes"]), deliv:bl(r["Deliverables"]), note:String(r["Note"]||"").trim(), lead:String(r["Lead time (weeks)"]||"").trim()?(num(r["Lead time (weeks)"])||null):null, mlr:yn(r["MLR review"]), price:num(r["Flat price (2026)"]), unit:r["Unit"], billing:r["Billing"],
       rounds:r["Rev rounds"], basis:r["Price basis"]||"", use:r["When to use"], find:(finder[bs]||[]).join(", "),
-      h:{S:num(r["Strategy h"]),D:num(r["Design h"]),V:num(r["Dev h"]),A:num(r["Account h"]),C:num(r["Copy h"]),M:num(r["Medical copy h"])} }; });
+      partner:String(r["Partner"]||"").trim(),
+      h:{S:num(r["Strategy h"]),D:num(r["Design h"]),V:num(r["Dev h"]),A:num(r["Account h"]),C:num(r["Copy h"]),M:num(r["Medical copy h"]),P:num(r["Partner h"])} }; });
   const seen=new Set(); const cats=[]; for(const i of items){ if(!seen.has(i.cat)){ seen.add(i.cat); cats.push({code:i.cat,name:i.category}); } }
   const uses = {}; for(const r of sj("Packages")) uses[r["Package"]] = r["What it is for"];
   const pk = {}; const order=[]; for(const r of sj("Package Detail")){ const p=r["Package"], s=r["SKU"]; if(!p||!s) continue; if(!pk[p]){pk[p]=[];order.push(p);} pk[p].push({sku:String(s),qty:num(r["Qty"])||1}); }
   const packs = order.map(p=>({name:p,use:uses[p]||"",items:pk[p]}));
   const levels = sj("Level Definitions").map(r=>{ const rounds={}; String(r["Revision rounds by level"]).split(",").forEach(x=>{ const m=x.match(/(Template|Level \d):\s*(\d+)/); if(m) rounds[m[1]]=parseInt(m[2]); }); return {name:r["Service type"], test:r["Level test (what makes it Level 1, 2 or 3)"], rounds}; });
   const tr = sj("Terms"); let terms=null, rates=null;
-  if(tr.length){ const g={}; const go=[]; for(const r of tr){ if(r["Group"]==="Rates"){ rates=r["Text"]; continue; } if(!g[r["Group"]]){g[r["Group"]]=[];go.push(r["Group"]);} g[r["Group"]].push([r["Heading"],r["Text"]]); } terms=go.map(h=>({h,items:g[h]})); }
-  return {items,cats,packs,levels,terms,rates};
+  let optTerms=null;
+  if(tr.length){ const g={}, go=[], og={}, oo=[]; for(const r of tr){ if(r["Group"]==="Rates"){ rates=r["Text"]; continue; } const opt=/^opt/i.test(String(r["Applies"]||"").trim()), G=opt?og:g, O=opt?oo:go; if(!G[r["Group"]]){G[r["Group"]]=[];O.push(r["Group"]);} G[r["Group"]].push([r["Heading"],r["Text"]]); } terms=go.map(h=>({h,items:g[h]})); if(oo.length) optTerms=oo.map(h=>({h,items:og[h]})); }
+  return {items,cats,packs,levels,terms,rates,optTerms};
 }
 /* ---------- password gate: the data file is encrypted; the password is the key ---------- */
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -1235,7 +1671,7 @@ async function unlock(pw, persist){
   btn.disabled=true; btn.textContent="Opening"; err.textContent="";
   try{
     DATA = await decryptData(pw); rememberPw(pw, persist);
-    if(DATA.terms){ TERMS = DATA.terms; } if(DATA.rates){ RATES_TXT = DATA.rates; }
+    if(DATA.terms){ TERMS = DATA.terms; } if(DATA.rates){ RATES_TXT = DATA.rates; } if(DATA.optTerms){ OPT_TERMS = DATA.optTerms; }
     bySku = Object.fromEntries(DATA.items.map(i=>[i.sku,i]));
     document.getElementById("gate").hidden = true; document.getElementById("app").hidden = false;
     start(); return true;

@@ -3,8 +3,12 @@
 // holds ciphertext: the kit encrypts each proposal in the browser with a password the AM sets, and the client's
 // signature is encrypted with the same key before it is sent. Publishing, listing and unpublishing need the
 // team password (SITE_PASSWORD); signing needs a token derived from the proposal password.
+// Each proposal can be linked to a ClickUp Engagements task (metadata.clickupTask); publish, overwrite, sign and
+// unpublish then update that task through lib/clickup.mjs, bounded to 5 s and never able to fail the request.
 import { getStore } from "@netlify/blobs";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { validateTracking, validateOptions, pickOption } from "./lib/validate.mjs";
+import { notify } from "./lib/clickup.mjs";
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const RESERVED = new Set(["api", "assets", "data", "tools", "netlify", "index", "admin", "proposals"]);
@@ -44,7 +48,9 @@ export default async (req) => {
       const cur = SLUG.test(slug) ? await s.get(slug, { type: "json" }) : null;
       if (!cur) return json({ error: "No proposal at that address." }, 404);
       if (cur.sig) return json({ error: "A signed proposal stays published as the record of the agreement." }, 409);
+      const m = (await s.getMetadata(slug))?.metadata || {};
       await s.delete(slug);
+      if (m.clickupTask) await notify("withdraw", { taskId: m.clickupTask, address: `${url.origin}/${slug}` });
       return json({ ok: true });
     }
 
@@ -60,16 +66,32 @@ export default async (req) => {
       const c = body.cipher || {};
       if (!B64.test(c.salt || "") || !B64.test(c.iv || "") || !B64.test(c.ct || "") || !Number.isInteger(c.iter) || c.iter < 100000 || !HEX64.test(body.authHash || ""))
         return json({ error: "The proposal didn't arrive intact. Try again." }, 400);
+      const tracking = validateTracking(body);
+      if (!tracking.ok) return json({ error: tracking.error }, 400);
+      const options = validateOptions(body.options);
+      if (!options.ok) return json({ error: options.error }, 400);
       const cur = await s.get(slug, { type: "json" });
       if (cur?.sig) return json({ code: "signed", error: "signed" }, 409);
       if (cur && !body.overwrite) return json({ code: "exists", error: "exists" }, 409);
+      const prev = cur ? (await s.getMetadata(slug))?.metadata || {} : {};
       const now = new Date().toISOString();
       const rec = { v: 1, slug, cipher: { v: 1, iter: c.iter, salt: c.salt, iv: c.iv, ct: c.ct }, authHash: body.authHash, docHash: sha(c.ct),
         publishedAt: cur?.publishedAt || now, updatedAt: now, sig: null };
+      const { clickupTask, total, sentBy, version } = tracking.value;
       const metadata = { title: String(body.title || "").slice(0, 200), company: String(body.company || "").slice(0, 200), tier: String(body.tier || "").slice(0, 4),
-        publishedAt: rec.publishedAt, updatedAt: now, signedAt: null, docHash: rec.docHash };
+        publishedAt: rec.publishedAt, updatedAt: now, signedAt: null, docHash: rec.docHash,
+        // A revision keeps the task link unless the kit sends a new task. (The 14-day nudge marker lives in the
+        // "proposal-tracking" store, written only by reconcile.mjs, so nothing here ever rewrites it.)
+        clickupTask: clickupTask || prev.clickupTask || null, total, sentBy, version,
+        // Several options: the client signs one; total above is the lead option's (see lib/validate.mjs)
+        ...(options.value ? { options: options.value } : {}) };
       await s.setJSON(slug, rec, { metadata });
-      return json({ ok: true, slug, url: `${url.origin}/${slug}` });
+      const address = `${url.origin}/${slug}`;
+      // A revision is an "overwrite" for the task it was already linked to; a task linked for the first time gets the
+      // full "publish" (status to proposal sent, Sent By), even when the proposal itself is a revision.
+      if (metadata.clickupTask)
+        await notify(cur && prev.clickupTask === metadata.clickupTask ? "overwrite" : "publish", { taskId: metadata.clickupTask, address, total, sentBy, version });
+      return json({ ok: true, slug, url: address, clickupTask: metadata.clickupTask });
     }
 
     if (body.action === "sign") {
@@ -81,11 +103,16 @@ export default async (req) => {
       if (body.docHash !== cur.docHash) return json({ error: "Steadfast updated this proposal after you opened it. Reload to read the current version." }, 409);
       const g = body.sig || {};
       if (!B64.test(g.iv || "") || !B64.test(g.ct || "") || g.ct.length > 3_000_000) return json({ error: "The signature didn't arrive intact. Try again." }, 400);
-      const signedAt = new Date().toISOString();
-      cur.sig = { iv: g.iv, ct: g.ct, signedAt, docHash: cur.docHash,
-        ip: req.headers.get("x-nf-client-connection-ip") || "", ua: (req.headers.get("user-agent") || "").slice(0, 300) };
       const m = (await s.getMetadata(slug))?.metadata || {};
-      await s.setJSON(slug, cur, { metadata: { ...m, signedAt } });
+      const chosen = pickOption(m.options, body.option);
+      if (!chosen.ok) return json({ error: chosen.error }, 400);
+      const opt = chosen.value; // null for a proposal with one scope
+      const signedAt = new Date().toISOString();
+      cur.sig = { iv: g.iv, ct: g.ct, signedAt, docHash: cur.docHash, ...(opt ? { option: opt } : {}),
+        ip: req.headers.get("x-nf-client-connection-ip") || "", ua: (req.headers.get("user-agent") || "").slice(0, 300) };
+      await s.setJSON(slug, cur, { metadata: { ...m, signedAt, ...(opt ? { signedOption: opt.name, total: opt.total } : {}) } });
+      if (m.clickupTask)
+        await notify("sign", { taskId: m.clickupTask, address: `${url.origin}/${slug}`, total: opt ? opt.total : m.total ?? null, signedAt, docHash: cur.docHash, option: opt?.name });
       return json({ ok: true, signedAt });
     }
 
