@@ -28,14 +28,14 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-cover{background:var(--sp-ink);color:var(--sp-ink-fg);position:relative;overflow:hidden}
 .sp-cover .wrapw{padding-top:28px;padding-bottom:clamp(56px,9vw,110px);position:relative;z-index:1}
 .sp-cover .top{display:flex;align-items:center;gap:14px;margin-bottom:clamp(48px,9vw,120px)}
-.sp-cover .mark{width:44px;height:44px;border-radius:0 0 22px 22px;background:var(--sp-ink-fg);color:var(--sp-ink);display:flex;align-items:center;justify-content:center;font-family:var(--sp-display);font-weight:600;font-size:1.3rem}
+.sp-cover .top .logo{height:22px;width:auto;color:var(--sp-ink-fg);flex:none}
+.sp-cover .top .eb{padding-left:14px;border-left:1px solid #3a3733}
 .sp-cover .top .eb{color:#bdb6ab}
 .sp-cover h1{font-size:clamp(2.2rem,6vw,4.4rem);font-weight:400;letter-spacing:-.01em;max-width:16ch}
 .sp-cover .sub{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:1.05rem}
 .sp-cover .pill{border:1px solid #6e6a64;border-radius:99px;padding:1px 10px;font-family:var(--sp-mono);font-size:.78rem}
-.sp-cover .arcs{position:absolute;right:-6%;bottom:-30%;width:min(56vw,640px);aspect-ratio:1;z-index:0;pointer-events:none}
-.sp-cover .arcs i{position:absolute;inset:0;border-radius:50%;border:1px solid #2c2a27}
-.sp-cover .arcs i:nth-child(2){inset:12%} .sp-cover .arcs i:nth-child(3){inset:24%} .sp-cover .arcs i:nth-child(4){inset:36%;background:#161514}
+/* Large S bleeding off the top and bottom of the cover, as on the deck template's cover. */
+.sp-cover .bigs{position:absolute;top:-10%;right:4%;height:136%;width:auto;color:#1b1a19;z-index:0;pointer-events:none}
 
 /* Client and issue strip */
 .sp-meta{background:var(--sp-card)}
@@ -186,7 +186,7 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 
 /* Footer */
 .sp-foot{background:#151413;color:#a39e96;text-align:center;padding:48px 16px;font-size:.84rem}
-.sp-foot .mark{width:38px;height:38px;margin:0 auto 14px;border-radius:0 0 19px 19px;background:#3a3733;color:#151413;display:flex;align-items:center;justify-content:center;font-family:var(--sp-display);font-weight:600}
+.sp-foot .logo{display:block;width:30px;height:auto;margin:0 auto 14px;color:#5a5650}
 .sp-foot a{color:inherit}
 
 @media (max-width:760px){
