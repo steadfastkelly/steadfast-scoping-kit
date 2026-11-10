@@ -382,6 +382,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <label>Target launch<input type="date" id="tl-target" onchange="setTl('target',this.value)"></label>
       <label class="chk"><input type="checkbox" id="tl-waves" onchange="setTl('waves',this.checked)"> Run in two waves</label>
       <label id="tl-wbbox" hidden>Wave B starts<input type="date" id="tl-wb" onchange="setTl('wb',this.value)"></label>
+      <label>Trial data readout<input type="date" id="tl-readout" onchange="setTl('readout',this.value);renderBuilder()"></label>
       <label class="chk"><input type="checkbox" id="tl-streams" onchange="setTl('streams',this.checked)"> Parallel workstreams</label>
       <label id="tl-capbox" hidden>Team size<span><input type="number" id="tl-cap" min="0" step="1" placeholder="Any" onchange="setTl('cap',this.value)"> people</span></label>
     </div>
@@ -409,6 +410,8 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <label class="wide chk"><input type="checkbox" id="p-bigTerms" onchange="setProp('bigTerms',this.checked)"> Add the large-program terms and the Assumptions and Risks section (for multi-month launch programs only)</label>
       <label class="wide chk"><input type="checkbox" id="p-showVoices" onchange="setProp('showVoices',this.checked)"> Show a voices section (endorsements). Only entries with a written approval on file appear.</label>
     </div>
+    <div class="propgrid" style="margin-top:12px"><label class="wide chk"><input type="checkbox" id="p-showDirect" onchange="setProp('showDirect',this.checked)"> List work the client contracts directly (market research, advisory board costs). Not in our price.</label></div>
+    <div id="p-direct" class="vox" hidden></div>
     <div id="p-voices" class="vox" hidden></div>
     <p class="small muted" id="p-tierhint" style="margin-top:8px"></p>
     <div class="toolbar" style="margin:14px 0 0"><button class="pri" onclick="openPreview()">Preview Proposal</button><button onclick="openPublish()">Publish Proposal</button></div>
@@ -418,6 +421,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <div class="toolbar" style="margin-top:14px">
     <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
     <button onclick="copyTimeline()">Copy timeline</button>
+    <button onclick="copyDeck()">Copy plan for the deck</button>
     <button onclick="exportScope('hours')">Copy hours for production</button>
     <button onclick="exportScope('skeleton')">Copy proposal skeleton</button>
     <button onclick="clearScope()">Clear</button>
@@ -550,6 +554,7 @@ let TERMS = TERMS_DEFAULT;
 const OPT_TERMS_DEFAULT = [
  {h:"Program Terms", items:[
   ["MLR Review Rounds","Each piece includes up to two rounds of medical, legal and regulatory (MLR) comments. More rounds are billed at the rates defined here. The schedule allows 10 business days for MLR comments on each submission. If a review takes longer, the dates after it move by the same amount."],
+  ["Content Lock","The Client shares the trial data as soon as it reads out. Content and claims are locked 4 weeks after the claims matrix is approved. Changes to locked or approved content after that are a change order, priced from our catalog."],
   ["Label Changes","The final approved label may change pieces that are already approved. Updating approved work to match the final label is a change order, priced from our catalog. It is not a revision round."],
   ["Pause and Restart","If the Client pauses the work for more than 30 days, the Firm bills for the work completed to that point. Restarting carries a remobilization fee of $7,500 and a new schedule, agreed in writing. If the pause lasts more than 90 days, either party may end the agreement under Cancellation."],
   ["Program Payments","The deposit and the monthly installments hold a dedicated team for this program. Installments are due on their scheduled dates, even when a review or an approval takes longer than planned."],
@@ -559,11 +564,14 @@ const OPT_TERMS_DEFAULT = [
 // Assumptions and Risks: each risk, how likely it is, and the term that handles it. {client} becomes the client's name. DRAFT.
 const RISKS_DEFAULT = {
   assumptions:["{client} sets up its MLR review in Veeva before the first submission.","{client} names one decision-maker who collects and sends feedback.",
+    "{client} shares the Phase 3 data as soon as it reads out. Work that depends on the data starts then.",
     "Branded pieces are made ready for launch. None is published or shared outside {client} before FDA approval.",
     "Unbranded disease education stays separate from branded work, with its own look and its own MLR review.",
     "The final label arrives after approval, so some approved pieces will need updates."],
   risks:[
     ["MLR review takes longer than planned. {client}'s review team is new.","High","Two rounds of MLR comments per piece are included. More are billed by the hour. If a review takes more than 10 business days, later dates move by the same amount. See MLR Review Rounds."],
+    ["The trial data reads out later than planned.","Medium","Work that does not need the data goes ahead. Work that does waits for it, and the dates after it move by the same amount. See Content Lock."],
+    ["Content changes after it is approved.","High","Content and claims lock 4 weeks after the claims matrix is approved. Later changes are a change order. See Content Lock."],
     ["The final label changes pieces that are already approved.","High","Updates to match the final label are a change order, not a revision round. See Label Changes."],
     ["The BLA date moves, or {client} pauses the work.","Medium","Work done to that point is billed. A pause of more than 30 days carries a restart fee and a new schedule. See Pause and Restart."],
     ["Feedback takes longer than planned.","Medium","{client} responds within 3 business days. Delays can add fees if we must move other work. See Timeline & Communication."],
@@ -665,10 +673,12 @@ const newId = () => "o"+Math.random().toString(36).slice(2,8);
 const curOpt = () => opts.list[opts.active];
 const leadOpt = () => opts.list.find(o=>o.lead) || opts.list[0];
 const multi = () => opts.list.filter(o=>o.rows.length).length>1;
-const sameRow = (x,sku,wave) => x.sku===sku && (x.wave||"")===(wave||"");
+const sameRow = (x,sku,wave,data) => x.sku===sku && (x.wave||"")===(wave||"") && !!x.data===!!data;
 function withScope(rows,fn){ const keep=scope; scope=rows; try{ return fn(); } finally{ scope=keep; } }
 function saveScope(){ if(opts.list.length) curOpt().rows=scope; try{ localStorage.setItem("sowkit.opts",JSON.stringify(opts)); localStorage.setItem("sowkit.scope",JSON.stringify(scope)); }catch(e){} }
-function cleanRows(rows){ return (Array.isArray(rows)?rows:[]).filter(x=>x&&bySku[x.sku]).map(x=>({sku:String(x.sku),qty:Math.max(1,parseInt(x.qty)||1),wave:/^[AB]$/.test(x.wave)?x.wave:"",...(STREAMS.includes(x.stream)?{stream:x.stream}:{})})); }
+function cleanRows(rows){ return (Array.isArray(rows)?rows:[]).filter(x=>x&&bySku[x.sku]).map(x=>({sku:String(x.sku),qty:Math.max(1,parseInt(x.qty)||1),wave:/^[AB]$/.test(x.wave)?x.wave:"",...(STREAMS.includes(x.stream)?{stream:x.stream}:{}),...(x.data?{data:true}:{})})); }
+// Needs trial data: the row can't start until the readout (and, after the claims matrix, until claims are approved).
+function setData(n,v){ const e=scope[n]; if(!e) return; const twin=scope.find((x,k)=>k!==n&&sameRow(x,e.sku,e.wave,v)); if(twin){ twin.qty+=e.qty; scope=scope.filter((x,k)=>k!==n); } else if(v) e.data=true; else delete e.data; saveScope(); renderBuilder(); }
 // Workstream for a row: "" follows the automatic choice (streamOf), anything else pins it.
 function setStream(n,v){ const e=scope[n]; if(!e) return; if(v) e.stream=v; else delete e.stream; saveScope(); renderBuilder(); }
 function loadScopeLocal(){
@@ -682,7 +692,7 @@ function addItem(sku,qty,wave){ wave=wave||""; const e=scope.find(x=>sameRow(x,s
 function addBrief(){ const b=DATA.items.find(i=>i.base==="Discovery & Strategy Brief"&&i.level==="L1"); addItem(b.sku,1); location.hash="#builder"; }
 function loadPack(n,replace){ const p=DATA.packs[n]; if(replace) scope=[]; for(const li of p.items) {const e=scope.find(x=>sameRow(x,li.sku,"")); if(e) e.qty+=li.qty; else scope.push({sku:li.sku,qty:li.qty,wave:""});} saveScope(); renderBuilder(); location.hash="#builder"; toast((replace?"Loaded: ":"Added: ")+p.name); }
 function setQty(n,v){ const e=scope[n]; if(!e) return; e.qty=Math.max(0,parseInt(v)||0); if(e.qty===0) scope=scope.filter((x,k)=>k!==n); saveScope(); renderBuilder(); }
-function setWave(n,w){ const e=scope[n]; if(!e) return; const twin=scope.find((x,k)=>k!==n&&sameRow(x,e.sku,w)); if(twin){ twin.qty+=e.qty; scope=scope.filter((x,k)=>k!==n); } else e.wave=w; saveScope(); renderBuilder(); }
+function setWave(n,w){ const e=scope[n]; if(!e) return; const twin=scope.find((x,k)=>k!==n&&sameRow(x,e.sku,w,e.data)); if(twin){ twin.qty+=e.qty; scope=scope.filter((x,k)=>k!==n); } else e.wave=w; saveScope(); renderBuilder(); }
 function removeItem(n){ scope=scope.filter((x,k)=>k!==n); saveScope(); renderBuilder(); }
 function clearScope(){ scope=[]; saveScope(); renderBuilder(); }
 
@@ -716,7 +726,7 @@ function parseImport(text,fallbackName){
   const list=raw.map((o,n)=>{ const rows=[];
     for(const x of (o.rows||[])){ if(!x||!x.sku) continue; const sku=String(x.sku).trim(); if(!bySku[sku]){ skipped.add(sku); continue; }
       const wave=/^[AB]$/i.test(x.wave||"")?String(x.wave).toUpperCase():"", qty=Math.max(1,parseInt(x.qty)||1);
-      const stream=STREAMS.includes(x.stream)?x.stream:"", e=rows.find(r=>sameRow(r,sku,wave)); if(e){ e.qty+=qty; merged++; } else rows.push({sku,qty,wave,...(stream?{stream}:{})}); }
+      const stream=STREAMS.includes(x.stream)?x.stream:"", data=!!x.data, e=rows.find(r=>sameRow(r,sku,wave,data)); if(e){ e.qty+=qty; merged++; } else rows.push({sku,qty,wave,...(stream?{stream}:{}),...(data?{data}:{})}); }
     return {id:newId(),name:String(o.name||(raw.length>1?"Option "+(n+1):fallbackName||"Imported option")).slice(0,60),lead:!!o.lead,summary:String(o.summary||"").slice(0,200),rows}; });
   return {list,skipped:[...skipped],merged};
 }
@@ -734,7 +744,7 @@ function doImport(){
   toast(`Imported ${plural(r.list.length,"option")}, ${rows} rows`);
   if(r.skipped.length||r.merged) document.getElementById("out").textContent=`IMPORT REPORT\n${r.skipped.length?"Not in the catalog, so left out: "+r.skipped.join(", ")+"\n":""}${r.merged?r.merged+" repeated rows (same SKU and wave) were added together.\n":""}`;
 }
-function exportOpts(){ saveScope(); const s=JSON.stringify({v:1,options:opts.list.map(o=>({name:o.name,lead:!!o.lead,summary:o.summary||"",rows:o.rows.map(x=>({sku:x.sku,qty:x.qty,...(x.wave?{wave:x.wave}:{}),...(x.stream?{stream:x.stream}:{})}))}))},null,1); document.getElementById("out").textContent=s; copyText(s,"All options copied as JSON"); }
+function exportOpts(){ saveScope(); const s=JSON.stringify({v:1,options:opts.list.map(o=>({name:o.name,lead:!!o.lead,summary:o.summary||"",rows:o.rows.map(x=>({sku:x.sku,qty:x.qty,...(x.wave?{wave:x.wave}:{}),...(x.stream?{stream:x.stream}:{}),...(x.data?{data:true}:{})}))}))},null,1); document.getElementById("out").textContent=s; copyText(s,"All options copied as JSON"); }
 function scopeTotals(rows){ let tot=0,h=H0(); for(const e of rows||scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=(i.h[k]||0)*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 function warnings(){
   const bases=new Set(scope.map(e=>bySku[e.sku].base)); const w=[];
@@ -764,13 +774,13 @@ function renderBuilder(){
   const wt=wv?waveTotals():null;
   document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">${multi()?esc(curOpt().name):"Scope total"}</div></div>${wt?`<div class="t"><div class="v">${money(wt.a)}</div><div class="k">Wave A + program</div></div><div class="t"><div class="v">${money(wt.b)}</div><div class="k">Wave B</div></div>`:""}<div class="t"><div class="v">${t.th} h</div><div class="k">Production hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
   document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
-  const sv=!!tl.streams, cols=7+(wv?1:0)+(sv?1:0);
-  document.getElementById("bhead").innerHTML = `<tr><th>Line item</th><th>Level</th>${wv?"<th>Wave</th>":""}${sv?"<th>Workstream</th>":""}<th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr>`;
+  const sv=!!tl.streams, dv=!!tl.readout, cols=7+(wv?1:0)+(sv?1:0)+(dv?1:0);
+  document.getElementById("bhead").innerHTML = `<tr><th>Line item</th><th>Level</th>${wv?"<th>Wave</th>":""}${sv?"<th>Workstream</th>":""}${dv?"<th>Needs trial data</th>":""}<th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr>`;
   document.getElementById("bbody").innerHTML = scope.map((e,n)=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+(b||0),0)*e.qty;
     const wsel = wv ? `<td><select class="wv" aria-label="Wave for ${esc(i.name)}" onchange="setWave(${n},this.value)">${["A","B",""].map(w=>`<option value="${w}"${(e.wave||"")===w?" selected":""}>${w?WAVE[w]:"Whole program"}</option>`).join("")}</select></td>` : "";
     const auto = sv && !spanRow(i) ? streamOf({...e,stream:""},i) : "";
     const ssel = sv ? `<td>${spanRow(i)?`<span class="small muted">Whole program</span>`:`<select class="wv" aria-label="Workstream for ${esc(i.name)}" onchange="setStream(${n},this.value)"><option value="">Auto: ${auto}</option>${STREAMS.map(s=>`<option value="${s}"${e.stream===s?" selected":""}>${s}</option>`).join("")}</select>`}</td>` : "";
-    return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div>${i.partner?`<div class="prtline"><span class="chip prt">${prtLabel(i)}</span> ${esc(i.partner)}</div>`:""}</td><td class="small">${i.lname||"flat"}</td>${wsel}${ssel}<td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
+    return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div>${i.partner?`<div class="prtline"><span class="chip prt">${prtLabel(i)}</span> ${esc(i.partner)}</div>`:""}</td><td class="small">${i.lname||"flat"}</td>${wsel}${ssel}${dv?`<td>${isClaims(i)?`<span class="small muted">Starts at readout</span>`:spanRow(i)?"":`<label class="chk"><input type="checkbox"${e.data?" checked":""} aria-label="${esc(i.name)} needs the trial data" onchange="setData(${n},this.checked)"> Yes</label>`}</td>`:""}<td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
   if(scope.length) document.getElementById("out").textContent = buildExport("items");
   renderTimeline(); renderPropTier();
 }
@@ -826,10 +836,10 @@ const TL_MLR=[
   {id:"monthly",label:"Monthly committee",cad:4,turn:2,cyc:2},
   {id:"custom",label:"Custom"}];
 // target: the launch date the client needs (flags any miss); waves: run Wave B rows as their own waterfall from wb.
-let tl={v:2,start:"",mlr:"unknown",fb:7,cad:2,turn:2,cyc:2,target:"",waves:false,wb:"",streams:false,cap:0};
+let tl={v:2,start:"",mlr:"unknown",fb:7,cad:2,turn:2,cyc:2,target:"",waves:false,wb:"",streams:false,cap:0,readout:""};
 function saveTl(){ try{localStorage.setItem("sowkit.tl",JSON.stringify(tl));}catch(e){} }
 function loadTl(){ try{const s=JSON.parse(localStorage.getItem("sowkit.tl")||"{}"); if(!s.v) delete s.fb; Object.assign(tl,s,{v:2});}catch(e){} } // v1 defaulted feedback to 5 days
-function setTl(k,v){ tl[k]= ["start","mlr","target","wb"].includes(k) ? v : k==="waves"||k==="streams" ? !!v : Math.max(0,parseFloat(v)||0); saveTl(); if(k==="waves"||k==="streams") renderBuilder(); else renderTimeline(); }
+function setTl(k,v){ tl[k]= ["start","mlr","target","wb","readout"].includes(k) ? v : k==="waves"||k==="streams" ? !!v : Math.max(0,parseFloat(v)||0); saveTl(); if(k==="waves"||k==="streams") renderBuilder(); else renderTimeline(); }
 const DAY=864e5;
 const tlWeekOf = date => (tl.start&&date) ? (new Date(date+"T12:00:00")-new Date(tl.start+"T12:00:00"))/DAY/7 : null;
 // Wave B's start in weeks from kickoff: the date set in the builder, or week 14 (about three months in) without one.
@@ -879,8 +889,8 @@ function tlRun(all,t0,m,tag){
     for(const tier of [...new Set(list.map(x=>TL_TIER[x.i.base]??1))].sort((a,b)=>a-b)){
       let te=ts, tg=ts;
       for(const x of list.filter(x=>(TL_TIER[x.i.base]??1)===tier)){
-        const d=tlItem(x.i,x.e.qty), st=tlPlace(ts,prodHours(x),d.prod);
-        rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:""),tag,base:x.i.base,start:st,end:st+d.total,gate:st+d.gate,prod:d.prod,rev:d.rev,rounds:d.rounds,hrs:prodHours(x),mlr:!!m&&tlIsMLR(x.i)});
+        const d=tlItem(x.i,x.e.qty), st=tlPlace(tlDataStart(x,ts),prodHours(x),d.prod);
+        rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:"")+(x.e.data?" (needs data)":""),tag,base:x.i.base,start:st,end:st+d.total,gate:st+d.gate,prod:d.prod,rev:d.rev,rounds:d.rounds,hrs:prodHours(x),mlr:!!m&&tlIsMLR(x.i)});
         te=Math.max(te,st+d.total); tg=Math.max(tg,st+d.gate);
         if(d.total>10) flags.push({k:"info",t:`${pre}${x.i.name} runs about ${wk(d.total)} weeks on its own. Consider staging it so part of it can go to review sooner.`});
       }
@@ -912,7 +922,7 @@ function tlRun(all,t0,m,tag){
 // so they don't set the launch date. Only rows set to it by hand go there.
 const STREAM_APPROVAL="At approval";
 const STREAMS=["Strategy & messaging","Brand & campaign","Websites","Visual aid","Other materials","Wave B",STREAM_APPROVAL];
-const STREAM_STRAT=new Set(["Discovery & Strategy Brief","Working Session","Market & KOL Research Study","Physician Survey & Readout","Messaging & Content Document","Medical Writing & Narrative","Advisory Board Support","Medical & Scientific Consultation","Channel Strategy","Naming","Brand Evolution Summit","Website & Brand Audit"]);
+const STREAM_STRAT=new Set(["Claims Matrix","Discovery & Strategy Brief","Working Session","Market & KOL Research Study","Physician Survey & Readout","Messaging & Content Document","Medical Writing & Narrative","Advisory Board Support","Medical & Scientific Consultation","Channel Strategy","Naming","Brand Evolution Summit","Website & Brand Audit"]);
 const STREAM_BRAND=new Set(["Brand Identity","Brand Visual Direction","Logo","Brand Guidelines","Template System","Campaign Development","Medical Illustration","Brand Asset Onboarding","Figma Design System"]);
 const STREAM_SITE=new Set(["Website Architecture & Sitemap","Wireframes","Website Narrative & Content","Site Foundation","Homepage Design","Homepage Development","Web Page Design","Web Page Development","Page Template","Site Feature or Integration","Content Population & Migration","QA, Accessibility & Launch","Accessibility Audit & Remediation","Email Platform Setup & Automation","Launch Measurement Plan & Setup","CMS Upgrade or Platform Migration","Localization Management","Web Application or Dashboard"]);
 const STREAM_VA=new Set(["Interactive Visual Aid","Rep CRM Certification"]);
@@ -930,6 +940,13 @@ const prodHours = x => ["S","D","V","C","M","P"].reduce((a,k)=>a+(x.i.h[k]||0)*x
 // already placed. Workstreams are placed in order (strategy first, Wave B last), so later ones queue for people.
 // TL_CAL is the people booked per week; null (the default, and always outside workstream mode) means no limit.
 let TL_CAL=null;
+// Trial data: rows marked "Needs trial data" wait for it. The Claims Matrix starts at the readout; every other data
+// row waits until the claims matrix has its first round approved (or the readout, without a claims matrix row).
+// TL_DATA = {readout, claims} in weeks from kickoff while tlBuild runs, null otherwise.
+let TL_DATA=null;
+const isClaims = i => i.base==="Claims Matrix";
+const needsData = x => !!(x.e.data || isClaims(x.i));
+function tlDataStart(x,ts){ if(!TL_DATA||!needsData(x)) return ts; return Math.max(ts, isClaims(x.i)?TL_DATA.readout:TL_DATA.claims); }
 function tlPlace(ts,hrs,prod){
   if(!TL_CAL||!hrs) return ts;
   const len=Math.max(0.4,prod||0.4), rate=hrs/len/TL_CAP, cap=tl.cap;
@@ -945,8 +962,8 @@ function tlTiers(list,t,m,tag,mult){
   const rows=[]; let ts=t, end=t, gate=t;
   for(const tier of [...new Set(list.map(x=>TL_TIER[x.i.base]??1))].sort((a,b)=>a-b)){
     let te=ts, tg=ts;
-    for(const x of list.filter(x=>(TL_TIER[x.i.base]??1)===tier)){ const d=tlItem(x.i,x.e.qty), hrs=prodHours(x)*(mult||1), st=tlPlace(ts,hrs,d.prod);
-      rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:"")+(mult>1?` (each of ${mult} sites)`:""),tag,base:x.i.base,start:st,end:st+d.total,gate:st+d.gate,prod:d.prod,rev:d.rev,rounds:d.rounds,hrs,mlr:!!m&&tlIsMLR(x.i)});
+    for(const x of list.filter(x=>(TL_TIER[x.i.base]??1)===tier)){ const d=tlItem(x.i,x.e.qty), hrs=prodHours(x)*(mult||1), st=tlPlace(tlDataStart(x,ts),hrs,d.prod);
+      rows.push({type:"item",label:x.i.name+(x.e.qty>1?" x "+x.e.qty:"")+(x.e.data?" (needs data)":"")+(mult>1?` (each of ${mult} sites)`:""),tag,base:x.i.base,start:st,end:st+d.total,gate:st+d.gate,prod:d.prod,rev:d.rev,rounds:d.rounds,hrs,mlr:!!m&&tlIsMLR(x.i)});
       te=Math.max(te,st+d.total); tg=Math.max(tg,st+d.gate); }
     end=Math.max(end,te); gate=Math.max(gate,tg); ts=tg;
   }
@@ -1006,6 +1023,15 @@ function tlLoad(rows){
   return wk.map(h=>h/TL_CAP);
 }
 function tlBuild(){
+  const rw=tlWeekOf(tl.readout);
+  if(rw===null||rw<0) return tlBuildInner();
+  const cm=scope.find(e=>isClaims(bySku[e.sku])), claims=cm?rw+tlItem(bySku[cm.sku],cm.qty).gate:rw;
+  TL_DATA={readout:rw,claims};
+  try{ const b=tlBuildInner();
+    if(scope.some(e=>e.data||isClaims(bySku[e.sku]))) b.flags.unshift({k:"info",t:`Work that needs the trial data waits for the readout (${fmtDate(tlDate(rw))})${cm?`, and then for the claims matrix, approved about ${fmtDate(tlDate(claims))}`:""}. A later readout moves those rows, and everything after them, by the same amount.`});
+    return b; } finally{ TL_DATA=null; }
+}
+function tlBuildInner(){
   const m=tlMlr(), all=scope.map(e=>({e,i:bySku[e.sku]})), bases=new Set(all.map(x=>x.i.base));
   const work=all.filter(x=>!spanRow(x.i)), waves=wavesOn() && work.some(x=>x.e.wave==="B");
   let rows=[], flags=[], launch=0, slip=0, gatedTotal=0, phaseStart={};
@@ -1073,7 +1099,7 @@ function renderTimeline(){
   const sel=document.getElementById("tl-mlr");
   if(sel && !sel.options.length) sel.innerHTML=TL_MLR.map(o=>`<option value="${o.id}">${o.label}</option>`).join("");
   if(sel) sel.value=tl.mlr;
-  for(const k of ["start","fb","cad","turn","cyc","target","wb","cap"]){ const el=document.getElementById("tl-"+k); if(el && document.activeElement!==el) el.value=k==="cap"&&!tl.cap?"":tl[k]??""; }
+  for(const k of ["start","fb","cad","turn","cyc","target","wb","cap","readout"]){ const el=document.getElementById("tl-"+k); if(el && document.activeElement!==el) el.value=k==="cap"&&!tl.cap?"":tl[k]??""; }
   document.getElementById("tl-waves").checked=!!tl.waves; document.getElementById("tl-wbbox").hidden=!tl.waves;
   document.getElementById("tl-streams").checked=!!tl.streams; document.getElementById("tl-capbox").hidden=!tl.streams;
   document.getElementById("tl-custom").hidden = tl.mlr!=="custom";
@@ -1125,9 +1151,29 @@ function timelineText(){
    Acceptance of Proposal. Client name, dates and totals are PandaDoc variables, filled after creation,
    so they stay linked everywhere they appear. */
 let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director",
-  bigTerms:false,showVoices:false,voicesTitle:"Retina Voices",voices:[]};
+  bigTerms:false,showVoices:false,voicesTitle:"Retina Voices",voices:[],showDirect:false,direct:[]};
 function saveProp(){ try{localStorage.setItem("sowkit.prop",JSON.stringify(prop));}catch(e){} }
-function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} if(!Array.isArray(prop.voices)) prop.voices=[]; }
+function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} if(!Array.isArray(prop.voices)) prop.voices=[]; if(!Array.isArray(prop.direct)) prop.direct=[]; }
+
+/* Work the client contracts directly: a partner such as a market research firm is engaged and paid by the client,
+   and the proposal shows it with a rough estimate, outside our totals. A partner is named only when "Name them" is
+   ticked (once they have agreed); a blank estimate reads "To be confirmed". */
+const shownDirect = () => prop.showDirect ? prop.direct.filter(x=>String(x.what||"").trim()) : [];
+function setDirect(n,k,v){ const x=prop.direct[n]; if(!x) return; x[k]=v; saveProp(); refreshPreview(); }
+function addDirect(){ prop.direct.push({}); saveProp(); renderDirect(); }
+function delDirect(n){ prop.direct.splice(n,1); saveProp(); renderDirect(); refreshPreview(); }
+const directEst = x => { const a=num0(x.low), b=num0(x.high); return a&&b&&a!==b ? `${money0(Math.min(a,b))} to ${money0(Math.max(a,b))}` : a||b ? money0(a||b) : "To be confirmed"; };
+const num0 = v => { const n=parseFloat(String(v||"").replace(/[$,]/g,"")); return isFinite(n)&&n>0?n:0; };
+function renderDirect(){
+  const box=document.getElementById("p-direct"); if(!box) return; box.hidden=!prop.showDirect; if(box.hidden) return;
+  box.innerHTML=prop.direct.map((x,n)=>`<div class="card" style="margin-bottom:10px;background:var(--bg)"><div class="propgrid">
+    <label class="wide">What it is (the client sees it)<input value="${esc(x.what||"")}" placeholder="Market research: physician and patient sentiment, launch baseline" oninput="setDirect(${n},'what',this.value)"></label>
+    <label>Partner<input value="${esc(x.who||"")}" oninput="setDirect(${n},'who',this.value)"></label>
+    <label>Estimate, low ($)<input value="${esc(x.low||"")}" inputmode="numeric" oninput="setDirect(${n},'low',this.value)"></label>
+    <label>Estimate, high ($)<input value="${esc(x.high||"")}" inputmode="numeric" oninput="setDirect(${n},'high',this.value)"></label></div>
+    <div class="acts"><label class="chk"><input type="checkbox"${x.named?" checked":""} onchange="setDirect(${n},'named',this.checked)"> Name the partner (they have agreed)</label><button class="sm" onclick="delDirect(${n})">Remove</button></div></div>`).join("")+
+    `<button class="sm" onclick="addDirect()">Add an item</button>`;
+}
 
 /* Voices (endorsements), per proposal. Never write, draft or paraphrase a quote for a real person: every quote is
    pasted exactly as the person approved it in writing. An entry shows in the proposal only when it is ticked to show
@@ -1151,12 +1197,13 @@ function renderVoices(){
    `<button class="sm" onclick="addVoice()">Add a voice</button>`;
 }
 // A new company or title means a new engagement, so the remembered ClickUp task must not carry over to it.
-function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else { if((k==="company"||k==="title")&&prop[k]!==v) prop.clickupTask=""; prop[k]=v; } saveProp(); if(k==="showVoices") renderVoices(); renderPropTier(); }
+function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else { if((k==="company"||k==="title")&&prop[k]!==v) prop.clickupTask=""; prop[k]=v; } saveProp(); if(k==="showVoices") renderVoices(); if(k==="showDirect") renderDirect(); renderPropTier(); }
 function renderProp(){
   for(const k of ["title","company","partner","first","last","email","date","version","tier","overview","firmName","firmTitle"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
   prop.obj.forEach((v,n)=>{ const el=document.getElementById("p-obj"+n); if(el && document.activeElement!==el) el.value=v; });
   for(const k of ["bigTerms","showVoices"]){ const el=document.getElementById("p-"+k); if(el) el.checked=!!prop[k]; }
-  renderVoices(); renderPropTier();
+  { const el=document.getElementById("p-showDirect"); if(el) el.checked=!!prop.showDirect; }
+  renderDirect(); renderVoices(); renderPropTier();
 }
 function renderPropTier(){ refreshPreview(); const el=document.getElementById("p-tierhint"); if(el) el.textContent = scope.length ? `${propTier()==="L1"?"Simple":propTier()==="L2"?"Mid-range":"Complex"} proposal (${propTier()})${prop.tier==="auto"?", picked from the scope":""}.` : ""; }
 // Auto tier: Simple under $15,000 with one phase, Complex from $50,000 or with a full site build, Mid-range between.
@@ -1387,6 +1434,7 @@ function proposalPageOne(){
     SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
       return `<tr class="stage"><td colspan="3">${esc(s)}</td></tr>`+g.map(x=>`<tr><td><b>${nm(x)}</b><div class="d">${esc(tier==="L1"?cDesc(x.i):cap(x.i.lname||""))}</div></td><td class="dl">${(x.i.deliv||[]).map(esc).join("<br>")}</td><td class="r">${money0(x.i.price*x.e.qty)}${suffix}</td></tr>`).join(""); }).join("")+
     `<tr class="tot"><td colspan="2">${label}</td><td class="r">${money0(total)}${suffix}</td></tr></tbody></table></div>`;
+  const dx=shownDirect(), directHTML=dx.length?`<div class="sp-cardbox"><h3 class="sub">Contracted directly by ${co}</h3><p>These partners work for ${co} directly and bill ${co}, so they are not in the totals above. We coordinate their work with ours. The estimates are rough until each partner quotes.</p><div class="scroll" style="margin-top:18px"><table class="sp-tbl"><tbody>${dx.map(x=>`<tr><td><b>${esc(x.what.trim())}</b>${x.named&&String(x.who||"").trim()?`<div class="d">${esc(x.who.trim())}</div>`:""}</td><td class="r">${directEst(x)}</td></tr>`).join("")}</tbody></table></div></div>`:"";
   const notInHTML=notIn.length?`<div class="sp-cardbox"><h3 class="sub">Not in scope</h3><ul class="dots">${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
   const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr"||r.type==="wave");
   const W=Math.max(weeks,...tlRows.map(r=>Math.ceil(r.hi||r.end)));
@@ -1426,7 +1474,7 @@ function proposalPageOne(){
     p+=`<div class="sp-sum"><div><span class="sp-tag">Deliverables</span><ul class="dots">${keyDeliv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
       <div><span class="sp-tag">Budget</span><table class="sp-mini"><tbody>${stages.map(s=>`<tr><td>${esc(s)}</td><td>${money0(bySec[s])}</td></tr>`).join("")}<tr class="tot"><td>Total</td><td>${money0(d.oneTime)}</td></tr></tbody></table>${wavesOn()&&waveTotals().b?`<p class="sp-note">Wave A and program ${money0(waveTotals().a)}. Wave B ${money0(waveTotals().b)}.</p>`:""}${d.monthly.length?`<p class="sp-note">Plus optional post-launch services from ${money0(d.perMonth)} per month.</p>`:""}</div>
       <div><span class="sp-tag">Timeline</span><div class="sp-big"><div class="v">${months||weeks}</div><div class="k">${months?"Months":"Weeks"}</div><div class="s">Kickoff to launch${kick?`<br>${tlFmt(kick)} to ${tlFmt(launch)}`:""}</div></div></div></div>`;
-    p+=`<div class="sp-cardbox" style="border-top:0"><h3 class="sub">Payment Schedule</h3>${payHTML}</div>`;
+    p+=`<div class="sp-cardbox" style="border-top:0"><h3 class="sub">Payment Schedule</h3>${payHTML}</div>`+directHTML;
     p+=`<div style="margin-top:56px"><details class="sp-acc" data-k="scope"><summary><span class="lt">A</span><h3>Scope of Work</h3><span class="ex"></span></summary><div class="body">${itemsHTML(d.once)}</div></details>
       <details class="sp-acc" data-k="budget"><summary><span class="lt">B</span><h3>Budget</h3><span class="ex"></span></summary><div class="body">${budgetTbl(d.once,"Total",d.oneTime,"")}${notInHTML}</div></details>
       <details class="sp-acc" data-k="timeline"><summary><span class="lt">C</span><h3>Timeline</h3><span class="ex"></span></summary><div class="body">${tlTbl}${tlLine}</div></details></div>`;
@@ -1440,7 +1488,7 @@ function proposalPageOne(){
   } else {
     // Mid-range: the scope in full; Simple: straight to the budget
     if(L(2)) h+=sec("card",head("Scope of Work",`<p>Here is what each part of the project includes and what ${co} receives at the end of it.</p>`)+itemsHTML(d.once));
-    h+=sec(L(2)?"alt":"card",head("Budget",`<p>The investment for the scope as written${d.monthly.length?", with ongoing services listed separately":""}.</p>`)+budgetTbl(d.once,"Total",d.oneTime,"")+(d.monthly.length?`<h3 class="sub" style="margin-top:44px">Ongoing services (monthly)</h3>`+budgetTbl(d.monthly,"Monthly total",d.perMonth," / mo"):"")+(notInHTML?`<div style="margin-top:28px">${notInHTML}</div>`:""));
+    h+=sec(L(2)?"alt":"card",head("Budget",`<p>The investment for the scope as written${d.monthly.length?", with ongoing services listed separately":""}.</p>`)+budgetTbl(d.once,"Total",d.oneTime,"")+(d.monthly.length?`<h3 class="sub" style="margin-top:44px">Ongoing services (monthly)</h3>`+budgetTbl(d.monthly,"Monthly total",d.perMonth," / mo"):"")+(notInHTML?`<div style="margin-top:28px">${notInHTML}</div>`:"")+(directHTML?`<div style="margin-top:28px">${directHTML}</div>`:""));
     h+=sec(L(2)?"card":"alt",head("Timeline",`<p>About ${plural(weeks,"week")} from kickoff to ${d.b.rows.some(r=>r.type==="launch")?"launch":"final files"}.</p>`)+tlTbl+tlLine);
     h+=sec(L(2)?"alt":"card",head("Payment Schedule",`<p>${payIntro}</p>`)+payHTML.replace(/^<p>.*?<\/p>/,""));
   }
@@ -1615,6 +1663,35 @@ async function unpublish(slug){
   const j=await r.json().catch(()=>({})); toast(r.ok?"Unpublished /"+slug:(j.error||"Couldn't unpublish")); loadPublished();
 }
 
+/* Plan for the deck: the big blocks a pitch deck needs before there is a final SOW. Each workstream (or phase), its
+   dates on the lead option, and a price range across the options, rounded out to the nearest $1,000. */
+function deckText(){
+  const list=propOptions().length?propOptions():[propSource()], lead=list[0];
+  const PM="Program management and MLR submissions";
+  const groupOf=(e,i)=>spanRow(i)?PM:tl.streams?streamOf(e,i):tlPhaseOf(i);
+  const once=rows=>rows.filter(e=>bySku[e.sku].billing!=="recurring"&&bySku[e.sku].section!=="Pass-through");
+  const order=tl.streams?[...STREAMS,PM]:[...TL_PHASES,PM];
+  const groups=order.filter(g=>list.some(o=>once(o.rows).some(e=>groupOf(e,bySku[e.sku])===g)));
+  const t=withScope(lead.rows,()=>tlBuild()), mo=w=>{ const d=tlDate(w); return d?d.toLocaleDateString("en-US",{month:"short",year:"numeric"}):"week "+(Math.floor(w)+1); };
+  const span=g=>{ if(g===PM) return [0,t.launch]; const rs=t.rows.filter(r=>(r.type==="wave"&&r.tag===g)||(r.type==="phase"&&(r.label===g||r.label.endsWith(": "+g))));
+    return rs.length?[Math.min(...rs.map(r=>r.start)),Math.max(...rs.map(r=>r.end))]:null; };
+  const range=vals=>{ const v=vals.filter(x=>x>0); if(!v.length) return "$0"; const a=Math.floor(Math.min(...v)/1000)*1000, b=Math.ceil(Math.max(...v)/1000)*1000; return a===b?money0(a):`${money0(a)} to ${money0(b)}`; };
+  const sumIn=(o,g)=>once(o.rows).filter(e=>groupOf(e,bySku[e.sku])===g).reduce((a,e)=>a+bySku[e.sku].price*e.qty,0);
+  const o=TL_MLR.find(x=>x.id===tl.mlr);
+  let s=`LAUNCH PLAN FOR THE DECK (a scenario, not a commitment)\n`;
+  s+=`Kickoff ${tl.start?fmtDate(tlDate(0)):"not set"}.${tl.readout?` Trial data readout ${fmtDate(new Date(tl.readout+"T12:00:00"))}.`:""}${tl.target?` Target ${fmtDate(new Date(tl.target+"T12:00:00"))}.`:""}\n`;
+  s+=`Assumes feedback within ${tl.fb} business days, MLR: ${o?o.label.toLowerCase():tl.mlr}${tl.streams?`, parallel workstreams${tl.cap?`, a team of ${tl.cap}`:""}`:""}.\n\nOPTIONS\n`;
+  for(const op of list){ const b=withScope(op.rows,()=>tlBuild()); s+=`  ${op.name}${op===lead&&list.length>1?" (recommended)":""}: ${money0(scopeTotals(once(op.rows)).tot)}, launch ${tl.start?fmtDate(tlDate(b.launch)):"week "+Math.ceil(b.launch)}\n`; }
+  if(list.length>1) s+=`  Range: ${range(list.map(op=>scopeTotals(once(op.rows)).tot))}\n`;
+  s+=`\nBLOCKS (timing on ${lead.name||"the lead option"}, price range across the options)\n`;
+  for(const g of groups){ const sp=span(g); s+=`  ${g==="At approval"?"At approval (ready before FDA approval)":g}: ${sp?`${mo(sp[0])} to ${mo(sp[1])}`:"throughout"}, ${range(list.map(op=>sumIn(op,g)))}\n`; }
+  const mon=withScope(lead.rows,()=>proposalData()).perMonth; if(mon) s+=`  Optional after launch: ${money0(mon)} per month\n`;
+  const dx=shownDirect(); if(dx.length){ s+=`\nCONTRACTED DIRECTLY BY THE CLIENT (not in our totals)\n`+dx.map(x=>`  ${x.what.trim()}${x.named&&x.who?` (${x.who.trim()})`:""}: ${directEst(x)}`).join("\n")+"\n"; }
+  const need=[...new Set(list.flatMap(op=>op.rows.map(e=>bySku[e.sku]).filter(i=>i.partner&&!partnerOptional(i)).map(i=>i.base)))];
+  if(need.length) s+=`\nINTERNAL: rows that need an integrated partner: ${need.join(", ")}.\n`;
+  return s;
+}
+function copyDeck(){ if(!propSource().rows.length){toast("Nothing in the scope yet");return;} const s=deckText(); document.getElementById("out").textContent=s; copyText(s,"Deck plan copied"); }
 function copyTimeline(){ if(!scope.length){toast("Nothing in the scope yet");return;} const s=timelineText(); document.getElementById("out").textContent=s; copyText(s,"Timeline copied"); }
 
 /* ---------- utilities ---------- */
