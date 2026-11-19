@@ -8,7 +8,7 @@
 <title>Steadfast SOW Kit</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@500;600&family=Zalando+Sans+Expanded:wght@400;500&family=Google+Sans+Flex:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Steadfast design system v1.2.1 (Steadfast Mode), applied to the SOW Kit. Source of truth:
+/* Steadfast design system v1.3.0 (Steadfast Mode), applied to the SOW Kit. Source of truth:
    docs/handoffs/steadfast-design-system.json. The --sf-* tokens below are css.variables, unrenamed. The kit's own
    class names stay (the scripts build them); each one is styled to the matching component spec.
    Layout: a left rail of seven views on desktop, a scrolling tab strip on phones. Paper and ink do the work; an accent
@@ -18,10 +18,11 @@
   --sf-raised:#fbf9f5;--sf-paper:#f2efe9;--sf-ink:#0a0a0a;
   --sf-n-50:#f2efe9;--sf-n-100:#ebe8e2;--sf-n-200:#e2ddd4;--sf-n-300:#d8d1c4;--sf-n-400:#cac2b6;--sf-n-500:#7f786d;--sf-n-600:#6a665f;--sf-n-700:#4f4a43;--sf-n-800:#2a2825;--sf-n-850:#1c1b19;--sf-n-900:#0a0a0a;
   --sf-dark-muted:#bdb6ab;--sf-dark-body:#cfc8bc;--sf-dark-rule:#3a3733;
-  --sf-emerald-300:#7cab97;--sf-emerald-500:#0f6b4f;--sf-emerald-600:#01573e;
-  --sf-maroon-200:#d9acad;--sf-maroon-500:#7a1f2b;--sf-maroon-600:#661622;
-  --sf-gold-100:#f0e2c7;--sf-gold-300:#d7b36c;--sf-gold-600:#7e5c03;--sf-gold-700:#5e4300;
-  --sf-purple-200:#c2b6dd;--sf-purple-500:#5b3a8c;
+  --sf-emerald-300:#7cab97;--sf-emerald-500:#0f6b4f;--sf-emerald-600:#01573e;--sf-emerald-700:#03422f;
+  --sf-maroon-200:#d9acad;--sf-maroon-300:#bd7e80;--sf-maroon-500:#7a1f2b;--sf-maroon-600:#661622;--sf-maroon-700:#530e18;
+  --sf-gold-100:#f0e2c7;--sf-gold-200:#e5cd9e;--sf-gold-300:#d7b36c;--sf-gold-400:#c4952b;--sf-gold-600:#7e5c03;--sf-gold-700:#5e4300;
+  --sf-purple-200:#c2b6dd;--sf-purple-300:#9f8dc4;--sf-purple-500:#5b3a8c;--sf-purple-700:#3a215e;
+  --sf-copper-200:#e1b59b;--sf-copper-400:#b0622c;--sf-copper-600:#773b0c;--sf-copper-700:#5d2a01;
   --sf-space-1:4px;--sf-space-2:8px;--sf-space-3:12px;--sf-space-4:16px;--sf-space-5:24px;--sf-space-6:32px;--sf-space-7:48px;--sf-space-8:64px;--sf-space-9:96px;
   --sf-gap-element:var(--sf-space-3);--sf-gap-group:var(--sf-space-5);--sf-gap-section:var(--sf-space-8);--sf-gutter:clamp(24px,5vw,48px);
   --sf-width-page:860px;--sf-width-app:1200px;--sf-radius-sm:4px;--sf-radius-md:6px;--sf-radius-lg:10px;--sf-control-h:44px;--sf-control-h-sm:36px;
@@ -79,6 +80,9 @@ nav.rail a:focus-visible{outline-offset:-2px}
 nav.rail a.muted{margin-top:var(--sf-space-5);color:var(--fg2)}
 main{flex:1;min-width:0;padding:var(--sf-space-6) max(var(--sf-gutter),env(safe-area-inset-right,0px)) var(--sf-space-9) max(var(--sf-gutter),env(safe-area-inset-left,0px))}
 section.view{display:none;max-width:1080px}
+/* The Scope Builder is a wide working table, so it takes the full content width (capped for very large screens).
+   Reading text inside it keeps its own measure through .head and .cmp. */
+#v-builder{max-width:1680px}
 section.view.on{display:block}
 .head{display:flex;flex-direction:column;gap:var(--sf-space-3);margin-bottom:var(--sf-gap-group);max-width:70ch}
 .head p{color:var(--fg3);font-size:var(--sf-text-lede);max-width:58ch}
@@ -207,6 +211,21 @@ input[type=checkbox]:checked{background-color:var(--fg);border-color:var(--fg);b
 .tbl td:last-child,.tbl th:last-child{padding-right:0}
 .tbl tfoot td{border-bottom:0;border-top:1px solid var(--fg)}
 .tbl tfoot td.r b{font-weight:500}
+/* Builder table: the two reading columns (line item, level) get room first and keep it on every row;
+   selects, checkboxes and figures size to their content and never wrap. Below 1120px the table scrolls
+   sideways inside its box, and the line item column stays pinned so each row keeps its name. */
+#btbl{min-width:860px}
+#btbl th:nth-child(1){width:32%} #btbl th:nth-child(2){width:30%}
+#btbl tr.item td:nth-child(n+3){white-space:nowrap}
+#btbl input[type=number]{width:72px}
+/* Planning settings (wave, workstream, trial data) sit on a second line under the row they belong to,
+   so the reading columns and the money columns keep the width. The pair reads as one row: no rule between them. */
+#btbl tr.item.has-plan td{border-bottom:0;padding-bottom:var(--sf-space-2)}
+#btbl tr.plan td{padding-top:0;padding-bottom:var(--sf-space-4)}
+.planline{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sf-space-2) var(--sf-space-5)}
+.planline>label,.planline>span{display:inline-flex;align-items:center;gap:var(--sf-space-2);font-size:var(--sf-text-small);color:var(--fg2);min-height:var(--sf-control-h-sm)}
+.planline select.wv{color:var(--fg)}
+.planline label.chk{min-height:var(--sf-control-h-sm)!important;padding-block:0!important;align-items:center!important;color:var(--fg)}
 .pack .tot{margin:var(--sf-space-4) 0 var(--sf-space-5)}
 .pack .tbl{min-width:600px}
 .pack .tbl td:first-child{min-width:200px}
@@ -285,10 +304,19 @@ pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;
 .g-axis span{position:absolute;bottom:var(--sf-space-1);font-family:var(--mono);font-size:var(--sf-text-label);line-height:1.3;color:var(--fg2);white-space:nowrap}
 .g-phase .g-lab{font-family:var(--display);font-weight:500;font-size:var(--sf-text-control)}
 .g-bar{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0;display:flex;overflow:hidden;min-width:3px}
-.g-bar i{display:block;height:100%;background:var(--fg)}
-.g-bar b{display:block;height:100%;background:var(--edge);box-shadow:inset 1px 0 0 var(--bg)}
-.g-gated i{background:var(--fg)}
-.g-phasebar{height:4px;background:var(--edge)}
+/* Group color (design system: sequence slots). A chart's top-level groups take the five accents in order:
+   1 emerald, 2 maroon, 3 gold, 4 purple, 5 copper. Rows inherit their group's slot. Ungrouped rows and a
+   sixth group onward stay ink. Inside the chart color means group only; status is pattern and line. */
+.gantt{--ph:var(--fg);--ph-l:var(--edge);--ph-d:var(--fg);--ph-k:transparent}
+.g-row.ph1{--ph:var(--sf-emerald-500);--ph-l:var(--sf-emerald-300);--ph-d:var(--sf-emerald-700)}
+.g-row.ph2{--ph:var(--sf-maroon-500);--ph-l:var(--sf-maroon-300);--ph-d:var(--sf-maroon-700)}
+.g-row.ph3{--ph:var(--sf-gold-400);--ph-l:var(--sf-gold-200);--ph-d:var(--sf-gold-700);--ph-k:var(--sf-gold-600)}
+.g-row.ph4{--ph:var(--sf-purple-500);--ph-l:var(--sf-purple-300);--ph-d:var(--sf-purple-700)}
+.g-row.ph5{--ph:var(--sf-copper-400);--ph-l:var(--sf-copper-200);--ph-d:var(--sf-copper-700);--ph-k:var(--sf-copper-600)}
+.g-bar i{display:block;height:100%;background:var(--ph);box-shadow:inset 0 0 0 1px var(--ph-k)}
+.g-bar b{display:block;height:100%;background:var(--ph-l);box-shadow:inset 1px 0 0 var(--bg)}
+.g-phasebar{height:4px;background:var(--ph)}
+.g-top .g-lab span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ph);box-shadow:inset 0 0 0 1px var(--ph-k);margin-right:var(--sf-space-2);vertical-align:0}
 .g-mlrbar{background:var(--hatch-review) 0 0/6px 6px repeat}
 .g-mlr .g-lab span{color:var(--fg);font-weight:500}
 .g-slip{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0;background:var(--hatch-slip) 0 0/6px 6px repeat;box-shadow:inset 0 0 0 1px var(--fg2)}
@@ -297,7 +325,7 @@ pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;
 .g-ms{position:absolute;top:50%;width:14px;height:14px;background:var(--fg);transform:translate(-50%,-50%);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
 .g-launch .g-lab{font-weight:600}
 .g-wave{border-top:1px solid var(--fg)} .g-wave .g-lab span{font-weight:600}
-.g-wavebar{height:8px;background:var(--fg)}
+.g-wavebar{height:8px;background:var(--ph-d)}
 .g-load .g-track{height:56px;background:none}
 .g-ld{position:absolute;bottom:0;background:var(--soft);border-right:1px solid var(--bg)} .g-ld.over{background:var(--fg)}
 .g-cap{position:absolute;left:0;right:0;border-top:2px dashed var(--fg)}
@@ -306,6 +334,7 @@ pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;
 .g-key span{display:inline-flex;align-items:center;gap:var(--sf-space-2)}
 .g-key span::before{content:"";display:inline-block;width:18px;height:10px;flex:none}
 .g-key .k-prod::before{background:var(--fg)} .g-key .k-rev::before{background:var(--edge)}
+.g-key .k-grp::before{width:10px;height:10px;border-radius:50%;background:conic-gradient(var(--sf-emerald-500) 0 20%,var(--sf-maroon-500) 0 40%,var(--sf-gold-400) 0 60%,var(--sf-purple-500) 0 80%,var(--sf-copper-400) 0)}
 .g-key .k-mlr::before{background:var(--hatch-review) 0 0/6px 6px repeat}
 .g-key .k-slip::before{background:var(--hatch-slip) 0 0/6px 6px repeat;box-shadow:inset 0 0 0 1px var(--fg2)}
 .g-key .k-ms::before{width:12px;height:12px;background:var(--fg);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
@@ -517,7 +546,7 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
     </div>
     <div class="tot" id="tl-sum"></div>
     <div class="scroll"><div id="tl"></div></div>
-    <div class="g-key small muted"><span class="k-prod">Production</span><span class="k-rev">Client review rounds</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span><span class="k-tgt">Target launch</span></div>
+    <div class="g-key small muted"><span class="k-grp">Color marks the group</span><span class="k-prod">Production (solid)</span><span class="k-rev">Client review rounds (light)</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span><span class="k-tgt">Target launch</span></div>
     <div id="tl-flags" style="margin-top:var(--sf-gap-group)"></div>
   </div>
   <div class="tlbox">
@@ -909,13 +938,15 @@ function renderBuilder(){
   const wt=wv?waveTotals():null;
   document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">${multi()?esc(curOpt().name):"Scope total"}</div></div>${wt?`<div class="t"><div class="v">${money(wt.a)}</div><div class="k">Wave A + program</div></div><div class="t"><div class="v">${money(wt.b)}</div><div class="k">Wave B</div></div>`:""}<div class="t"><div class="v">${t.th} h</div><div class="k">Production hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
   document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
-  const sv=!!tl.streams, dv=!!tl.readout, cols=7+(wv?1:0)+(sv?1:0)+(dv?1:0);
-  document.getElementById("bhead").innerHTML = `<tr><th>Line item</th><th>Level</th>${wv?"<th>Wave</th>":""}${sv?"<th>Workstream</th>":""}${dv?"<th>Needs trial data</th>":""}<th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr>`;
+  const sv=!!tl.streams, dv=!!tl.readout, cols=7;
+  document.getElementById("bhead").innerHTML = `<tr><th>Line item</th><th>Level</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr>`;
   document.getElementById("bbody").innerHTML = scope.map((e,n)=>{const i=bySku[e.sku]; const th=Object.values(i.h).reduce((a,b)=>a+(b||0),0)*e.qty;
-    const wsel = wv ? `<td><select class="wv" aria-label="Wave for ${esc(i.name)}" onchange="setWave(${n},this.value)">${["A","B",""].map(w=>`<option value="${w}"${(e.wave||"")===w?" selected":""}>${w?WAVE[w]:"Whole program"}</option>`).join("")}</select></td>` : "";
+    const wsel = wv ? `<label>Wave <select class="wv" aria-label="Wave for ${esc(i.name)}" onchange="setWave(${n},this.value)">${["A","B",""].map(w=>`<option value="${w}"${(e.wave||"")===w?" selected":""}>${w?WAVE[w]:"Whole program"}</option>`).join("")}</select></label>` : "";
     const auto = sv && !spanRow(i) ? streamOf({...e,stream:""},i) : "";
-    const ssel = sv ? `<td>${spanRow(i)?`<span class="small muted">Whole program</span>`:`<select class="wv" aria-label="Workstream for ${esc(i.name)}" onchange="setStream(${n},this.value)"><option value="">Auto: ${auto}</option>${STREAMS.map(s=>`<option value="${s}"${e.stream===s?" selected":""}>${s}</option>`).join("")}</select>`}</td>` : "";
-    return `<tr><td><b>${i.name}</b>${ptip(i)}<div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td>${wsel}${ssel}${dv?`<td>${isClaims(i)?`<span class="small muted">Starts at readout</span>`:spanRow(i)?"":`<label class="chk"><input type="checkbox"${e.data?" checked":""} aria-label="${esc(i.name)} needs the trial data" onchange="setData(${n},this.checked)"> Yes</label>`}</td>`:""}<td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
+    const ssel = sv ? (spanRow(i)?`<span>Workstream: whole program</span>`:`<label>Workstream <select class="wv" aria-label="Workstream for ${esc(i.name)}" onchange="setStream(${n},this.value)"><option value="">Auto: ${auto}</option>${STREAMS.map(s=>`<option value="${s}"${e.stream===s?" selected":""}>${s}</option>`).join("")}</select></label>`) : "";
+    const dsel = dv ? (isClaims(i)?`<span>Starts at the trial data readout</span>`:spanRow(i)?"":`<label class="chk"><input type="checkbox"${e.data?" checked":""} aria-label="${esc(i.name)} needs the trial data" onchange="setData(${n},this.checked)"> Needs trial data</label>`) : "";
+    const plan = wsel+ssel+dsel;
+    return `<tr class="item${plan?" has-plan":""}"><td><b>${i.name}</b>${ptip(i)}<div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td><td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>${plan?`<tr class="plan"><td colspan="7"><div class="planline">${plan}</div></td></tr>`:""}`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
   if(scope.length) document.getElementById("out").textContent = buildExport("items");
   renderTimeline(); renderPropTier();
 }
@@ -1254,8 +1285,11 @@ function renderTimeline(){
   // People needed each week (workstream mode), against the team size when one is set
   const top=Math.max(peak.v,tl.cap||0,1);
   const loadRow = tl.streams ? `<div class="g-row g-load"><div class="g-lab"><span>People needed</span><small>Peak ${peak.v.toFixed(1)}, week ${peak.k+1}</small></div><div class="g-track">${load.map((v,w)=>`<div class="g-ld${tl.cap&&v>tl.cap+0.05?" over":""}" style="left:${pct(w)};width:${pct(1)};height:${(v/top*100).toFixed(1)}%" title="Week ${w+1}: ${v.toFixed(1)} people"></div>`).join("")}${tl.cap?`<div class="g-cap" style="bottom:${(tl.cap/top*100).toFixed(1)}%" title="Team size: ${tl.cap}"></div>`:""}</div></div>` : "";
+  // Sequence slots: the chart's top-level groups (waves or workstreams, else SOW phases) take accents 1 to 5 in order.
+  const topType = rows.some(r=>r.type==="wave") ? "wave" : "phase"; let slot=0, cur=0;
+  const slotOf = r => { if(r.type===topType){ slot++; cur = slot<=5 ? slot : 0; } else if(/^(span|ongoing|launch)$/.test(r.type)) return 0; return cur; };
   box.innerHTML=`<div class="gantt" style="--w:${W}"><div class="g-row g-axis"><div class="g-lab"></div><div class="g-track">${axis}</div></div>${loadRow}`+
-    rows.map(r=>`<div class="g-row g-${r.type==="wave"?"phase g-wave":r.type}"><div class="g-lab"><span>${r.label}</span><small>${when(r)}</small></div><div class="g-track">${r.type==="wave"?`<div class="g-bar g-wavebar" style="left:${pct(r.start)};width:${pct(Math.max(r.end-r.start,0.15))}"></div>`:bar(r)}${target!=null&&target>=0?`<div class="g-tgt" style="left:${pct(target)}"></div>`:""}</div></div>`).join("")+`</div>`;
+    rows.map(r=>{ const ph=slotOf(r); return `<div class="g-row g-${r.type==="wave"?"phase g-wave":r.type}${ph?" ph"+ph:""}${r.type===topType&&ph?" g-top":""}"><div class="g-lab"><span>${r.label}</span><small>${when(r)}</small></div><div class="g-track">${r.type==="wave"?`<div class="g-bar g-wavebar" style="left:${pct(r.start)};width:${pct(Math.max(r.end-r.start,0.15))}"></div>`:bar(r)}${target!=null&&target>=0?`<div class="g-tgt" style="left:${pct(target)}"></div>`:""}</div></div>`; }).join("")+`</div>`;
   const sum=document.getElementById("tl-sum");
   const end=launch, d1=tlDate(end), d2=tlDate(end+slip);
   sum.innerHTML = launch>0 ? `<div class="t"><div class="v">${Math.ceil(end)} wks</div><div class="k">To launch</div></div>${slip>0.5?`<div class="t"><div class="v">${Math.ceil(end+slip)} wks</div><div class="k">If MLR runs long</div></div>`:""}${d1?`<div class="t"><div class="v">${tlFmt(d1)}${slip>0.5?" to "+tlFmt(d2):""}</div><div class="k">Launch date</div></div>`:""}${tl.streams?`<div class="t"><div class="v">${peak.v.toFixed(1)}</div><div class="k">Peak people${tl.cap?" (team "+tl.cap+")":""}</div></div>`:""}` : "";
@@ -1575,10 +1609,15 @@ function proposalPageOne(){
   const notInHTML=notIn.length?`<div class="sp-cardbox"><h3 class="sub">Not in scope</h3><ul class="dots">${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
   const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr"||r.type==="wave");
   const W=Math.max(weeks,...tlRows.map(r=>Math.ceil(r.hi||r.end)));
+  // Same sequence slots as the kit's timeline: top-level groups take the five accents in order (design system, color in charts).
+  const SLOT=[null,["#0f6b4f","#0f6b4f"],["#7a1f2b","#7a1f2b"],["#c4952b","#7e5c03"],["#5b3a8c","#5b3a8c"],["#b0622c","#773b0c"]];
+  const topT=tlRows.some(r=>r.type==="wave")?"wave":"phase"; let sN=0, sCur=0;
+  const slotC=r=>{ if(r.type===topT){ sN++; sCur=sN<=5?sN:0; } return SLOT[sCur]; };
+  const dot=c=>c?`<span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c[0]};box-shadow:inset 0 0 0 1px ${c[1]};margin-right:8px"></span>`:"";
   const tlTbl=`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Stage</th><th>Timing</th>${tl.start?"<th>Dates</th>":""}<th class="r">Length</th><th style="width:30%"></th></tr></thead><tbody>`+
-    tlRows.map(r=>{ const a=tlDate(r.start), b=tlDate(Math.max(r.start,r.end-0.01));
-      return `<tr${r.type==="wave"?' class="stage"':""}><td><b>${esc(r.type==="mlr"?`${company||"Client"} MLR review${r.tag?", "+r.tag:""}`:r.label)}</b>${r.type==="mlr"&&r.hi>r.end+0.5?`<div class="d">Up to week ${Math.ceil(r.hi)} if review runs long</div>`:""}</td><td>${tlRange(r.start,r.end)}</td>${tl.start?`<td>${a?tlFmt(a):""}${b&&wkSpan(r)>1?" to "+tlFmt(b):""}</td>`:""}<td class="r">${plural(wkSpan(r),"week")}</td>
-        <td class="bar"><div style="position:relative;height:8px;background:var(--sp-line);border-radius:4px"><i style="position:absolute;top:0;bottom:0;border-radius:4px;left:${(r.start/W*100).toFixed(2)}%;width:${Math.max(2,(r.end-r.start)/W*100).toFixed(2)}%;background:${r.type==="mlr"?"var(--sp-fg2)":"var(--sp-ink)"}"></i></div></td></tr>`; }).join("")+
+    tlRows.map(r=>{ const a=tlDate(r.start), b=tlDate(Math.max(r.start,r.end-0.01)), c=slotC(r);
+      return `<tr${r.type==="wave"?' class="stage"':""}><td><b>${r.type===topT?dot(c):""}${esc(r.type==="mlr"?`${company||"Client"} MLR review${r.tag?", "+r.tag:""}`:r.label)}</b>${r.type==="mlr"&&r.hi>r.end+0.5?`<div class="d">Up to week ${Math.ceil(r.hi)} if review runs long</div>`:""}</td><td>${tlRange(r.start,r.end)}</td>${tl.start?`<td>${a?tlFmt(a):""}${b&&wkSpan(r)>1?" to "+tlFmt(b):""}</td>`:""}<td class="r">${plural(wkSpan(r),"week")}</td>
+        <td class="bar"><div style="position:relative;height:8px;background:var(--sp-line)"><i style="position:absolute;top:0;bottom:0;left:${(r.start/W*100).toFixed(2)}%;width:${Math.max(2,(r.end-r.start)/W*100).toFixed(2)}%;background:${r.type==="mlr"?"repeating-linear-gradient(135deg,var(--sp-fg2) 0 1.5px,transparent 1.5px 5px)":c?c[0]:"var(--sp-ink)"};${c&&r.type!=="mlr"?`box-shadow:inset 0 0 0 1px ${c[1]}`:""}"></i></div></td></tr>`; }).join("")+
     `<tr class="tot"><td>Launch / final files</td><td>Week ${weeks}</td>${tl.start?`<td>${launch?tlFmt(launch):""}</td>`:""}<td class="r"></td><td></td></tr></tbody></table></div>`;
   const tlLine=`<p style="margin-top:18px">Work begins ${kick?fmtDate(kick):"at kickoff"}, with launch planned for ${launch?fmtDate(launch):"week "+weeks}. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.</p>`;
   const payIntro=d.oneTime<15000?"A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.":`A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in ${d.pay.length-1} equal monthly installments, so payment follows the work as it happens.`;
