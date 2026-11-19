@@ -8,238 +8,367 @@
 <title>Steadfast SOW Kit</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@500;600&family=Zalando+Sans+Expanded:wght@400;500&family=Google+Sans+Flex:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a left rail of seven sections on desktop, a scrolling tab strip on phones; paper ground, black as the only accent (as on steadfastdesignfirm.com), borderless tinted panels, numbers in mono. */
+/* Steadfast design system v1.2.1 (Steadfast Mode), applied to the SOW Kit. Source of truth:
+   docs/handoffs/steadfast-design-system.json. The --sf-* tokens below are css.variables, unrenamed. The kit's own
+   class names stay (the scripts build them); each one is styled to the matching component spec.
+   Layout: a left rail of seven views on desktop, a scrolling tab strip on phones. Paper and ink do the work; an accent
+   appears only as a status shape beside an ink word. */
 :root{
-  --bg:#f2efe9; --bg2:#e2ddd4; --panel:#ebe8e2; --fg:#0a0a0a; --fg2:#706c65; --line:#d8d1c4;
-  --accent:#000000; --accent-fg:#ffffff; --accent-soft:#cac2b6; --tone2:#807b73; --tone3:#cac2b6;
-  --label:"Zalando Sans Expanded","Helvetica Neue",Arial,sans-serif;
-  --ok:#2f6b3a; --warn:#9a5b12; --bad:#9b2a2a;
-  --display:"Zalando Sans SemiExpanded","Helvetica Neue",Arial,sans-serif;
-  --body:"Google Sans Flex","Helvetica Neue",Arial,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light; /* One theme: paper on every screen. The system has no dark mode. */
+  --sf-raised:#fbf9f5;--sf-paper:#f2efe9;--sf-ink:#0a0a0a;
+  --sf-n-50:#f2efe9;--sf-n-100:#ebe8e2;--sf-n-200:#e2ddd4;--sf-n-300:#d8d1c4;--sf-n-400:#cac2b6;--sf-n-500:#7f786d;--sf-n-600:#6a665f;--sf-n-700:#4f4a43;--sf-n-800:#2a2825;--sf-n-850:#1c1b19;--sf-n-900:#0a0a0a;
+  --sf-dark-muted:#bdb6ab;--sf-dark-body:#cfc8bc;--sf-dark-rule:#3a3733;
+  --sf-emerald-300:#7cab97;--sf-emerald-500:#0f6b4f;--sf-emerald-600:#01573e;
+  --sf-maroon-200:#d9acad;--sf-maroon-500:#7a1f2b;--sf-maroon-600:#661622;
+  --sf-gold-100:#f0e2c7;--sf-gold-300:#d7b36c;--sf-gold-600:#7e5c03;--sf-gold-700:#5e4300;
+  --sf-purple-200:#c2b6dd;--sf-purple-500:#5b3a8c;
+  --sf-space-1:4px;--sf-space-2:8px;--sf-space-3:12px;--sf-space-4:16px;--sf-space-5:24px;--sf-space-6:32px;--sf-space-7:48px;--sf-space-8:64px;--sf-space-9:96px;
+  --sf-gap-element:var(--sf-space-3);--sf-gap-group:var(--sf-space-5);--sf-gap-section:var(--sf-space-8);--sf-gutter:clamp(24px,5vw,48px);
+  --sf-width-page:860px;--sf-width-app:1200px;--sf-radius-sm:4px;--sf-radius-md:6px;--sf-radius-lg:10px;--sf-control-h:44px;--sf-control-h-sm:36px;
+  --sf-font-display:"Zalando Sans SemiExpanded","Helvetica Neue",Arial,sans-serif;--sf-font-label:"Zalando Sans Expanded","Helvetica Neue",Arial,sans-serif;--sf-font-body:"Google Sans Flex","Helvetica Neue",Arial,sans-serif;--sf-font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --sf-text-label:.75rem;--sf-text-small:.8125rem;--sf-text-body:1rem;--sf-text-lede:1.0625rem;--sf-text-dense:.875rem;--sf-text-control:.9375rem;--sf-text-h3:1.25rem;--sf-text-h2:clamp(1.5rem,3vw,1.75rem);--sf-text-figure:clamp(1.5rem,4vw,2rem);--sf-text-h1:clamp(2rem,5.4vw,3.3rem);
+
+  /* The kit's names for its surfaces and inks, mapped onto the tokens. */
+  --bg:var(--sf-paper); --panel:var(--sf-n-100); --bg2:var(--sf-n-200); --field:var(--sf-raised);
+  --line:var(--sf-n-300); --soft:var(--sf-n-400); --edge:var(--sf-n-500);
+  --fg:var(--sf-ink); --fg2:var(--sf-n-600); --fg3:var(--sf-n-700);
+  --accent:var(--sf-ink); --accent-fg:var(--sf-paper);
+  --band:var(--sf-ink); --band-fg:var(--sf-paper); --band-muted:var(--sf-dark-muted); --band-body:var(--sf-dark-body);
+  --ok:var(--sf-emerald-500); --warn:var(--sf-gold-600); --bad:var(--sf-maroon-600); --info:var(--sf-purple-500);
+  --scrim:rgba(10,10,10,.6); --pv-paper:#f2efe9;
+  --display:var(--sf-font-display); --label:var(--sf-font-label); --body:var(--sf-font-body); --mono:var(--sf-font-mono);
+  /* Drawn marks. Data URLs cannot read a variable, so each color is written into the URL. */
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.5 6 6l4.5-4.5' fill='none' stroke='%230a0a0a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --tick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3 7.4l2.7 2.7L11 4.4' fill='none' stroke='%23f2efe9' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --hatch-review:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 1l2-2M0 6l6-6M5 7l2-2' stroke='%230a0a0a' stroke-width='1'/%3E%3C/svg%3E");
+  --hatch-slip:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 1l2-2M0 6l6-6M5 7l2-2' stroke='%236a665f' stroke-width='1'/%3E%3C/svg%3E");
+  --dash:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Crect width='8' height='6' fill='%237f786d'/%3E%3C/svg%3E");
+
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111111;--bg2:#222120;--panel:#1a1a19;--fg:#f2efe9;--fg2:#a39e96;--line:#33312e;--accent:#f2efe9;--accent-fg:#111111;--accent-soft:#3a3733;--tone2:#807b73;--tone3:#4d4a45;--ok:#7fc48a;--warn:#e0a85a;--bad:#e07a7a;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#111111;--bg2:#222120;--panel:#1a1a19;--fg:#f2efe9;--fg2:#a39e96;--line:#33312e;--accent:#f2efe9;--accent-fg:#111111;--accent-soft:#3a3733;--tone2:#807b73;--tone3:#4d4a45;--ok:#7fc48a;--warn:#e0a85a;--bad:#e07a7a;color-scheme:dark}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;letter-spacing:.02em;margin:0}
-h1,h2,h3,h4{font-family:var(--display);font-weight:500;line-height:1.1;letter-spacing:0;text-wrap:balance;margin:0}
-h1{font-size:2.1rem} h2{font-size:1.35rem} h3{font-size:1.05rem} h4{font-size:.95rem;font-weight:600}
-p{margin:0} a{color:var(--accent)}
+
+/* Base */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:var(--sf-text-body);line-height:1.5;margin:0}
+h1,h2,h3,h4{font-family:var(--display);font-weight:500;margin:0;text-wrap:balance}
+h1{font-size:var(--sf-text-h1);line-height:1.08;letter-spacing:-.015em;max-width:18ch}
+h2{font-size:var(--sf-text-h2);line-height:1.15;letter-spacing:-.005em}
+h3{font-size:var(--sf-text-h3);line-height:1.25}
+h4{font-family:var(--body);font-size:var(--sf-text-body);font-weight:600;line-height:1.3}
+p{margin:0}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (hover:hover){a:hover{text-decoration-thickness:2px}}
+::selection{background:var(--fg);color:var(--bg)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.eyebrow{font-family:var(--label);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fg2);font-weight:500}
+.eyebrow{font-family:var(--label);font-size:var(--sf-text-label);font-weight:500;line-height:1.3;letter-spacing:.16em;text-transform:uppercase;color:var(--fg2)}
+.muted{color:var(--fg2)}
+.small{font-size:var(--sf-text-small);line-height:1.45}
+
+/* Page frame */
 .wrap{display:flex;min-height:100%}
 .wrap>*{min-width:0}
-nav.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:flex-start;min-width:0;max-width:100%;width:220px;flex:0 0 220px;padding:22px 0 22px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:4px}
-nav.rail .brand{font-family:var(--display);font-weight:600;font-size:1rem;letter-spacing:.02em;margin-bottom:10px;padding-left:10px}
-nav.rail .brand small{display:block;font-family:var(--body);font-weight:400;font-size:.72rem;color:var(--fg2);letter-spacing:0}
-nav.rail a{display:block;padding:8px 10px;border-radius:6px;color:var(--fg);text-decoration:none;font-size:.92rem}
-nav.rail a.on{background:var(--accent);color:var(--accent-fg)}
-nav.rail a{transition:background .15s}
-nav.rail a:hover:not(.on){background:var(--bg2)}
-nav.rail a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{flex:1;min-width:0;padding-block:22px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-@media (min-width:861px){main{padding-left:28px}}
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:flex-start;min-width:0;max-width:100%;width:260px;flex:0 0 260px;padding:var(--sf-space-6) 0 var(--sf-space-6) max(var(--sf-space-5),env(safe-area-inset-left,0px));display:flex;flex-direction:column}
+nav.rail .brand{font-family:var(--display);font-weight:500;font-size:var(--sf-text-h3);line-height:1.25;margin-bottom:var(--sf-space-5)}
+nav.rail .brand small{display:block;margin-top:var(--sf-space-1);font-family:var(--body);font-weight:400;font-size:var(--sf-text-small);line-height:1.45;color:var(--fg2)}
+/* View switches are flat label tabs: no outline, no gap, light fill on hover, a step darker when selected. */
+nav.rail a{display:flex;align-items:center;gap:var(--sf-space-2);min-height:var(--sf-control-h);padding:14px 21px;color:var(--fg);text-decoration:none;font-family:var(--label);font-size:var(--sf-text-label);font-weight:400;line-height:1.3;letter-spacing:.14em;text-transform:uppercase;transition:background-color .15s}
+@media (hover:hover){nav.rail a:hover:not(.on){background:var(--panel)}}
+nav.rail a.on{background:var(--bg2)}
+nav.rail a:focus-visible{outline-offset:-2px}
+nav.rail a.muted{margin-top:var(--sf-space-5);color:var(--fg2)}
+main{flex:1;min-width:0;padding:var(--sf-space-6) max(var(--sf-gutter),env(safe-area-inset-right,0px)) var(--sf-space-9) max(var(--sf-gutter),env(safe-area-inset-left,0px))}
 section.view{display:none;max-width:1080px}
 section.view.on{display:block}
-.head{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;max-width:70ch}
-.head p{color:var(--fg2)}
-.grid{display:grid;gap:10px}
-.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.card{background:var(--panel);border-radius:10px;padding:20px;min-width:0}
-.card h3{margin-bottom:6px}
-.step{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--line)}
-.step:last-child{border-bottom:1px solid var(--line)}
-.step .n{font-family:var(--mono);font-size:1.1rem;color:var(--accent)}
-.step p{color:var(--fg2);max-width:68ch}
-.step b{color:var(--fg)}
-button,.btn{font:inherit;font-size:.83rem;font-weight:500;letter-spacing:0;border:1px solid transparent;background:var(--bg2);color:var(--fg);border-radius:6px;padding:9px 14px;cursor:pointer;transition:opacity .15s}
-button.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-button.sm{padding:6px 11px;font-size:.78rem}
-button:hover{opacity:.8}
-.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
-input[type=search],select,input[type=number]{font:inherit;font-size:.9rem;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
-/* Dropdowns match the other fields, with the arrow inset evenly from the right edge rather than against it. */
-select,.propgrid select{-webkit-appearance:none;appearance:none;padding-right:36px;background-image:var(--chev);background-repeat:no-repeat;background-position:right 12px center;background-size:11px 7px;min-height:36px;cursor:pointer}
-:root{--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%23706c65' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%23a39e96' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}}
-.optbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
-.optbar .opt{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 12px;border:1px solid var(--line);background:var(--panel)}
-.optbar .opt.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-.optbar .opt small{font-family:var(--mono);font-size:.72rem;opacity:.8}
-.optedit{display:grid;grid-template-columns:minmax(160px,1fr) minmax(220px,2fr);gap:10px 14px;margin-bottom:14px}
-.optedit label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
-.optedit input{font:inherit;font-family:var(--body);font-size:.9rem;letter-spacing:0;text-transform:none;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);width:100%}
-.optedit .acts{grid-column:1/-1;margin-top:0}
-.tbl select.wv{font-size:.8rem;padding:5px 30px 5px 8px;min-height:30px;background-position:right 10px center}
-.chip.prt{background:transparent;border:1px solid var(--fg2);color:var(--fg)}
-.prtline{font-size:.78rem;color:var(--fg2);margin-top:2px}
-.vox{background:var(--panel);border-radius:10px;padding:14px;margin-top:10px}
-.vox .propgrid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.chk{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;font-family:var(--body)!important;font-size:.88rem!important;letter-spacing:0!important;text-transform:none!important;color:var(--fg)!important}
-.chk input{width:auto!important}
-@media (max-width:600px){.optedit{grid-template-columns:1fr}}
-input[type=search]{flex:1;min-width:200px}
-input[type=number]{width:62px;text-align:right;font-family:var(--mono)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:.74rem;padding:2px 8px;border-radius:99px;background:var(--bg2);color:var(--fg2)}
-.chip.lvl{background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-weight:500}
-.chip.basis-i{border:1px dashed var(--warn);color:var(--warn);background:transparent}
-.row{background:var(--panel);border-radius:10px;padding:12px 14px;margin-bottom:8px;min-width:0}
-.row .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.row .top .nm{font-weight:600;flex:1;min-width:200px}
-.row .top .pr{font-family:var(--mono);font-weight:500;white-space:nowrap}
-.row .lv{color:var(--fg2);font-size:.9rem;margin-top:2px}
-.row .more{display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:none}
-.row.open .more{display:block}
-.row .desc{max-width:72ch}
-.client .desc{max-width:72ch}
-.client .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 28px;margin-top:12px}
-.client ul{margin:6px 0 0;padding-left:18px}
-.client li{font-size:.9rem;margin:2px 0}
-.client .note{margin-top:12px;color:var(--fg2);font-style:italic;max-width:72ch}
-.hrs{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono);font-size:.8rem;color:var(--fg2);margin-top:8px}
-.hrs b{color:var(--fg);font-weight:500}
-.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.muted{color:var(--fg2)}
-.small{font-size:.86rem}
-.tbl{width:100%;border-collapse:collapse;font-size:.9rem}
-.tbl th{text-align:left;font-family:var(--label);font-weight:500;color:var(--fg2);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;padding:8px 6px;border-bottom:1px solid var(--line)}
-.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-.tbl td.r,.tbl th.r{text-align:right;font-family:var(--mono)}
+.head{display:flex;flex-direction:column;gap:var(--sf-space-3);margin-bottom:var(--sf-gap-group);max-width:70ch}
+.head p{color:var(--fg3);font-size:var(--sf-text-lede);max-width:58ch}
+.head p.small{font-size:var(--sf-text-small)}
+.tlbox{margin-top:var(--sf-gap-section)}
+.grid{display:grid;gap:var(--sf-gap-group)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
 .scroll{overflow-x:auto}
-.pack{padding:24px}
-.pack .tot{margin:16px 0 8px}
+
+/* Panels: a quiet shaded box for notes set apart from the main story. No border, no shadow. */
+.card{background:var(--panel);border-radius:var(--sf-radius-lg);padding:var(--sf-space-5);min-width:0}
+.card>.eyebrow{display:block;margin-bottom:var(--sf-space-2)}
+.card h3{margin-bottom:var(--sf-space-2)}
+
+/* Start Here steps: a divided list, flush with its title, under a 2px rule. */
+.step{display:grid;grid-template-columns:32px minmax(0,1fr);gap:var(--sf-space-3);align-items:baseline;padding:var(--sf-space-4) 0;border-bottom:1px solid var(--line)}
+.head+.step{border-top:2px solid var(--fg)}
+.step .n{font-family:var(--mono);font-size:var(--sf-text-lede);color:var(--fg)}
+.step b{font-weight:600;color:var(--fg)}
+.step p{color:var(--fg3);max-width:65ch;margin-top:var(--sf-space-1)}
+
+/* Buttons. One ink button per view; the rest are outlined. Hover changes fill only. */
+button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sf-space-2);min-height:var(--sf-control-h);padding:0 21px;border:1px solid var(--fg);border-radius:var(--sf-radius-md);background:transparent;color:var(--fg);font-family:var(--body);font-size:var(--sf-text-control);font-weight:500;line-height:1;letter-spacing:0;text-decoration:none;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s}
+@media (hover:hover){button:hover:not(:disabled),.btn:hover{background:var(--fg);color:var(--bg)}}
+button:active:not(:disabled){background:var(--fg3);border-color:var(--fg3);color:var(--bg)}
+button.pri{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+@media (hover:hover){button.pri:hover:not(:disabled){background:var(--sf-n-800);border-color:var(--sf-n-800)}}
+button.sm{min-height:var(--sf-control-h-sm);padding:0 15px;font-size:var(--sf-text-dense)}
+@media (pointer:coarse){button.sm{min-height:var(--sf-control-h)}}
+button:disabled{background:var(--bg2);border-color:var(--bg2);color:var(--fg3);cursor:not-allowed}
+/* A row or package repeats its actions, so its "Add" is outlined there: the view keeps one ink button. */
+.row .acts button.pri,.pack .acts button.pri{background:transparent;color:var(--fg)}
+@media (hover:hover){.row .acts button.pri:hover,.pack .acts button.pri:hover{background:var(--fg);color:var(--bg)}}
+.toolbar{display:flex;flex-wrap:wrap;gap:var(--sf-space-3);align-items:center;margin-bottom:var(--sf-gap-group)}
+.acts{display:flex;gap:var(--sf-space-3);flex-wrap:wrap;align-items:center;margin-top:var(--sf-space-4)}
+
+/* Fields: one shell for text, number, date, search, dropdown and textarea. 44px, raised fill, n-500 edge. */
+input[type=search],input[type=number],input[type=date],input[type=text],input[type=email],input[type=password],input:not([type]),select,textarea{min-height:var(--sf-control-h);padding:0 var(--sf-space-4);border:1px solid var(--edge);border-radius:var(--sf-radius-md);background-color:var(--field);color:var(--fg);font-family:var(--body);font-size:var(--sf-text-body);font-weight:400;line-height:1.5;letter-spacing:0;text-transform:none;transition:border-color .15s,box-shadow .15s}
+textarea{padding:var(--sf-space-3) var(--sf-space-4);resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--fg2);opacity:1}
+@media (hover:hover){input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:var(--fg)}}
+input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+input[type=file]{font-family:var(--body);font-size:var(--sf-text-dense);color:var(--fg)}
+select{-webkit-appearance:none;appearance:none;padding-right:var(--sf-control-h);background-image:var(--chev);background-repeat:no-repeat;background-position:right 16px center;background-size:12px 8px;cursor:pointer}
+input[type=search]{flex:1;min-width:min(100%,240px)}
+input[type=number]{width:104px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tbl select.wv{min-height:var(--sf-control-h-sm);padding:0 40px 0 var(--sf-space-3);background-position:right 12px center}
+/* Checkbox: a 20px mark with an n-600 edge, ink with a paper tick when checked. Its row is 44px tall. */
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:20px;height:20px;margin:2px 0 0;flex:none;border:2px solid var(--fg2);border-radius:var(--sf-radius-sm);background-color:var(--field);cursor:pointer;transition:background-color .12s,border-color .12s}
+@media (hover:hover){input[type=checkbox]:hover{border-color:var(--fg)}}
+input[type=checkbox]:checked{background-color:var(--fg);border-color:var(--fg);background-image:var(--tick);background-repeat:no-repeat;background-position:center;background-size:14px 14px}
+/* Form labels: body 14px, weight 500, ink, sentence case, 8px above the control. */
+.propgrid label,.tlset label,.optedit label,.mbox label{display:block;font-family:var(--body);font-size:var(--sf-text-dense);font-weight:500;line-height:1.3;letter-spacing:0;text-transform:none;color:var(--fg)}
+.propgrid input:not([type=checkbox]),.propgrid textarea,.propgrid select,.optedit input{width:100%}
+:is(.propgrid,.tlset,.optedit,.mbox) label>:is(input:not([type=checkbox]),select,textarea){display:block;margin-top:var(--sf-space-2)}
+:is(.propgrid,.tlset,.optedit,.mbox) label>:is(.mrow,.objs,span:not(.muted)){margin-top:var(--sf-space-2)}
+.chk,.gate label.rm,.mbox label.rm{display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:var(--sf-space-3)!important;min-height:var(--sf-control-h);padding-block:10px;font-family:var(--body)!important;font-size:var(--sf-text-body)!important;font-weight:400!important;line-height:1.5;letter-spacing:0!important;text-transform:none!important;color:var(--fg)!important;cursor:pointer}
+.propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--sf-gap-group) var(--sf-space-5)}
+.propgrid .wide{grid-column:1/-1}
+.propgrid .objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:var(--sf-space-3)}
+.propgrid textarea{line-height:1.5}
+/* The timeline settings are a control strip: on the paper between a 2px rule and a hairline. */
+.tlset{display:flex;flex-wrap:wrap;gap:var(--sf-gap-group) var(--sf-space-5);align-items:flex-end}
+.tlbox>.tlset{border-top:2px solid var(--fg);border-bottom:1px solid var(--line);padding:var(--sf-space-4) 0 var(--sf-space-5);margin-bottom:var(--sf-gap-group)}
+.tlset label>span{display:flex;align-items:center;gap:var(--sf-space-2);font-size:var(--sf-text-body);font-weight:400}
+.optedit{display:grid;grid-template-columns:minmax(min(100%,160px),1fr) minmax(min(100%,220px),2fr);gap:var(--sf-gap-group) var(--sf-space-5);margin-bottom:var(--sf-gap-group)}
+.optedit .acts{grid-column:1/-1;margin-top:0}
+
+/* Options strip: joined fill buttons. They touch, have no outline, and fill when chosen. */
+.optbar{display:flex;flex-wrap:wrap;gap:var(--sf-space-3);align-items:stretch;margin-bottom:var(--sf-gap-group)}
+.optbar .opt{flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:var(--sf-space-2) 21px;border:0;border-radius:0;background:var(--panel);color:var(--fg)}
+@media (hover:hover){.optbar .opt:hover:not(.on){background:var(--bg2);color:var(--fg)}}
+.optbar .opt.on{background:var(--fg);color:var(--bg)}
+.optbar .opt small{font-family:var(--mono);font-size:var(--sf-text-label);font-weight:400}
+.optbar .opt+.opt{margin-left:calc(var(--sf-space-3) * -1)} /* options touch; the action buttons keep the 12px gap */
+.optbar>button.sm{align-self:center}
+.vox{background:var(--panel);border-radius:var(--sf-radius-lg);padding:var(--sf-space-5);margin-top:var(--sf-space-3)}
+.vox .propgrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+
+/* Tags and flags. A tag is a small neutral label. A status is a shape and an ink word, never a tinted chip. */
+.chips{display:flex;flex-wrap:wrap;gap:var(--sf-space-2)}
+.chip{display:inline-block;font-family:var(--body);font-size:var(--sf-text-label);font-weight:400;line-height:1.3;letter-spacing:0;text-transform:none;padding:var(--sf-space-1) var(--sf-space-2);border-radius:var(--sf-radius-sm);background:var(--bg2);color:var(--fg);white-space:nowrap}
+.chip.lvl{font-family:var(--mono);font-weight:500;background:var(--fg);color:var(--bg)}
+.chip.basis-i,.chip.prt{display:inline-flex;align-items:center;gap:var(--sf-space-2);padding:0;border:0;border-radius:0;background:none;font-size:var(--sf-text-dense);font-weight:500;color:var(--fg)}
+.chip.basis-i::before,.chip.prt::before,.okflag::before{content:"";width:10px;height:10px;flex:none}
+.chip.basis-i::before{background:var(--warn);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.chip.prt::before{box-shadow:inset 0 0 0 2px var(--info)}
+.okflag{display:inline-flex;align-items:center;gap:var(--sf-space-2);font-weight:500}
+.okflag::before{width:11px;height:6px;border-left:2px solid var(--ok);border-bottom:2px solid var(--ok);transform:translateY(-2px) rotate(-45deg)}
+/* Notices (builder warnings, timeline flags): a divided list of flags under a 2px rule. Triangle = needs a
+   decision, diamond = at risk, outlined square = someone else owns it. */
+#warns:not(:empty),#tl-flags:not(:empty){border-top:2px solid var(--fg);margin-bottom:var(--sf-gap-group)}
+.cmp{position:relative;padding:var(--sf-space-3) 0 var(--sf-space-3) 22px;border-bottom:1px solid var(--line);font-size:var(--sf-text-dense);line-height:1.45;color:var(--fg);max-width:80ch}
+.cmp::before{content:"";position:absolute;left:0;top:calc(var(--sf-space-3) + 5px);width:10px;height:10px;background:var(--warn);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.cmp.risk::before{background:var(--bad);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.cmp.info::before{background:none;clip-path:none;box-shadow:inset 0 0 0 2px var(--info)}
+.cmp.info{display:block;padding:var(--sf-space-3) 0 var(--sf-space-3) 22px;background:none;border-radius:0} /* .info is also the Brief infographic panel */
+
+/* Catalog: a divided list of rows. A row opens a detail box whose 2px ink top edge is the row's rule. */
+#list{border-top:2px solid var(--fg)}
+.row{padding:var(--sf-space-3) 0;border-bottom:1px solid var(--line);min-width:0}
+.row .top{display:flex;gap:var(--sf-space-1) var(--sf-space-3);align-items:baseline;flex-wrap:wrap;min-height:28px}
+.row .top::before{content:"+";flex:none;width:var(--sf-space-4);font-family:var(--mono);color:var(--fg)}
+.row.open .top::before{content:"\2212"}
+.row .top .nm{font-weight:600;flex:1;min-width:min(100%,200px)}
+.row .top .pr{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+.row .lv{color:var(--fg2);font-size:var(--sf-text-dense);margin-top:var(--sf-space-1);padding-left:calc(var(--sf-space-4) + var(--sf-space-3))}
+.row .more{display:none;margin-top:var(--sf-space-3);padding:var(--sf-space-5);border-top:2px solid var(--fg);background:var(--panel)}
+.row.open .more{display:block}
+.row .desc,.client .desc{max-width:65ch}
+.client .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--sf-space-3) var(--sf-space-6);margin-top:var(--sf-space-4)}
+.client ul{margin:var(--sf-space-2) 0 0;padding:0 0 0 1.25em;list-style:disc}
+.client li{font-size:var(--sf-text-dense);padding:2px 0}
+.client li::marker{color:var(--fg)}
+.client .note{margin-top:var(--sf-space-3);color:var(--fg2);max-width:65ch}
+.hrs{display:flex;flex-wrap:wrap;gap:var(--sf-space-1) var(--sf-space-4);font-family:var(--mono);font-size:var(--sf-text-small);color:var(--fg2);margin-top:var(--sf-space-3)}
+.hrs b{color:var(--fg);font-weight:500}
+
+/* Tables: a 2px ink rule on top, hairlines between rows, numbers right-aligned in mono. */
+.tbl{width:100%;border-collapse:collapse;border-top:2px solid var(--fg);font-size:var(--sf-text-control)}
+.tbl th{text-align:left;font-family:var(--label);font-weight:500;font-size:var(--sf-text-label);line-height:1.3;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2);padding:var(--sf-space-3) var(--sf-space-4) var(--sf-space-2) 0;border-bottom:1px solid var(--line)}
+.tbl td{padding:var(--sf-space-3) var(--sf-space-4) var(--sf-space-3) 0;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td.r,.tbl th.r{text-align:right;padding-left:var(--sf-space-4)}
+.tbl td.r{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td:last-child,.tbl th:last-child{padding-right:0}
+.tbl tfoot td{border-bottom:0;border-top:1px solid var(--fg)}
+.tbl tfoot td.r b{font-weight:500}
+.pack .tot{margin:var(--sf-space-4) 0 var(--sf-space-5)}
 .pack .tbl{min-width:600px}
 .pack .tbl td:first-child{min-width:200px}
 .pack .tbl tbody td:nth-child(2){color:var(--fg2)}
-.pack .tbl td.r{white-space:nowrap}
-.pack .tbl tfoot td{border-bottom:0;border-top:2px solid var(--line)}
-.pack .acts{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-.tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
-.tot .t{background:var(--panel);border-radius:8px;padding:12px 14px}
-.card .tot .t{background:var(--bg)}
-.tot .t .v{font-family:var(--mono);font-size:1.25rem;font-weight:500}
-.tot .t .k{font-family:var(--label);font-size:.62rem;color:var(--fg2);text-transform:uppercase;letter-spacing:.18em;margin-top:2px}
-pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break:break-word;background:var(--panel);border-radius:10px;padding:16px;max-height:420px;overflow:auto;margin:0}
-.terms h3{margin:18px 0 6px}
-.terms h4{margin:12px 0 4px}
-.terms p{max-width:72ch;color:var(--fg);margin-bottom:6px}
-.terms .blk{position:relative;border-radius:10px;padding:18px 20px;margin-bottom:12px;background:var(--panel)}
-.terms .blk .cp{position:absolute;top:10px;right:10px}
-.sig{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:10px}
-.sig .ln{border-bottom:1px solid var(--fg);height:30px;margin-top:18px}
-.sig .lb{font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2);margin-top:4px}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.pack .acts{margin-top:var(--sf-space-4);padding-top:var(--sf-space-4);border-top:1px solid var(--line)}
+.pack>.small{margin-top:var(--sf-space-2);max-width:65ch}
+
+/* Figures: a row of labeled numbers under a 2px rule. The first one is the headline figure. */
+.tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:var(--sf-space-4) var(--sf-space-5);align-items:end;margin:0 0 var(--sf-gap-group);padding-top:var(--sf-space-3);border-top:2px solid var(--fg)}
+.tot:empty{display:none}
+.tot .t{min-width:0}
+.tot .t .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--sf-text-h3);font-weight:500;line-height:1.25}
+.tot .t:first-child .v{font-size:var(--sf-text-figure);line-height:1.1}
+.tot .t .k{font-family:var(--label);font-size:var(--sf-text-label);font-weight:500;line-height:1.3;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2);margin-top:var(--sf-space-1)}
+pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;white-space:pre-wrap;word-break:break-word;background:var(--panel);border-radius:var(--sf-radius-lg);padding:var(--sf-space-5);max-height:420px;overflow:auto;margin:0}
+
+/* Terms: each group title carries a 2px rule; its clauses are divided rows with a copy button at the right. */
+.terms>h3{margin:var(--sf-space-7) 0 0;padding-bottom:var(--sf-space-2);border-bottom:2px solid var(--fg)}
+.terms>h3:first-child{margin-top:0}
+.terms>p.small{margin-top:var(--sf-space-2)}
+.terms h4{margin:0 0 var(--sf-space-2);padding-right:96px}
+.terms p{max-width:65ch;color:var(--fg)}
+.terms .blk{position:relative;padding:var(--sf-space-4) 0;border-bottom:1px solid var(--line)}
+.terms .blk .cp{position:absolute;top:var(--sf-space-3);right:0}
+.sig{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--sf-space-5) var(--sf-space-6);margin-top:var(--sf-space-3)}
+.sig p{margin-top:var(--sf-space-2)}
+.sig .ln{border-bottom:1px solid var(--fg);height:32px;margin-top:var(--sf-space-4)}
+.sig .lb{font-family:var(--label);font-size:var(--sf-text-label);line-height:1.3;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2);margin-top:var(--sf-space-1)}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--sf-space-5) + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:var(--sf-space-2) var(--sf-space-3);border-radius:var(--sf-radius-md);font-size:var(--sf-text-dense);opacity:0;transition:opacity .15s;pointer-events:none;z-index:20}
 .toast.show{opacity:1}
-.banner{background:var(--accent);color:var(--accent-fg);border-radius:10px;padding:28px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-bottom:22px}
-.banner h2{font-size:1.5rem;color:var(--accent-fg)}
-.banner p{opacity:.9;max-width:62ch;margin-top:6px}
-.banner .cta{background:var(--accent-fg);color:var(--accent);border-color:transparent;font-weight:600;white-space:nowrap}
-/* infographic */
-.info{background:var(--panel);border-radius:10px;padding:20px;display:grid;gap:22px}
-.tl{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
-.tl .d{background:var(--bg2);border-radius:4px;height:34px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.74rem;color:var(--fg2)}
-.tl .d.a{background:var(--accent-soft);color:var(--accent)} .tl .d.b{background:var(--accent);color:var(--accent-fg)}
+
+/* The Brief: one ink band, then the infographic wireframe on a panel. */
+.banner{background:var(--band);color:var(--band-fg);border-radius:var(--sf-radius-md);padding:var(--sf-space-6);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sf-space-5);align-items:end;margin-bottom:var(--sf-gap-section)}
+.banner>div{display:flex;flex-direction:column;gap:var(--sf-space-3)}
+.banner .eyebrow{color:var(--band-muted)}
+.banner h2{color:var(--band-fg)}
+.banner p{color:var(--band-body);max-width:62ch}
+.banner .cta{justify-self:start;background:var(--band-fg);border-color:var(--band-fg);color:var(--band);white-space:nowrap}
+@media (hover:hover){.banner .cta:hover{background:var(--band-body);border-color:var(--band-body);color:var(--band)}}
+.banner :focus-visible{outline-color:var(--band-fg)}
+.info{background:var(--panel);border-radius:var(--sf-radius-lg);padding:var(--sf-space-5);display:grid;gap:var(--sf-space-6)}
+.tl{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px}
+.tl .d{background:var(--bg2);border-radius:2px;height:36px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:var(--sf-text-label);color:var(--fg);white-space:nowrap;overflow:hidden}
+.tl .d.a{background:var(--bg2);color:var(--fg)}
+.tl .d.b{background:var(--fg2);color:var(--bg)}
 .tl .d.c{background:var(--fg);color:var(--bg)}
-.phases{display:grid;grid-template-columns:5fr 4fr 2fr;gap:4px;margin-top:6px}
-.phases div{font-size:.8rem}
-.phases b{display:block;font-family:var(--display);font-weight:500;font-size:.95rem}
-.bar{display:flex;height:40px;border-radius:6px;overflow:hidden}
-.bar div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;color:var(--accent-fg);min-width:0}
-.bar .s{background:var(--accent)} .bar .de{background:var(--tone2)} .bar .ac{background:var(--tone3);color:var(--fg)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.84rem;margin-top:8px}
-.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
-.legend .s::before{background:var(--accent)} .legend .de::before{background:var(--tone2)} .legend .ac::before{background:var(--tone3)}
-.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center}
-.flow .bx{border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
-.flow .bx .v{font-family:var(--mono);font-size:1.2rem;font-weight:500}
-.flow .ar{font-size:1.4rem;color:var(--fg2);text-align:center}
-.recv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.recv div{border-top:2px solid var(--accent);padding-top:8px;font-size:.9rem}
-.recv b{display:block;font-family:var(--display);font-weight:500;margin-bottom:2px}
-.tlbox{margin-top:28px}
-.propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
-.propgrid label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
-.propgrid .wide{grid-column:1/-1}
-.propgrid input,.propgrid textarea,.propgrid select{font:inherit;font-family:var(--body);font-size:.9rem;letter-spacing:0;text-transform:none;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);width:100%}
-.propgrid textarea{resize:vertical;line-height:1.45}
-.vars td{padding:5px 6px} .vars code{font-family:var(--mono);font-size:.78rem}
-.propgrid .objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
-.tlset{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:6px}
-.tlset label{display:flex;flex-direction:column;gap:4px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
-.tlset label>span{display:flex;align-items:center;gap:6px;font-family:var(--body);font-size:.85rem;letter-spacing:0;text-transform:none}
-.tlset input[type=date]{font:inherit;font-size:.9rem;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);letter-spacing:0;text-transform:none}
-.tlset select{letter-spacing:0;text-transform:none}
-.gantt{min-width:680px;background:var(--panel);border-radius:10px;padding:10px 14px 6px}
-.g-row{display:grid;grid-template-columns:minmax(190px,30%) 1fr;align-items:center;min-height:30px;border-bottom:1px solid var(--line)}
-.g-row:last-child{border-bottom:0}
-.g-lab{padding:4px 12px 4px 0;font-size:.82rem;line-height:1.25;min-width:0}
+.phases{display:grid;grid-template-columns:5fr 4fr 2fr;gap:var(--sf-space-4);margin-top:var(--sf-space-3)}
+.phases div{font-size:var(--sf-text-dense);line-height:1.45;color:var(--fg3)}
+.phases b{display:block;font-family:var(--display);font-weight:500;font-size:var(--sf-text-body);color:var(--fg);margin-bottom:var(--sf-space-1)}
+.bar{display:flex;gap:2px;height:40px;border-radius:2px;overflow:hidden}
+.bar div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:var(--sf-text-label);min-width:0}
+.bar .s{background:var(--fg);color:var(--bg)} .bar .de{background:var(--fg2);color:var(--bg)} .bar .ac{background:var(--soft);color:var(--fg)}
+.legend{display:flex;flex-wrap:wrap;gap:var(--sf-space-2) var(--sf-space-5);font-size:var(--sf-text-small);line-height:1.45;color:var(--fg3);margin-top:var(--sf-space-3)}
+.legend span{display:inline-flex;align-items:baseline;gap:var(--sf-space-2)}
+.legend span::before{content:"";width:18px;height:10px;flex:none}
+.legend .s::before{background:var(--fg)} .legend .de::before{background:var(--fg2)} .legend .ac::before{background:var(--soft)}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:var(--sf-space-4);align-items:start}
+.flow .bx{border-top:2px solid var(--fg);padding-top:var(--sf-space-3)}
+.flow .bx .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--sf-text-h3);font-weight:500;line-height:1.25;margin-bottom:var(--sf-space-1)}
+.flow .ar{font-family:var(--mono);font-size:var(--sf-text-h3);line-height:1;color:var(--fg2);padding-top:var(--sf-space-4)}
+.recv{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:var(--sf-space-5)}
+.recv div{border-top:2px solid var(--fg);padding-top:var(--sf-space-3);font-size:var(--sf-text-dense);line-height:1.45;color:var(--fg3)}
+.recv b{display:block;font-family:var(--display);font-weight:500;font-size:var(--sf-text-body);color:var(--fg);margin-bottom:var(--sf-space-1)}
+
+/* Timeline (Gantt). Ink is our production, n-500 is client review, diagonal ink lines are the MLR review window,
+   n-600 lines with an outline are the time review can add, the diamond is launch, the dotted line is the target. */
+.gantt{min-width:680px;border-top:2px solid var(--fg)}
+.g-row{display:grid;grid-template-columns:minmax(190px,30%) minmax(0,1fr);align-items:center;min-height:36px;border-bottom:1px solid var(--line)}
+.g-lab{padding:var(--sf-space-2) var(--sf-space-3) var(--sf-space-2) 0;font-size:var(--sf-text-dense);line-height:1.3;min-width:0}
 .g-lab span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.g-lab small{display:block;color:var(--fg2);font-family:var(--mono);font-size:.7rem}
-.g-track{position:relative;height:100%;min-height:30px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:calc(100% / var(--w)) 100%}
-.g-axis{min-height:24px;border-bottom:1px solid var(--line)}
-.g-axis .g-track{background:none}
-.g-axis span{position:absolute;bottom:4px;font-family:var(--mono);font-size:.66rem;color:var(--fg2);white-space:nowrap}
-.g-phase .g-lab{font-family:var(--display);font-weight:500;font-size:.88rem}
-.g-bar{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:3px;display:flex;overflow:hidden;min-width:3px}
+.g-lab small{display:block;color:var(--fg2);font-family:var(--mono);font-size:var(--sf-text-label);line-height:1.3}
+.g-track{position:relative;height:100%;min-height:36px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:calc(100% / var(--w)) 100%}
+.g-axis{min-height:28px}
+.g-axis .g-track{background:none;min-height:28px}
+.g-axis span{position:absolute;bottom:var(--sf-space-1);font-family:var(--mono);font-size:var(--sf-text-label);line-height:1.3;color:var(--fg2);white-space:nowrap}
+.g-phase .g-lab{font-family:var(--display);font-weight:500;font-size:var(--sf-text-control)}
+.g-bar{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0;display:flex;overflow:hidden;min-width:3px}
 .g-bar i{display:block;height:100%;background:var(--fg)}
-.g-bar b{display:block;height:100%;background:var(--tone2)}
+.g-bar b{display:block;height:100%;background:var(--edge);box-shadow:inset 1px 0 0 var(--bg)}
 .g-gated i{background:var(--fg)}
-.g-phasebar{height:4px;background:var(--fg2);opacity:.5}
-.g-mlrbar{background:var(--warn)}
-.g-mlr .g-lab span{color:var(--warn);font-weight:500}
-.g-slip{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0 3px 3px 0;background:repeating-linear-gradient(135deg,var(--warn) 0 3px,transparent 3px 7px);opacity:.55}
-.g-spanbar,.g-ongoingbar{height:6px;background:var(--tone3)}
-.g-ongoingbar{background:repeating-linear-gradient(90deg,var(--tone2) 0 8px,transparent 8px 12px)}
-.g-ms{position:absolute;top:50%;width:12px;height:12px;background:var(--fg);transform:translate(-50%,-50%) rotate(45deg)}
+.g-phasebar{height:4px;background:var(--edge)}
+.g-mlrbar{background:var(--hatch-review) 0 0/6px 6px repeat}
+.g-mlr .g-lab span{color:var(--fg);font-weight:500}
+.g-slip{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0;background:var(--hatch-slip) 0 0/6px 6px repeat;box-shadow:inset 0 0 0 1px var(--fg2)}
+.g-spanbar,.g-ongoingbar{height:6px;background:var(--soft)}
+.g-ongoingbar{background:var(--dash) 0 0/12px 6px repeat-x}
+.g-ms{position:absolute;top:50%;width:14px;height:14px;background:var(--fg);transform:translate(-50%,-50%);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
 .g-launch .g-lab{font-weight:600}
-.g-wave{background:var(--bg2)} .g-wave .g-lab span{font-weight:600}
-.g-wavebar{height:8px;background:var(--fg);opacity:.85}
+.g-wave{border-top:1px solid var(--fg)} .g-wave .g-lab span{font-weight:600}
+.g-wavebar{height:8px;background:var(--fg)}
 .g-load .g-track{height:56px;background:none}
-.g-ld{position:absolute;bottom:0;background:var(--tone2);border-right:1px solid var(--panel)} .g-ld.over{background:var(--bad)}
+.g-ld{position:absolute;bottom:0;background:var(--soft);border-right:1px solid var(--bg)} .g-ld.over{background:var(--fg)}
 .g-cap{position:absolute;left:0;right:0;border-top:2px dashed var(--fg)}
-.g-tgt{position:absolute;top:0;bottom:0;border-left:2px dashed var(--bad);pointer-events:none}
-.g-key .k-tgt::before{width:0;height:10px;border-left:2px dashed var(--bad);border-radius:0}
-.g-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
-.g-key span::before{content:"";display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
-.g-key .k-prod::before{background:var(--fg)} .g-key .k-rev::before{background:var(--tone2)} .g-key .k-mlr::before{background:var(--warn)}
-.g-key .k-slip::before{background:repeating-linear-gradient(135deg,var(--warn) 0 3px,transparent 3px 7px);opacity:.6}
-.g-key .k-ms::before{width:8px;height:8px;background:var(--fg);transform:rotate(45deg)}
-.cmp.risk{border-left-color:var(--bad)} .cmp.mlr{border-left-color:var(--warn)} .cmp.info{border-left-color:var(--line)}
-.cmp{border-left:3px solid var(--warn);padding:8px 12px;background:var(--panel);border-radius:0 6px 6px 0;font-size:.88rem;margin-bottom:10px}
+.g-tgt{position:absolute;top:0;bottom:0;border-left:2px dotted var(--fg);pointer-events:none}
+.g-key{display:flex;flex-wrap:wrap;gap:var(--sf-space-2) clamp(var(--sf-space-4),3.2vw - 12px,var(--sf-space-7));margin-top:var(--sf-space-3);font-size:var(--sf-text-small);line-height:1.45;color:var(--fg3)}
+.g-key span{display:inline-flex;align-items:center;gap:var(--sf-space-2)}
+.g-key span::before{content:"";display:inline-block;width:18px;height:10px;flex:none}
+.g-key .k-prod::before{background:var(--fg)} .g-key .k-rev::before{background:var(--edge)}
+.g-key .k-mlr::before{background:var(--hatch-review) 0 0/6px 6px repeat}
+.g-key .k-slip::before{background:var(--hatch-slip) 0 0/6px 6px repeat;box-shadow:inset 0 0 0 1px var(--fg2)}
+.g-key .k-ms::before{width:12px;height:12px;background:var(--fg);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.g-key .k-tgt::before{width:0;height:14px;border-left:2px dotted var(--fg)}
+
+/* Password page: the form sits on the paper under a 2px ink rule. Controls never sit in a card. */
+.gate{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding:var(--sf-space-5) max(var(--sf-gutter),env(safe-area-inset-right,0px)) var(--sf-space-5) max(var(--sf-gutter),env(safe-area-inset-left,0px))}
+.gate form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:var(--sf-gap-group);border-top:2px solid var(--fg);padding-top:var(--sf-space-5)}
+.gate form>div:first-child,.mbox form>div:first-child,#pub-done>div:first-child{display:flex;flex-direction:column;gap:var(--sf-space-2)}
+.gate h1{font-size:var(--sf-text-h2);line-height:1.15;letter-spacing:-.005em}
+.gate .fld{display:flex;flex-direction:column;gap:var(--sf-space-2)}
+.gate .fld label{font-size:var(--sf-text-dense);font-weight:500;line-height:1.3}
+.gate input[type=password]{width:100%}
+.gate button{align-self:flex-start}
+.err{color:var(--bad);font-size:var(--sf-text-dense);font-weight:500;line-height:1.45}
+.err:empty{display:none}
+.err:not(:empty){display:flex;align-items:flex-start;gap:var(--sf-space-2)}
+.err:not(:empty)::before{content:"!";flex:none;display:inline-grid;place-items:center;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--bad);color:var(--bg);font-family:var(--mono);font-size:var(--sf-text-label);font-weight:500;line-height:1}
+
+/* Dialogs: a square paper box with a 2px ink top rule on a scrim. */
+.modal{position:fixed;inset:0;background:var(--scrim);z-index:40;display:flex;align-items:center;justify-content:center;padding:var(--sf-space-4)}
+.mbox{background:var(--bg);border-top:2px solid var(--fg);padding:var(--sf-space-6);width:100%;max-width:520px;max-height:100%;overflow:auto}
+.mbox form{display:flex;flex-direction:column;gap:var(--sf-gap-group)}
+.mbox .mrow{display:flex;gap:var(--sf-space-2);align-items:center;font-weight:400}
+.mbox .mrow input{flex:1;min-width:0}
+.mbox #pub-url{font-family:var(--mono);word-break:break-all}
+.mbox .acts{margin-top:0}
+#pub-done{display:flex;flex-direction:column;gap:var(--sf-space-3)}
+#pub-done[hidden]{display:none}
+.pvov{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column}
+.pvov .pvbar{display:flex;gap:var(--sf-space-3);align-items:center;flex-wrap:wrap;padding:var(--sf-space-2) var(--sf-space-4);border-bottom:1px solid var(--line)}
+.pvov .pvbar .small{flex:1;min-width:200px}
+.pvov iframe{flex:1;border:0;width:100%;background:var(--pv-paper)}
+
 @media (max-width:860px){
   .wrap{flex-direction:column}
-  nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;width:auto;flex:none;flex-direction:row;overflow-x:auto;gap:4px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--bg);border-bottom:1px solid var(--line)}
+  nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;width:auto;flex:none;flex-direction:row;overflow-x:auto;scrollbar-width:none;padding:0 max(var(--sf-gutter),env(safe-area-inset-right,0px)) 0 max(var(--sf-gutter),env(safe-area-inset-left,0px));background:var(--bg)}
+  nav.rail::-webkit-scrollbar{display:none}
   nav.rail .brand{display:none}
-  nav.rail a{white-space:nowrap;font-size:.86rem}
-  .banner{grid-template-columns:1fr}
-  .phases{grid-template-columns:1fr}
-  .flow{grid-template-columns:1fr}
-  .flow .ar{transform:rotate(90deg)}
+  nav.rail a{white-space:nowrap}
+  nav.rail a.muted{margin:0 0 0 auto}
+  main{padding-top:var(--sf-space-5)}
+  .banner{grid-template-columns:minmax(0,1fr);padding:var(--sf-space-5)}
+  .phases,.flow{grid-template-columns:minmax(0,1fr)}
+  .flow .ar{padding-top:0;transform:rotate(90deg);justify-self:start}
 }
-.gate{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.gate form{background:var(--panel);border-radius:10px;padding:28px;width:100%;max-width:380px;display:grid;gap:12px}
-.gate h1{font-size:1.3rem}
-.gate input[type=password]{font:inherit;font-size:1rem;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);width:100%}
-.gate .err{color:var(--bad);font-size:.86rem;min-height:1.2em}
-.gate label.rm{display:flex;gap:8px;align-items:center;font-size:.86rem;color:var(--fg2)}
-.gate button{padding:10px 14px;font-size:.95rem}
-.pvov{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column}
-.pvov .pvbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line)}
-.pvov .pvbar .small{flex:1;min-width:200px}
-.pvov iframe{flex:1;border:0;width:100%;background:#f2efe9}
-.modal{position:fixed;inset:0;background:rgba(10,10,10,.45);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
-.mbox{background:var(--bg);border-radius:10px;padding:26px;width:100%;max-width:520px;max-height:100%;overflow:auto}
-.mbox form{display:grid;gap:14px}
-.mbox h2{margin-top:4px}
-.mbox label{display:flex;flex-direction:column;gap:5px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
-.mbox label.rm{flex-direction:row;align-items:center;gap:8px;font-family:var(--body);font-size:.86rem;letter-spacing:0;text-transform:none}
-.mbox .mrow{display:flex;gap:6px;align-items:center;font-family:var(--body);letter-spacing:0;text-transform:none}
-.mbox .mrow input{flex:1;min-width:0;font:inherit;font-size:.95rem;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
-.mbox .err{color:var(--bad);font-size:.86rem;min-height:1.2em}
-.mbox #pub-url{font-family:var(--mono);word-break:break-all}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:600px){.optedit{grid-template-columns:minmax(0,1fr)}.mbox{padding:var(--sf-space-5)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+@media (forced-colors:active){input[type=checkbox]:checked{background-color:Highlight;border-color:Highlight}.g-bar,.g-ms,.cmp::before,.chip::before{forced-color-adjust:none}}
+@media print{nav.rail,.toolbar,.acts,.toast{display:none}.gantt,.g-bar,.g-ms,.tl .d,.bar div,.banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* Glossary tooltips: dotted acronym, ink box with paper text (design system tooltip spec) */
+abbr.gl{text-decoration:underline dotted;text-decoration-color:var(--edge);text-decoration-thickness:1px;text-underline-offset:3px;cursor:help;border-radius:2px}
+abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+#gltip{position:absolute;z-index:60;max-width:260px;padding:8px 12px;border-radius:6px;background:var(--fg);color:var(--bg);font:400 13px/1.45 var(--sf-font-body,inherit);pointer-events:none}
+#gltip b{font-weight:600;margin-right:4px} #gltip span{display:block;margin-top:4px}
+/* Partner flag in the builder: caution mark beside the item name; the note shows in the same ink tooltip. */
+.ptip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:4px;padding:0;border:0;border-radius:4px;background:none;color:var(--warn);cursor:help;vertical-align:-5px}
+.ptip.opt{color:var(--info)}
+.ptip svg{width:16px;height:16px}
+.ptip:hover,.ptip[aria-expanded="true"]{background:var(--bg2)}
+.ptip:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+#gltip.pt b{display:block;margin:0 0 2px;color:var(--sf-gold-300)}
+@media print{abbr.gl{text-decoration:none}#gltip{display:none}}
 </style>
 
 </head>
@@ -248,7 +377,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <form id="gateform" autocomplete="off">
     <div><div class="eyebrow">Steadfast</div><h1>SOW Kit</h1></div>
     <p class="small muted">Internal. Enter the team password to open the catalog, packages and terms.</p>
-    <input type="password" id="pw" placeholder="Password" autofocus aria-label="Password">
+    <div class="fld"><label for="pw">Password</label><input type="password" id="pw" autofocus></div>
     <label class="rm"><input type="checkbox" id="remember"> Remember on this device</label>
     <div class="err" id="gateerr"></div>
     <button class="pri" type="submit" id="gatebtn">Open</button>
@@ -264,7 +393,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <a href="#builder">Scope Builder <span id="cnt" class="chip lvl" style="display:none"></span></a>
   <a href="#levels">Levels &amp; Rates</a>
   <a href="#terms">Terms</a>
-  <a href="#" onclick="lock();return false" class="muted" style="margin-top:auto;font-size:.8rem">Lock</a>
+  <a href="#" onclick="lock();return false" class="muted">Lock</a>
 </nav>
 <main>
 
@@ -273,7 +402,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <div class="head">
     <span class="eyebrow">For account managers</span>
     <h1>Build a scope from parts, not from scratch.</h1>
-    <p>Everything a proposal needs is here at 2026 rates: 80 services at three levels, seven pre-built packages, hours for production, and the terms. Pick a package, adjust levels, add the companions, paste. Thirty minutes, not three days.</p>
+    <p>Everything a proposal needs is here at 2026 rates: <span data-n="svc">80</span> services at three levels, <span data-n="pk">seven</span> pre-built packages, hours for production, and the terms. Pick a package, adjust levels, add the companions, paste. Thirty minutes, not three days.</p>
   </div>
   <div class="step"><div class="n">1</div><div><b>Hold the intro call.</b><p>Thirty minutes, free, with Taylor or the account lead. One outcome: decide whether The Brief is the right first step. If the client already knows exactly what they want and has done it with us before, skip to step 3.</p></div></div>
   <div class="step"><div class="n">2</div><div><b>Sell The Brief.</b><p>$5,000, two weeks, credited to Stage 1. The Brief page has the client-facing explanation and the infographic. Send the paid kickoff link after the call, never before it.</p></div></div>
@@ -281,7 +410,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <div class="step"><div class="n">4</div><div><b>Set the level on each line.</b><p>Level 1 refreshes or works from what exists. Level 2 is new work on an approved direction. Level 3 adds strategy, research, custom interaction or regulated rounds. The level test for every service type is on the Levels page. When in doubt between two levels, pick the higher one and say what the lower one would drop.</p></div></div>
   <div class="step"><div class="n">5</div><div><b>Add the companions.</b><p>Every site build carries Site Foundation once, QA, Accessibility &amp; Launch once, and Account Management, Website Build. Every project over $10,000 carries Account Management at the matching tier. Pass-through costs are one line, at cost, with the item named. The builder warns you when one is missing.</p></div></div>
   <div class="step"><div class="n">6</div><div><b>Write the proposal in this order.</b><p>What we heard (four or five sentences in the client's words). One-line thesis. Four strategic imperatives with a "done when" line under each. Stages named as verbs, each with its items and price. Terms. Signature. The price comes after the argument, never before it. The builder exports the item lines and the stage totals; the narrative is yours.</p></div></div>
-  <div class="grid g3" style="margin-top:22px">
+  <div class="grid g3" style="margin-top:var(--sf-gap-group)">
     <div class="card"><span class="eyebrow">Rule of truth</span><h3>The catalog price is the price.</h3><p class="small muted">Discount only on a named row with a written reason. Partner-agency deals and older client rate cards are priced from the catalog first, then reduced where the contract says so.</p></div>
     <div class="card"><span class="eyebrow">Naming</span><h3>Service Title | L2</h3><p class="small muted">Titles in Title Case, levels explained in the description in sentence case. No dashes. Copy descriptions from the catalog as they are; they were written to go in front of a client.</p></div>
     <div class="card"><span class="eyebrow">Hours</span><h3>Hours are the budget.</h3><p class="small muted">Every line funds the hours shown at the 2026 card. Hand production the Hours by role total from the builder. Past those hours the line loses money, so flag it before it happens, not after.</p></div>
@@ -291,7 +420,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 <!-- ============ BRIEF ============ -->
 <section class="view" id="v-brief">
   <div class="banner">
-    <div><span class="eyebrow" style="color:inherit;opacity:.8">Our first engagement</span><h2>Start with The Brief.</h2>
+    <div><span class="eyebrow">Our first engagement</span><h2>Start with The Brief.</h2>
     <p>In two weeks and for a fixed $5,000, we learn your science, your market and the decision in front of you, then hand you a written brief: what to build, what it costs and what it is for. If you go forward with us, the fee comes off Stage 1. If you don't, you keep the brief.</p></div>
     <button class="btn cta" onclick="copyText(BRIEF_BANNER,'Banner copy copied')">Copy banner copy</button>
   </div>
@@ -299,7 +428,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <div class="info">
     <div>
       <span class="eyebrow">Panel 1. Two weeks, day by day</span>
-      <div class="tl" style="margin-top:8px">
+      <div class="tl" style="margin-top:var(--sf-space-2)">
         <div class="d a">Day 1</div><div class="d a">2</div><div class="d a">3</div><div class="d a">4</div><div class="d a">5</div><div class="d b">6</div><div class="d b">7</div><div class="d b">8</div><div class="d b">9</div><div class="d c">10</div>
       </div>
       <div class="phases">
@@ -310,13 +439,13 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     </div>
     <div>
       <span class="eyebrow">Panel 2. Where the $5,000 goes: 30 hours of senior time</span>
-      <div class="bar" style="margin-top:8px"><div class="s" style="flex:10">10 h</div><div class="de" style="flex:15">15 h</div><div class="ac" style="flex:5">5 h</div></div>
+      <div class="bar" style="margin-top:var(--sf-space-2)"><div class="s" style="flex:10">10 h</div><div class="de" style="flex:15">15 h</div><div class="ac" style="flex:5">5 h</div></div>
       <div class="legend"><span class="s">Strategy: Taylor, listening and writing the direction</span><span class="de">Design: a senior designer checking the direction can be made</span><span class="ac">Account: scheduling, the readout, the folder</span></div>
-      <p class="small muted" style="margin-top:8px">At our standard rates these hours cost $5,650. The Brief is $5,000 because it is the first thing we do together, and the full $5,000 is credited back if the project goes ahead.</p>
+      <p class="small muted" style="margin-top:var(--sf-space-2)">At our standard rates these hours cost $5,650. The Brief is $5,000 because it is the first thing we do together, and the full $5,000 is credited back if the project goes ahead.</p>
     </div>
     <div>
       <span class="eyebrow">Panel 3. What you receive on day 10</span>
-      <div class="recv" style="margin-top:8px">
+      <div class="recv" style="margin-top:var(--sf-space-2)">
         <div><b>A written brief</b>6 to 8 pages: your situation, your audience, the message in draft, what to build and what not to, and the risks to the calendar.</div>
         <div><b>A priced plan</b>Each stage with a fixed price, built from our standard rates, with the trades we would make if the budget is tighter than the plan.</div>
         <div><b>A 45-minute readout</b>With the senior people who would run the work, not a sales team.</div>
@@ -325,7 +454,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     </div>
     <div>
       <span class="eyebrow">Panel 4. What happens to the $5,000</span>
-      <div class="flow" style="margin-top:8px">
+      <div class="flow" style="margin-top:var(--sf-space-2)">
         <div class="bx"><div class="v">$5,000</div><div class="small muted">The Brief, invoiced at kickoff</div></div>
         <div class="ar">&#8594;</div>
         <div class="bx"><div class="v">Stage 1 minus $5,000</div><div class="small muted">If you go ahead within 60 days, the full fee comes off the first stage</div></div>
@@ -335,28 +464,28 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     </div>
     <div>
       <span class="eyebrow">Panel 5. What The Brief is not</span>
-      <p class="small" style="margin-top:6px;max-width:72ch">It is not a design or a concept; nothing is designed in these two weeks, which is what keeps it honest. It is not a research study; we talk to a handful of the right people, not a sample. It is not a commitment to the build, in either direction.</p>
+      <p class="small" style="margin-top:var(--sf-space-2);max-width:65ch">It is not a design or a concept; nothing is designed in these two weeks, which is what keeps it honest. It is not a research study; we talk to a handful of the right people, not a sample. It is not a commitment to the build, in either direction.</p>
     </div>
   </div>
-  <div class="toolbar" style="margin-top:16px"><button class="pri" onclick="copyText(BRIEF_PAGE,'Brief page copy copied')">Copy the full product page copy</button><button onclick="addBrief()">Add The Brief to a scope</button></div>
-  <div class="card" style="margin-top:14px"><span class="eyebrow">For the account manager</span><p class="small" style="margin-top:6px;max-width:72ch">The Brief is sold on the intro call and never gated in front of it. Taylor leads the listening. Hold the line on "nothing is designed": the moment a mood board appears, the price stops making sense and we are giving away the front end again. The credit lives on a named row in Stage 1: "Credit for The Brief, ($5,000)". Catalog row: Discovery &amp; Strategy Brief | L1.</p></div>
+  <div class="toolbar" style="margin-top:var(--sf-gap-group)"><button class="pri" onclick="copyText(BRIEF_PAGE,'Brief page copy copied')">Copy the full product page copy</button><button onclick="addBrief()">Add The Brief to a scope</button></div>
+  <div class="card"><span class="eyebrow">For the account manager</span><p class="small" style="max-width:65ch">The Brief is sold on the intro call and never gated in front of it. Taylor leads the listening. Hold the line on "nothing is designed": the moment a mood board appears, the price stops making sense and we are giving away the front end again. The credit lives on a named row in Stage 1: "Credit for The Brief, ($5,000)". Catalog row: Discovery &amp; Strategy Brief | L1.</p></div>
 </section>
 
 <!-- ============ PACKAGES ============ -->
 <section class="view" id="v-packages">
-  <div class="head"><span class="eyebrow">Seven starting points</span><h1>Load a package, then take things out.</h1><p>Each bundle is the set of rows that sold together across the signed scopes, at 2026 prices, with the hours production will need. Load one into the builder and adjust from there.</p></div>
+  <div class="head"><span class="eyebrow"><span data-n="PK">Seven</span> starting points</span><h1>Load a package, then take things out.</h1><p>Each bundle is the set of rows that sold together across the signed scopes, at 2026 prices, with the hours production will need. Load one into the builder and adjust from there.</p></div>
   <div id="packs" class="grid"></div>
 </section>
 
 <!-- ============ CATALOG ============ -->
 <section class="view" id="v-catalog">
-  <div class="head"><span class="eyebrow">80 services, 235 line items</span><h1>Find the row, read the level, add it.</h1><p>Search by what the client said. Open a row to read the client-facing description and the hours. The description is written to be pasted as is.</p></div>
+  <div class="head"><span class="eyebrow"><span data-n="svc">80</span> services, <span data-n="li">235</span> line items</span><h1>Find the row, read the level, add it.</h1><p>Search by what the client said. Open a row to read the client-facing description and the hours. The description is written to be pasted as is.</p></div>
   <div class="toolbar">
     <input type="search" id="q" placeholder="Search: sales aid, landing page, booth, congress, email, KOL...">
     <select id="fcat"><option value="">All service types</option></select>
     <select id="flvl"><option value="">All levels</option><option value="T">Template</option><option value="L1">Level 1</option><option value="L2">Level 2</option><option value="L3">Level 3</option><option value="">Flat</option></select>
   </div>
-  <div class="small muted" id="qcount" style="margin-bottom:10px"></div>
+  <div class="small muted" id="qcount" style="margin-bottom:var(--sf-space-3)"></div>
   <div id="list"></div>
 </section>
 
@@ -369,7 +498,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
   <div class="tot" id="tots"></div>
   <div class="scroll"><table class="tbl" id="btbl"><thead id="bhead"></thead><tbody id="bbody"></tbody></table></div>
   <div class="tlbox">
-    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Timeline</span><h2>Rough lead time, start to launch.</h2><p class="small">Each row's length comes from its hours and review rounds. Phases run in order, and any phase with promotional work ends in an MLR stage sized to the client's process. Hatched bars show how far it can stretch if review runs long.</p></div>
+    <div class="head"><span class="eyebrow">Timeline</span><h2>Rough lead time, start to launch.</h2><p class="small">Each row's length comes from its hours and review rounds. Phases run in order, and any phase with promotional work ends in an MLR stage sized to the client's process. Hatched bars show how far it can stretch if review runs long.</p></div>
     <div class="tlset">
       <label>Kickoff<input type="date" id="tl-start" onchange="setTl('start',this.value)"></label>
       <label>Client's MLR process<select id="tl-mlr" onchange="setTl('mlr',this.value)"></select></label>
@@ -389,10 +518,10 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     <div class="tot" id="tl-sum"></div>
     <div class="scroll"><div id="tl"></div></div>
     <div class="g-key small muted"><span class="k-prod">Production</span><span class="k-rev">Client review rounds</span><span class="k-mlr">MLR review</span><span class="k-slip">If review runs long</span><span class="k-ms">Launch</span><span class="k-tgt">Target launch</span></div>
-    <div id="tl-flags" style="margin-top:14px"></div>
+    <div id="tl-flags" style="margin-top:var(--sf-gap-group)"></div>
   </div>
   <div class="tlbox">
-    <div class="head" style="margin:0 0 14px"><span class="eyebrow">Proposal</span><h2>Preview it, publish it, get it signed.</h2><p class="small">Fill in the client and the overview. The proposal builds itself from the scope and the timeline on the Complex layout, with fewer sections for Mid-range and Simple work. Preview opens it in a tab that follows your edits. Publish puts it online at its own address behind a password you set, with a signature block the client signs to accept.</p></div>
+    <div class="head"><span class="eyebrow">Proposal</span><h2>Preview it, publish it, get it signed.</h2><p class="small">Fill in the client and the overview. The proposal builds itself from the scope and the timeline on the Complex layout, with fewer sections for Mid-range and Simple work. Preview opens it in a tab that follows your edits. Publish puts it online at its own address behind a password you set, with a signature block the client signs to accept.</p></div>
     <div class="propgrid">
       <label class="wide">Project title<input id="p-title" placeholder="HCP Sales Aid Redesign" oninput="setProp('title',this.value)"></label>
       <label>Client company<input id="p-company" oninput="setProp('company',this.value)"></label>
@@ -410,16 +539,16 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <label class="wide chk"><input type="checkbox" id="p-bigTerms" onchange="setProp('bigTerms',this.checked)"> Add the large-program terms and the Assumptions and Risks section (for multi-month launch programs only)</label>
       <label class="wide chk"><input type="checkbox" id="p-showVoices" onchange="setProp('showVoices',this.checked)"> Show a voices section (endorsements). Only entries with a written approval on file appear.</label>
     </div>
-    <div class="propgrid" style="margin-top:12px"><label class="wide chk"><input type="checkbox" id="p-showDirect" onchange="setProp('showDirect',this.checked)"> List work the client contracts directly (market research, advisory board costs). Not in our price.</label></div>
+    <div class="propgrid" style="margin-top:var(--sf-gap-group)"><label class="wide chk"><input type="checkbox" id="p-showDirect" onchange="setProp('showDirect',this.checked)"> List work the client contracts directly (market research, advisory board costs). Not in our price.</label></div>
     <div id="p-direct" class="vox" hidden></div>
     <div id="p-voices" class="vox" hidden></div>
-    <p class="small muted" id="p-tierhint" style="margin-top:8px"></p>
-    <div class="toolbar" style="margin:14px 0 0"><button class="pri" onclick="openPreview()">Preview Proposal</button><button onclick="openPublish()">Publish Proposal</button></div>
-    <div class="head" style="margin:28px 0 10px"><span class="eyebrow">Published proposals</span></div>
+    <p class="small muted" id="p-tierhint" style="margin-top:var(--sf-space-3)"></p>
+    <div class="toolbar" style="margin:var(--sf-gap-group) 0 0"><button class="pri" onclick="openPreview()">Preview Proposal</button><button onclick="openPublish()">Publish Proposal</button></div>
+    <div class="head" style="margin:var(--sf-space-7) 0 var(--sf-space-3)"><span class="eyebrow">Published proposals</span></div>
     <div id="p-pub"><p class="small muted">Loading.</p></div>
   </div>
-  <div class="toolbar" style="margin-top:14px">
-    <button class="pri" onclick="exportScope('items')">Copy line items for the proposal</button>
+  <div class="toolbar" style="margin-top:var(--sf-gap-section)">
+    <button onclick="exportScope('items')">Copy line items for the proposal</button>
     <button onclick="copyTimeline()">Copy timeline</button>
     <button onclick="copyDeck()">Copy plan for the deck</button>
     <button onclick="exportScope('hours')">Copy hours for production</button>
@@ -432,7 +561,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
 <!-- ============ LEVELS ============ -->
 <section class="view" id="v-levels">
   <div class="head"><span class="eyebrow">Level tests and the rate card</span><h1>The level is a test, not a feeling.</h1><p>Read the test for the service type, then pick. Revision rounds are set by level and are two hours each; the terms say so.</p></div>
-  <div class="grid g3" style="margin-bottom:22px" id="rates"></div>
+  <div class="grid g3" style="margin-bottom:var(--sf-gap-group)" id="rates"></div>
   <div id="lvls"></div>
 </section>
 
@@ -452,7 +581,7 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
       <div><div class="eyebrow">Import a scope</div><h2 id="imp-h">Load a scope file.</h2></div>
       <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together.</p>
       <label>Scope file<input type="file" id="imp-file" accept=".json,application/json" onchange="readImportFile(this)"></label>
-      <label>Or paste it<textarea id="imp-text" rows="6" spellcheck="false" style="font-family:var(--mono);font-size:.78rem;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);text-transform:none;letter-spacing:0"></textarea></label>
+      <label>Or paste it<textarea id="imp-text" rows="6" spellcheck="false" style="font-family:var(--mono);font-size:var(--sf-text-small)"></textarea></label>
       <label class="rm"><input type="checkbox" id="imp-replace"> Replace every option in the builder (otherwise the import is added as new options)</label>
       <div class="err" id="imp-err" aria-live="polite"></div>
       <div class="acts"><button type="submit" class="pri">Import</button><button type="button" onclick="closeImport()">Cancel</button></div>
@@ -474,10 +603,10 @@ pre.out{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;word-break
     </form>
     <div id="pub-done" hidden>
       <div><div class="eyebrow">Published</div><h2>It's live.</h2></div>
-      <p class="small" style="margin-top:12px"><a id="pub-url" target="_blank" rel="noopener"></a></p>
-      <p class="small muted" style="margin-top:6px">Password: <b class="num" id="pub-pwshow"></b></p>
-      <p class="small muted" style="margin-top:12px">Send the link and the password in separate messages. The client opens the link, enters the password, reads the proposal and signs at the end. Signed status shows under Published proposals.</p>
-      <div class="acts" style="margin-top:16px"><button class="pri" onclick="copyText(document.getElementById('pub-url').href,'Link copied')">Copy link</button><button onclick="copyText(document.getElementById('pub-pwshow').textContent,'Password copied')">Copy password</button><button onclick="closePublish()">Done</button></div>
+      <p class="small"><a id="pub-url" target="_blank" rel="noopener"></a></p>
+      <p class="small muted">Password: <b class="num" id="pub-pwshow"></b></p>
+      <p class="small muted">Send the link and the password in separate messages. The client opens the link, enters the password, reads the proposal and signs at the end. Signed status shows under Published proposals.</p>
+      <div class="acts" style="margin-top:var(--sf-space-3)"><button class="pri" onclick="copyText(document.getElementById('pub-url').href,'Link copied')">Copy link</button><button onclick="copyText(document.getElementById('pub-pwshow').textContent,'Password copied')">Copy password</button><button onclick="closePublish()">Done</button></div>
     </div>
   </div>
 </div>
@@ -492,6 +621,11 @@ const H0 = () => ({S:0,D:0,V:0,A:0,C:0,M:0,P:0});
 // The Catalog's Partner column: who delivers the partner part of a row. Text starting "Optional" means we can do it ourselves.
 const partnerOptional = i => /^optional/i.test(i.partner||"");
 const prtLabel = i => partnerOptional(i) ? "Partner optional" : "Needs a partner";
+// Partner flag beside a builder row's title: a caution mark (or an info mark when a partner is optional). Hover, focus or tap shows the note.
+const PT_CAUTION = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14.5H1z" fill="currentColor"/><path d="M8 6v4.2" stroke="var(--bg)" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="12.2" r=".9" fill="var(--bg)"/></svg>';
+const PT_INFO = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg>';
+const ptip = i => { if(!i.partner) return ""; const opt = partnerOptional(i), lab = prtLabel(i);
+  return `<button type="button" class="ptip${opt?" opt":""}" data-lab="${esc(lab)}" data-tip="${esc(i.partner)}" aria-label="${esc(lab)}: ${esc(i.partner)}">${opt?PT_INFO:PT_CAUTION}</button>`; };
 const LVL = {T:"Template",L1:"Level 1",L2:"Level 2",L3:"Level 3","":"Flat"};
 const money = n => "$" + Math.round(n).toLocaleString("en-US");
 let bySku = {};
@@ -600,7 +734,7 @@ function renderTerms(){
   for(const g of TERMS){ h+=`<h3>${g.h}</h3>`;
     for(const [t,b] of g.items){ const txt=t+"\n"+b; h+=`<div class="blk"><button class="sm cp" onclick='copyText(${JSON.stringify(txt)},"Copied: ${t}")'>Copy</button><h4>${t}</h4><p>${b}</p></div>`; } }
   h+=`<div class="blk"><button class="sm cp" onclick='copyText(RATES_TXT,"Rates copied")'>Copy</button><h4>Rates defined here</h4><p>${RATES_TXT}</p></div>`;
-  h+=`<h3>Large-program terms (opt-in)</h3><p class="small muted" style="margin-bottom:10px">Added to a proposal only when the AM ticks "Add the large-program terms" in the Proposal panel. For multi-month launch programs.</p>`;
+  h+=`<h3>Large-program terms (opt-in)</h3><p class="small muted" style="margin-top:var(--sf-space-2)">Added to a proposal only when the AM ticks "Add the large-program terms" in the Proposal panel. For multi-month launch programs.</p>`;
   for(const g of optTermGroups()){ for(const [t,b] of g.items){ const txt=t+"\n"+b; h+=`<div class="blk"><button class="sm cp" onclick='copyText(${JSON.stringify(txt)},"Copied: ${t}")'>Copy</button><h4>${t}</h4><p>${b}</p></div>`; } }
   h+=`<h3>Signature</h3><div class="blk"><button class="sm cp" onclick='copyText(sigText(),"Signature block copied")'>Copy</button><div class="sig">
    <div><span class="eyebrow">The Firm</span><p><b>Steadfast Design Firm</b><br>220 S. White Street #3, Wake Forest, NC 27587</p><div class="ln"></div><div class="lb">Full name: Taylor Tsantles</div><div class="ln"></div><div class="lb">Title: President &amp; Chief Strategist</div><div class="ln"></div><div class="lb">Signature &amp; date</div></div>
@@ -610,9 +744,9 @@ function renderTerms(){
 
 /* ---------- Levels & rates ---------- */
 function renderLevels(){
-  document.getElementById("rates").innerHTML = Object.keys(RATE).map(k=>`<div class="card"><span class="eyebrow">${ROLE[k]}</span><div class="num" style="font-size:1.4rem;margin-top:4px">$${RATE[k]}<span class="small muted">/h</span></div></div>`).join("")
-    + `<div class="card"><span class="eyebrow">Rush</span><div class="num" style="font-size:1.4rem;margin-top:4px">1.5x</div><div class="small muted">under 5 business days</div></div>`;
-  document.getElementById("lvls").innerHTML = DATA.levels.map(l=>`<div class="card" style="margin-bottom:10px"><h3>${l.name}</h3><p class="small" style="max-width:80ch">${l.test}</p>${Object.keys(l.rounds).length?`<div class="chips" style="margin-top:8px">${Object.entries(l.rounds).map(([a,b])=>`<span class="chip">${a}: ${b} round${b>1?"s":""}</span>`).join("")}</div>`:""}</div>`).join("");
+  document.getElementById("rates").innerHTML = Object.keys(RATE).map(k=>`<div class="card"><span class="eyebrow">${ROLE[k]}</span><div class="num" style="font-size:var(--sf-text-figure);margin-top:var(--sf-space-1)">$${RATE[k]}<span class="small muted">/h</span></div></div>`).join("")
+    + `<div class="card"><span class="eyebrow">Rush</span><div class="num" style="font-size:var(--sf-text-figure);margin-top:var(--sf-space-1)">1.5x</div><div class="small muted">under 5 business days</div></div>`;
+  document.getElementById("lvls").innerHTML = DATA.levels.map(l=>`<div class="card" style="margin-bottom:var(--sf-space-3)"><h3>${l.name}</h3><p class="small" style="max-width:80ch">${l.test}</p>${Object.keys(l.rounds).length?`<div class="chips" style="margin-top:var(--sf-space-2)">${Object.entries(l.rounds).map(([a,b])=>`<span class="chip">${a}: ${b} round${b>1?"s":""}</span>`).join("")}</div>`:""}</div>`).join("");
 }
 
 /* ---------- Catalog ---------- */
@@ -623,7 +757,7 @@ function rowHTML(i){
   const prt = i.partner ? `<span class="chip prt" title="${esc(i.partner)}">${prtLabel(i)}</span>` : "";
   return `<div class="row" id="r-${i.sku}"><div class="top" onclick="toggleRow('${i.sku}')" style="cursor:pointer"><span class="nm">${i.name}</span><span class="chip">${i.category}</span>${ind}${prt}<span class="pr">${money(i.price)}${i.unit==="month"?" /mo":""}</span></div>
    <div class="lv">${i.lname?LVL[i.level]+": "+i.lname:i.use}</div>
-   <div class="more">${clientHTML(i)}${i.partner?`<div class="cmp" style="margin-top:14px"><b>Integrated partner.</b> ${esc(i.partner)} ${i.h.P?`The price includes the partner's hours at the industry-norm rate of $${RATE.P}/h (Partner hours below).`:"The price is the same whoever delivers it."} Confirm who delivers it before the proposal goes out. Name a partner to the client only once they have agreed.</div>`:""}<p class="small muted" style="margin-top:14px"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${leadText(i)?`<p class="small muted" style="margin-top:4px"><b>Lead time:</b> ${leadText(i)}</p>`:""}${hoursLine(i)}
+   <div class="more">${clientHTML(i)}${i.partner?`<div class="cmp" style="margin-top:14px"><b>Integrated partner.</b> ${esc(i.partner)} ${i.h.P?`The price includes the partner's hours at the industry-norm rate of $${RATE.P}/h (Partner hours below).`:"The price is the same whoever delivers it."} Confirm who delivers it before the proposal goes out. Name a partner to the client only once they have agreed.</div>`:""}<p class="small muted" style="margin-top:var(--sf-space-4)"><b>When to use:</b> ${i.use}</p><p class="small muted" style="margin-top:4px"><b>Price basis:</b> ${i.basis}. <b>Unit:</b> ${i.unit}. <b>Section:</b> ${i.section}.</p>${leadText(i)?`<p class="small muted" style="margin-top:var(--sf-space-1)"><b>Lead time:</b> ${leadText(i)}</p>`:""}${hoursLine(i)}
    <div class="acts"><button class="sm pri" onclick="addItem('${i.sku}',1)">Add to scope</button><button class="sm" onclick='copyText(${JSON.stringify(clientText(i,1))},"Client copy copied")'>Copy client copy</button></div></div></div>`;
 }
 /* Client copy, in Taylor's order: description, includes, deliverables, note. Falls back to the older one-paragraph description. */
@@ -781,7 +915,7 @@ function renderBuilder(){
     const wsel = wv ? `<td><select class="wv" aria-label="Wave for ${esc(i.name)}" onchange="setWave(${n},this.value)">${["A","B",""].map(w=>`<option value="${w}"${(e.wave||"")===w?" selected":""}>${w?WAVE[w]:"Whole program"}</option>`).join("")}</select></td>` : "";
     const auto = sv && !spanRow(i) ? streamOf({...e,stream:""},i) : "";
     const ssel = sv ? `<td>${spanRow(i)?`<span class="small muted">Whole program</span>`:`<select class="wv" aria-label="Workstream for ${esc(i.name)}" onchange="setStream(${n},this.value)"><option value="">Auto: ${auto}</option>${STREAMS.map(s=>`<option value="${s}"${e.stream===s?" selected":""}>${s}</option>`).join("")}</select>`}</td>` : "";
-    return `<tr><td><b>${i.name}</b><div class="small muted">${i.section}</div>${i.partner?`<div class="prtline"><span class="chip prt">${prtLabel(i)}</span> ${esc(i.partner)}</div>`:""}</td><td class="small">${i.lname||"flat"}</td>${wsel}${ssel}${dv?`<td>${isClaims(i)?`<span class="small muted">Starts at readout</span>`:spanRow(i)?"":`<label class="chk"><input type="checkbox"${e.data?" checked":""} aria-label="${esc(i.name)} needs the trial data" onchange="setData(${n},this.checked)"> Yes</label>`}</td>`:""}<td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
+    return `<tr><td><b>${i.name}</b>${ptip(i)}<div class="small muted">${i.section}</div></td><td class="small">${i.lname||"flat"}</td>${wsel}${ssel}${dv?`<td>${isClaims(i)?`<span class="small muted">Starts at readout</span>`:spanRow(i)?"":`<label class="chk"><input type="checkbox"${e.data?" checked":""} aria-label="${esc(i.name)} needs the trial data" onchange="setData(${n},this.checked)"> Yes</label>`}</td>`:""}<td class="r"><input type="number" id="q-${n}" min="0" value="${e.qty}" aria-label="Quantity for ${esc(i.name)}" onchange="setQty(${n},this.value)"></td><td class="r">${money(i.price)}</td><td class="r">${money(i.price*e.qty)}</td><td class="r">${th}</td><td><button class="sm" onclick="removeItem(${n})">Remove</button></td></tr>`;}).join("") || `<tr><td colspan="${cols}" class="muted small">Nothing in the scope yet. Load a package or add rows from the catalog.</td></tr>`;
   if(scope.length) document.getElementById("out").textContent = buildExport("items");
   renderTimeline(); renderPropTier();
 }
@@ -1167,7 +1301,7 @@ const directEst = x => { const a=num0(x.low), b=num0(x.high); return a&&b&&a!==b
 const num0 = v => { const n=parseFloat(String(v||"").replace(/[$,]/g,"")); return isFinite(n)&&n>0?n:0; };
 function renderDirect(){
   const box=document.getElementById("p-direct"); if(!box) return; box.hidden=!prop.showDirect; if(box.hidden) return;
-  box.innerHTML=prop.direct.map((x,n)=>`<div class="card" style="margin-bottom:10px;background:var(--bg)"><div class="propgrid">
+  box.innerHTML=prop.direct.map((x,n)=>`<div class="card" style="margin-bottom:var(--sf-space-3);background:var(--bg)"><div class="propgrid">
     <label class="wide">What it is (the client sees it)<input value="${esc(x.what||"")}" placeholder="Market research: physician and patient sentiment, launch baseline" oninput="setDirect(${n},'what',this.value)"></label>
     <label>Partner<input value="${esc(x.who||"")}" oninput="setDirect(${n},'who',this.value)"></label>
     <label>Estimate, low ($)<input value="${esc(x.low||"")}" inputmode="numeric" oninput="setDirect(${n},'low',this.value)"></label>
@@ -1192,8 +1326,8 @@ function voiceStatus(v){ const miss=[["quote","quote"],["name","name"],["title",
 function renderVoices(){
   const box=document.getElementById("p-voices"); if(!box) return; box.hidden=!prop.showVoices; if(box.hidden) return;
   box.innerHTML=`<div class="propgrid"><label class="wide">Section title<input value="${esc(prop.voicesTitle||"")}" oninput="setProp('voicesTitle',this.value)"></label></div>
-   <p class="small muted" style="margin:10px 0">Paste each quote exactly as the person approved it in writing. Never write or reword a quote for someone. Before you ask anyone, check whether they consult for the client, sit on its advisory boards, or work with a competitor, and record it under Disclosed relationships. With no entry ready, the section stays hidden.</p>`+
-   prop.voices.map((v,n)=>`<div class="card" style="margin-bottom:10px;background:var(--bg)"><div class="propgrid">${VOICE_FIELDS.map(([k,l,t])=>`<label class="${t==="wide"?"wide":""}">${l}${k==="quote"||k==="disclosure"?`<textarea rows="${k==="quote"?3:2}" oninput="setVoice(${n},'${k}',this.value)">${esc(v[k]||"")}</textarea>`:`<input${t==="date"?' type="date"':""} value="${esc(v[k]||"")}" oninput="setVoice(${n},'${k}',this.value)">`}</label>`).join("")}</div>
+   <p class="small muted" style="margin:var(--sf-space-3) 0">Paste each quote exactly as the person approved it in writing. Never write or reword a quote for someone. Before you ask anyone, check whether they consult for the client, sit on its advisory boards, or work with a competitor, and record it under Disclosed relationships. With no entry ready, the section stays hidden.</p>`+
+   prop.voices.map((v,n)=>`<div class="card" style="margin-bottom:var(--sf-space-3);background:var(--bg)"><div class="propgrid">${VOICE_FIELDS.map(([k,l,t])=>`<label class="${t==="wide"?"wide":""}">${l}${k==="quote"||k==="disclosure"?`<textarea rows="${k==="quote"?3:2}" oninput="setVoice(${n},'${k}',this.value)">${esc(v[k]||"")}</textarea>`:`<input${t==="date"?' type="date"':""} value="${esc(v[k]||"")}" oninput="setVoice(${n},'${k}',this.value)">`}</label>`).join("")}</div>
    <div class="acts"><label class="chk"><input type="checkbox"${v.show?" checked":""} onchange="setVoice(${n},'show',this.checked)"> Show</label><span class="small muted" id="vx-st-${n}">${voiceStatus(v)}</span><button class="sm" onclick="delVoice(${n})">Remove</button></div></div>`).join("")+
    `<button class="sm" onclick="addVoice()">Add a voice</button>`;
 }
@@ -1564,7 +1698,7 @@ function openPreview(){
     ov.hidden=false; pvWin=ov.querySelector("iframe").contentWindow;
   }
   pvWin.document.open();
-  pvWin.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Preview</title>${PROP_FONTS}<link rel="stylesheet" href="${location.origin}/assets/proposal.css"><style>.sp-pv{position:sticky;top:0;z-index:9;background:#f4e3b5;color:#5c4100;font:500 13px/1.4 "Google Sans Flex",Arial,sans-serif;padding:8px 16px;text-align:center}</style></head><body><div class="sp-pv">Preview. It updates as you edit the Scope Builder. Nothing here is published.</div><div id="sp-root"></div></body></html>`);
+  pvWin.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Preview</title>${PROP_FONTS}<link rel="stylesheet" href="${location.origin}/assets/proposal.css"><style>.sp-pv{position:sticky;top:0;z-index:9;background:#f0e2c7;color:#5e4300;font:500 13px/1.45 "Google Sans Flex","Helvetica Neue",Arial,sans-serif;padding:8px 16px}</style></head><body><div class="sp-pv">Preview. It updates as you edit the Scope Builder. Nothing here is published.</div><div id="sp-root"></div></body></html>`);
   pvWin.document.close(); refreshPreview(true); pvWin.focus();
 }
 function closePreview(){ const ov=document.getElementById("pvov"); if(ov) ov.hidden=true; pvWin=null; }
@@ -1656,7 +1790,7 @@ async function loadPublished(){
     const j=await r.json(); if(!r.ok) throw new Error(j.error||r.status);
     const fd=s=>s?new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
     box.innerHTML=j.proposals.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Proposal</th><th>Address</th><th>Published</th><th>Status</th><th>Task</th><th></th></tr></thead><tbody>${j.proposals.map(p=>{ const u=location.origin+"/"+p.slug, t=/^[a-z0-9]{6,12}$/.test(p.clickupTask||"")?p.clickupTask:"";
-      return `<tr><td><b>${esc(p.title||p.slug)}</b><div class="small muted">${esc(p.company||"")}${p.tier?" &middot; "+esc(TIER_NAME[p.tier]||p.tier):""}</div></td><td class="small"><a href="${esc(u)}" target="_blank" rel="noopener">/${esc(p.slug)}</a></td><td class="small">${fd(p.updatedAt||p.publishedAt)}</td><td class="small">${p.signedAt?`<b style="color:var(--ok)">Signed ${fd(p.signedAt)}</b>${p.signedOption?`<div class="small">${esc(p.signedOption)}, ${money(p.total||0)}</div>`:""}`:"Awaiting signature"+(Array.isArray(p.options)&&p.options.length>1?`<div class="small muted">${p.options.length} options</div>`:"")}</td><td class="small num">${t?`<a href="https://app.clickup.com/t/${t}" target="_blank" rel="noopener" title="Open the engagement task in ClickUp">${t}</a>`:`<span class="muted">none</span>`}</td>
+      return `<tr><td><b>${esc(p.title||p.slug)}</b><div class="small muted">${esc(p.company||"")}${p.tier?" &middot; "+esc(TIER_NAME[p.tier]||p.tier):""}</div></td><td class="small"><a href="${esc(u)}" target="_blank" rel="noopener">/${esc(p.slug)}</a></td><td class="small">${fd(p.updatedAt||p.publishedAt)}</td><td class="small">${p.signedAt?`<b class="okflag">Signed ${fd(p.signedAt)}</b>${p.signedOption?`<div class="small">${esc(p.signedOption)}, ${money(p.total||0)}</div>`:""}`:"Awaiting signature"+(Array.isArray(p.options)&&p.options.length>1?`<div class="small muted">${p.options.length} options</div>`:"")}</td><td class="small num">${t?`<a href="https://app.clickup.com/t/${t}" target="_blank" rel="noopener" title="Open the engagement task in ClickUp">${t}</a>`:`<span class="muted">none</span>`}</td>
         <td class="r" style="white-space:nowrap"><button class="sm" onclick='copyText(${JSON.stringify(u)},"Link copied")'>Copy link</button>${p.signedAt?"":` <button class="sm" onclick='unpublish(${JSON.stringify(p.slug)})'>Unpublish</button>`}</td></tr>`; }).join("")}</tbody></table></div>`:`<p class="small muted">Nothing published yet.</p>`;
   }catch(e){ box.innerHTML=`<p class="small muted">Couldn't load published proposals (${esc(e.message||e)}).</p>`; }
 }
@@ -1751,6 +1885,7 @@ async function unlock(pw, persist){
   btn.disabled=true; btn.textContent="Opening"; err.textContent="";
   try{
     DATA = await decryptData(pw); rememberPw(pw, persist);
+    if(DATA.glossary){ GLOSSARY = DATA.glossary; }
     if(DATA.terms){ TERMS = DATA.terms; } if(DATA.rates){ RATES_TXT = DATA.rates; } if(DATA.optTerms){ OPT_TERMS = DATA.optTerms; }
     bySku = Object.fromEntries(DATA.items.map(i=>[i.sku,i]));
     document.getElementById("gate").hidden = true; document.getElementById("app").hidden = false;
@@ -1760,8 +1895,75 @@ async function unlock(pw, persist){
     btn.disabled=false; btn.textContent="Open"; return false;
   }
 }
+/* ---------- Glossary tooltips ----------
+   Acronyms in the kit get a dotted underline; hover, focus or tap shows what they stand for.
+   The list comes from the Sheet's Glossary tab (DATA.glossary); this built-in copy is the fallback.
+   Only the first use of a term in each block is marked, so a busy row doesn't fill with underlines. */
+let GLOSSARY = [{"t": "HCP", "s": "Health care provider", "tip": "The prescribers and clinical staff a piece is written for (specialists, referring physicians, nurses)."}, {"t": "PRC", "s": "Promotional Review Committee", "tip": "The client's medical, legal and regulatory reviewers, who approve every promotional piece before it goes out; plan for 1 to 2 rounds per piece."}, {"t": "MLR", "s": "Medical, Legal and Regulatory review", "tip": "Another name for PRC: the same approval step, with its own window on the timeline."}, {"t": "KOL", "s": "Key opinion leader", "tip": "A specialist whose view carries weight with peers, often brought in to validate claims or join an advisory board."}, {"t": "MOA", "s": "Mechanism of action", "tip": "How a therapy works in the body, usually shown as an animation or illustration."}, {"t": "ISI", "s": "Important Safety Information", "tip": "The required safety text that travels with branded pieces; it takes layout space and adds review time."}, {"t": "ATU", "s": "Awareness, trial and usage", "tip": "A tracking study of how many prescribers know, have tried and now use a product, usually repeated every 6 to 12 months."}, {"t": "CRM", "s": "Customer relationship management", "tip": "The system a sales team logs contacts in; in pharma it also shows reps' approved materials (Veeva, OCE)."}, {"t": "OCE", "s": "Oracle Customer Engagement", "tip": "A pharma CRM that reps use to show and track sales aids in the room."}, {"t": "IVA", "s": "Interactive visual aid", "tip": "A sales aid built to run on a rep's tablet inside the CRM, with tap-through sections."}, {"t": "CMS", "s": "Content management system", "tip": "The platform a site runs on (Craft, Webflow, HubSpot), where the client edits pages after launch."}, {"t": "QA", "s": "Quality assurance", "tip": "Testing across browsers, devices, links and forms before anything goes live."}, {"t": "UX", "s": "User experience", "tip": "How a site or tool works for the person using it: structure, flow and labels."}, {"t": "SEO", "s": "Search engine optimization", "tip": "The page structure, metadata and content work that helps a site get found."}, {"t": "KPI", "s": "Key performance indicator", "tip": "One of the handful of numbers a program is judged on (visits, sign-ups, email opens)."}, {"t": "WCAG", "s": "Web Content Accessibility Guidelines", "tip": "The accessibility standard for websites; Level AA is what most clients and regulators expect."}, {"t": "HTML5", "s": "HTML5 banner", "tip": "An animated digital ad built in code to run on ad networks, as opposed to a static image."}, {"t": "AV", "s": "Audio-visual", "tip": "Screens, sound and lighting at an event, usually billed as a pass-through."}, {"t": "CAD", "s": "Computer-aided design", "tip": "The technical drawings a booth fabricator builds from."}, {"t": "IR", "s": "Investor relations", "tip": "Materials for investors and analysts (decks, fact sheets, the IR pages of a site)."}, {"t": "IQVIA", "s": "IQVIA", "tip": "A healthcare data company whose prescriber data lets ads and emails reach specific HCPs."}, {"t": "FDA", "s": "U.S. Food and Drug Administration", "tip": "Its approval, and the final label, set when promotion can start and what it can say."}, {"t": "BLA", "s": "Biologics License Application", "tip": "The FDA filing for a biologic or gene therapy; its timing drives launch readiness."}, {"t": "PI", "s": "Prescribing Information", "tip": "The full approved label; every claim has to sit inside it."}, {"t": "SOW", "s": "Statement of work", "tip": "The scope, price, timeline and terms the client signs."}, {"t": "SKU", "s": "Catalog code", "tip": "Each line item's code (STF-XXX-000-L1): service type, number and level."}, {"t": "PMO", "s": "Project management office", "tip": "The client team that sets project process and tools across vendors."}, {"t": "L1", "s": "Level 1", "tip": "The lightest version of a service. Level Definitions has the test for each service type."}, {"t": "L2", "s": "Level 2", "tip": "The middle version of a service: more original thinking or more pieces than Level 1."}, {"t": "L3", "s": "Level 3", "tip": "The fullest version of a service, with the most concepts, research or review rounds."}];
+const GL_SKIP = "script,style,textarea,input,select,option,button,summary,a,abbr,code,pre,svg,[contenteditable],.nm,.no-gloss,#pvov,#gate";
+const GL_BLOCK = "p,li,td,th,dd,dt,h1,h2,h3,h4,h5,label,.card,.blk,details,section";
+let glRe = null, glMap = {}, glBusy = false;
+function glSet(list){
+  glMap = Object.fromEntries((list||[]).filter(g=>g.t).map(g=>[g.t, g]));
+  const terms = Object.keys(glMap).sort((a,b)=>b.length-a.length).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+  glRe = terms.length ? new RegExp(`(?<![\\w-])(?<!\\| )(${terms.join("|")})s?(?![\\w-])`,"g") : null; // "| L1" inside an item name stays plain
+}
+function glossify(root){
+  if(!glRe || !root) return;
+  glBusy = true;
+  const seen = new WeakMap(), walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(n){
+    if(!n.nodeValue.trim() || !n.parentElement || n.parentElement.closest(GL_SKIP)) return NodeFilter.FILTER_REJECT;
+    glRe.lastIndex = 0; return glRe.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }});
+  const nodes = []; while(walker.nextNode()) nodes.push(walker.currentNode);
+  for(const n of nodes){
+    const blk = n.parentElement.closest(GL_BLOCK) || n.parentElement;
+    let done = seen.get(blk); if(!done){ done = new Set(blk.querySelectorAll ? [...blk.querySelectorAll("abbr.gl")].map(a=>a.dataset.t) : []); seen.set(blk, done); }
+    const s = n.nodeValue, frag = document.createDocumentFragment(); let last = 0, hit = false; glRe.lastIndex = 0; let m;
+    while((m = glRe.exec(s))){
+      const t = m[1]; if(done.has(t)) continue; done.add(t); hit = true;
+      frag.append(s.slice(last, m.index));
+      const a = document.createElement("abbr"); a.className = "gl"; a.tabIndex = 0; a.dataset.t = t; a.textContent = m[0];
+      a.setAttribute("aria-describedby","gltip"); frag.append(a); last = m.index + m[0].length;
+    }
+    if(hit){ frag.append(s.slice(last)); n.replaceWith(frag); }
+  }
+  glBusy = false;
+}
+function glTip(){ let el = document.getElementById("gltip"); if(!el){ el = document.createElement("div"); el.id = "gltip"; el.setAttribute("role","tooltip"); el.hidden = true; document.body.append(el); } return el; }
+function glShow(a){
+  const el = glTip();
+  if(a.classList.contains("ptip")){ el.className = "pt"; el.innerHTML = `<b>${esc(a.dataset.lab)}</b><span>${esc(a.dataset.tip.replace(/^(needs a partner|partner optional|optional)\s*[:.-]\s*/i,"").replace(/^./,c=>c.toUpperCase()))}</span>`; a.setAttribute("aria-expanded","true"); }
+  else { const g = glMap[a.dataset.t]; if(!g) return; el.className = ""; el.innerHTML = `<b>${esc(g.t)}</b> ${esc(g.s)}${g.tip?`<span>${esc(g.tip)}</span>`:""}`; }
+  el.hidden = false;
+  const r = a.getBoundingClientRect(), w = Math.min(320, innerWidth - 32); el.style.maxWidth = w + "px";
+  const x = Math.max(16, Math.min(r.left, innerWidth - el.offsetWidth - 16));
+  const below = r.bottom + 8 + el.offsetHeight < innerHeight;
+  el.style.left = (x + scrollX) + "px"; el.style.top = ((below ? r.bottom + 8 : r.top - el.offsetHeight - 8) + scrollY) + "px";
+  glOpen = a;
+}
+let glOpen = null;
+function glHide(){ const el = document.getElementById("gltip"); if(el) el.hidden = true; if(glOpen && glOpen.classList.contains("ptip")) glOpen.setAttribute("aria-expanded","false"); glOpen = null; }
+function glInit(){
+  glSet(GLOSSARY);
+  const app = document.getElementById("app"); glossify(app);
+  let q = 0; const obs = new MutationObserver(()=>{ if(glBusy || q) return; q = requestAnimationFrame(()=>{ q = 0; glossify(app); obs.takeRecords(); }); });
+  obs.observe(app, {childList:true, subtree:true});
+  document.addEventListener("mouseover", e=>{ const a = e.target.closest && e.target.closest("abbr.gl,.ptip"); if(a) glShow(a); });
+  document.addEventListener("mouseout", e=>{ const a = e.target.closest && e.target.closest("abbr.gl,.ptip"); if(a && !a.contains(e.relatedTarget) && document.activeElement !== a) glHide(); });
+  document.addEventListener("focusin", e=>{ if(e.target.matches && e.target.matches("abbr.gl,.ptip")) glShow(e.target); });
+  document.addEventListener("focusout", e=>{ if(e.target.matches && e.target.matches("abbr.gl,.ptip")) glHide(); });
+  document.addEventListener("click", e=>{ const a = e.target.closest && e.target.closest("abbr.gl,.ptip"); if(a){ e.preventDefault(); glShow(a); } else if(glOpen) glHide(); });
+  document.addEventListener("keydown", e=>{ if(e.key === "Escape" && glOpen) glHide(); });
+}
+
 function start(){
+  if(!window.__gl){ window.__gl=1; glInit(); } else glSet(GLOSSARY);
   const st=document.getElementById("src"); if(st) st.textContent = DATA.items.length+" line items loaded";
+  { // counts in the page copy follow the Sheet
+    const W=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"], np=(DATA.packs||[]).length, word=np<W.length?W[np]:String(np);
+    const n={svc:new Set(DATA.items.map(i=>i.base)).size, li:DATA.items.length, pk:word, PK:word[0].toUpperCase()+word.slice(1)};
+    document.querySelectorAll("[data-n]").forEach(e=>{ if(n[e.dataset.n]!=null) e.textContent=n[e.dataset.n]; });
+  }
   const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
   for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
   renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); renderBuilder(); renderProp(); route(); loadPublished();

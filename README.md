@@ -16,7 +16,7 @@ The account manager kit for building scopes at 2026 rates: The Brief, seven pack
 
 ## Updating prices, descriptions, packages or terms
 
-1. Edit the Google Sheet. The site reads these tabs: Catalog, Quick Finder, Packages, Package Detail, Level Definitions, Terms. Keep the column headers and tab names exactly as they are. Client-facing copy lives in the Catalog tab's Client description, Includes, Deliverables and Note columns (one bullet per line in Includes and Deliverables); it is what the kit shows first and what the Scope Builder exports. Add rows freely; a new line item needs a unique SKU in the same pattern (STF-XXX-000-L1).
+1. Edit the Google Sheet. The site reads these tabs: Catalog, Quick Finder, Packages, Package Detail, Level Definitions, Terms, and Glossary if it exists (Term, Stands for, Tooltip: the acronyms the kit explains on hover or tap; without the tab the kit uses its built-in list). Keep the column headers and tab names exactly as they are. Client-facing copy lives in the Catalog tab's Client description, Includes, Deliverables and Note columns (one bullet per line in Includes and Deliverables); it is what the kit shows first and what the Scope Builder exports. Add rows freely; a new line item needs a unique SKU in the same pattern (STF-XXX-000-L1).
 2. Choose **Steadfast → Publish to kit** in the Sheet.
 3. In about a minute the site has the new data. Anyone with the page open sees it on their next reload.
 

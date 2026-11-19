@@ -14,13 +14,15 @@ const page = (body, data) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow"><title>Proposal | Steadfast Design Firm</title>
 <link rel="stylesheet" href="${FONTS}"><link rel="stylesheet" href="/assets/proposal.css">
-<style>.sp-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:#0a0a0a}
-.sp-gate form{background:var(--sp-bg);border-radius:10px;padding:30px;width:100%;max-width:400px;display:grid;gap:14px}
-.sp-gate .logo{display:block;width:34px;height:auto;color:#0a0a0a}
-.sp-gate h1{font-family:var(--sp-display);font-weight:500;font-size:1.5rem;margin:0}
-.sp-gate p{margin:0;color:var(--sp-fg2);font-size:.92rem}
-.sp-gate input{font:inherit;font-size:1rem;padding:11px 12px;border:1px solid var(--sp-line);border-radius:6px;background:#fff;color:var(--sp-fg);width:100%}
-.sp-gate .eb{font-family:var(--sp-label);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sp-fg2)}</style>
+<style>.sp-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px clamp(24px,5vw,48px);background:var(--sp-ink)}
+.sp-gate form{background:var(--sp-bg);border-radius:0;padding:32px;width:100%;max-width:400px;display:grid;gap:24px}
+.sp-gate .logo{display:block;width:32px;height:auto;color:var(--sp-ink)}
+.sp-gate h1{font-family:var(--sp-display);font-weight:500;font-size:clamp(1.5rem,3vw,1.75rem);line-height:1.15;margin:8px 0 0}
+.sp-gate p{margin:0;color:var(--sp-fg2);font-size:.9375rem}
+.sp-gate input{font:inherit;font-size:1rem;min-height:44px;padding:0 16px;border:1px solid var(--sp-edge,#7f786d);border-radius:6px;background:var(--sp-card);color:var(--sp-fg);width:100%}
+.sp-gate input:focus-visible{outline:2px solid var(--sp-fg);outline-offset:2px}
+.sp-gate .sp-btn{justify-self:start}
+.sp-gate .eb{font-family:var(--sp-label);font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sp-fg2)}</style>
 </head><body>${body}${data ? `<script id="sp-data" type="application/json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script><script src="/assets/viewer.js"></script>` : ""}</body></html>`;
 
 const notFound = () => new Response(page(`<div class="sp-gate"><form>${BADGE}<h1>Nothing here</h1><p>This proposal isn't published at this address. If you followed a link from Steadfast, ask your contact for a fresh one.</p><p><a href="https://www.steadfastdesignfirm.com/">steadfastdesignfirm.com</a></p></form></div>`), { status: 404, headers: HEADERS });

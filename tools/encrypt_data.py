@@ -29,7 +29,7 @@ from cryptography.hazmat.primitives import hashes
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 ITER = 250_000
 
-TABS = ["Catalog", "Quick Finder", "Packages", "Package Detail", "Level Definitions", "Terms"]
+TABS = ["Catalog", "Quick Finder", "Packages", "Package Detail", "Level Definitions", "Terms", "Glossary"]  # Glossary is optional
 
 def to_dicts(table):
     """Header row plus data rows -> list of dicts, skipping blank rows."""
@@ -113,7 +113,10 @@ def build_data(tables):
         d[r["Group"]].append([r["Heading"], r["Text"]])
     if go: terms = [dict(h=h, items=g[h]) for h in go]
     optTerms = [dict(h=h, items=opt[h]) for h in oo] or None
-    return dict(items=items, cats=cats, packs=packs, levels=levels, terms=terms, rates=rates, optTerms=optTerms)
+    # Glossary tab (optional): Term | Stands for | Tooltip. The kit explains these acronyms on hover or tap; without the tab it uses its built-in list.
+    glossary = [dict(t=str(r.get("Term", "")).strip(), s=str(r.get("Stands for", "") or "").strip(), tip=str(r.get("Tooltip", "") or "").strip())
+                for r in rows("Glossary") if str(r.get("Term", "")).strip()] or None
+    return dict(items=items, cats=cats, packs=packs, levels=levels, terms=terms, rates=rates, optTerms=optTerms, glossary=glossary)
 
 def main():
     if "--from-sheet" in sys.argv:
