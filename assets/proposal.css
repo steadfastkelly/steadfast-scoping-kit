@@ -1,5 +1,5 @@
 /* Steadfast proposal: the client-facing page the Scope Builder previews and publishes.
-   Built on the Complex (L3) proposal layout, in the Steadfast design system v1.4.0 (Steadfast Mode,
+   Built on the Complex (L3) proposal layout, in the Steadfast design system v1.6.0 (Steadfast Mode,
    docs/handoffs/steadfast-design-system.json): paper ground, ink type and rules, Zalando Sans for display and labels,
    Google Sans Flex for reading text, JetBrains Mono for every figure. Light only: the system has no dark mode and a
    proposal is read, printed and signed as a document. Simple and Mid-range proposals use the same parts with fewer
@@ -11,7 +11,7 @@
   --sf-n-100:#ebe8e2;--sf-n-200:#e2ddd4;--sf-n-300:#d8d1c4;--sf-n-400:#cac2b6;--sf-n-500:#7f786d;--sf-n-600:#6a665f;--sf-n-700:#4f4a43;--sf-n-800:#2a2825;--sf-n-850:#1c1b19;
   --sf-dark-muted:#bdb6ab;--sf-dark-body:#cfc8bc;--sf-dark-rule:#3a3733;
   --sf-gold-100:#f0e2c7;--sf-gold-700:#5e4300;--sf-maroon-500:#7a1f2b;--sf-maroon-600:#661622;
-  --sp-bg:var(--sf-paper); --sp-panel:var(--sf-n-100); --sp-card:var(--sf-raised); --sp-fg:var(--sf-ink); --sp-fg2:var(--sf-n-600); --sp-line:var(--sf-n-300);
+  --sp-bg:#ffffff; --sp-panel:var(--sf-paper); --sp-card:var(--sf-paper); --sp-fg:var(--sf-ink); --sp-fg2:var(--sf-n-600); --sp-line:var(--sf-n-300);
   --sp-ink:var(--sf-ink); --sp-ink-fg:var(--sf-paper); --sp-soft:var(--sf-n-400); --sp-edge:var(--sf-n-500); --sp-fg3:var(--sf-n-700);
   --sp-display:"Zalando Sans SemiExpanded","Helvetica Neue",Arial,sans-serif;
   --sp-label:"Zalando Sans Expanded","Helvetica Neue",Arial,sans-serif;
@@ -263,3 +263,19 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-chosen{margin:0 0 16px;padding:12px 0 0;border-left:0 solid var(--sp-ink);border-top:2px solid var(--sp-ink);background:transparent;font-size:.9375rem}
 @media (max-width:760px){.sp-opt dl>div{font-size:.875rem}.sp-risk td:nth-child(2){white-space:normal}}
 @media print{.sp-opt,.sp-voice{break-inside:avoid}}
+
+/* Design system 1.6 (November 19, 2026): a white page with beige containers, so proposals print clean.
+   New rules only (see the note above): fields stay white on any surface, and the Why Steadfast band
+   prints white with an ink rule to save toner. The cover is the one surface that stays dark in print. */
+.sp-form input[type=text],.sp-form input[type=email],.sp-pad,.sp-agree input[type=checkbox]:not(:checked),.sp-pick input:not(:checked){background-color:#fff}
+.sp-pick input:checked{box-shadow:inset 0 0 0 3px #fff}
+/* Sections sit on the white page; beige marks the boxes inside them (cards, summary, options, steps). */
+.sp-sec.alt,.sp-sec.card{background:#fff}
+.sp-sec.card :is(.sp-cardbox,.sp-steps,.sp-opt){background:var(--sf-paper)}
+.sp-sec+.sp-sec:not(.sp-dark){border-top:1px solid var(--sp-line)}
+@media print{
+  .sp-dark{background:#fff!important;color:var(--sp-fg);border-top:2px solid var(--sp-ink);-webkit-print-color-adjust:economy;print-color-adjust:economy}
+  .sp-dark h2{border-bottom-color:var(--sp-line)}
+  .sp-dark .why p{color:var(--sp-fg2)}
+  .sp-dark .why i{background:var(--sp-ink);color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
