@@ -968,7 +968,7 @@ function buildExport(kind){
   if(kind==="skeleton"){
     let s="WHAT WE HEARD\n[Four or five sentences in the client's own words: the goal, the constraint, the deadline, the thing they said on the call that was not in the request.]\n\n[ONE-LINE THESIS, sentence case, the client's situation and the move in the same breath.]\n\n[Opening paragraph: the market, with the client as subject. Second paragraph: what the team holds at the end.]\n\nSTRATEGIC IMPERATIVES\n1. [Two-word imperative]. [One sentence.] Done when [outcome].\n2. [Two-word imperative]. [One sentence.] Done when [outcome].\n3. [Two-word imperative]. [One sentence.] Done when [outcome].\n4. [Two-word imperative]. [One sentence.] Done when [outcome].\n\n";
     let n=1; for(const sec of secs){ let st=0; s+=`STAGE ${n}: [Verb], ${sec} ([quarter])\n`; for(const e of g[sec]){const i=bySku[e.sku]; st+=i.price*e.qty; s+=`  ${i.name}${e.qty>1?" x "+e.qty:""}  ${money(i.price*e.qty)}\n`;} s+=`  Stage ${n} total  ${money(st)}\n  [One scope-for-budget trade stated inside an item.]\n\n`; n++; }
-    s+=`INVESTMENT  ${money(t.tot)}\n[Milestone payment schedule. Credit for The Brief, ($5,000), if sold.]\n\nTERMS & CONDITIONS\n[Paste from the Terms page.]\n`;
+    s+=`INVESTMENT  ${money(t.tot)}\n[Deposit and monthly installment schedule. Credit for The Brief, ($5,000), if sold.]\n\nTERMS & CONDITIONS\n[Paste from the Terms page.]\n`;
     return s;
   }
   let s="SCOPE OF WORK (2026 rates)\n";
@@ -1396,13 +1396,27 @@ const fmtDate = d => d.toLocaleDateString("en-US",{month:"long",day:"numeric",ye
 // Client-facing row name: the base deliverable, plus the level name when the scope holds two levels of the same thing.
 function clientName(i){ const same=scope.filter(e=>bySku[e.sku].base===i.base).length>1; return same&&i.lname ? `${i.base} (${i.lname})` : i.base; }
 
-// Deposit on signature, then the balance: on delivery for smaller work, monthly across the timeline for larger.
-function paySchedule(oneTime, weeks){
+// Every engagement: a deposit on signature, then the balance in equal monthly installments across the timeline.
+// The deposit is the larger of the size rate and the up-front work (discovery, onboarding, kickoff sessions), capped at 50%.
+// Rates are placeholders until Taylor and our accountant confirm them.
+const DEPOSIT_TIERS=[[10000,0.5],[50000,0.4],[100000,0.3],[Infinity,0.25]];
+const UPFRONT_SKUS=["STF-STR-001","STF-STR-002","STF-STR-008","STF-STR-010","STF-BRD-006"];
+const isUpfront = sku => UPFRONT_SKUS.some(b=>sku===b||sku.startsWith(b+"-"));
+function depositRate(oneTime, upfront){
+  const base=DEPOSIT_TIERS.find(([max])=>oneTime<max)[1];
+  return Math.min(0.5, Math.max(base, upfront/oneTime));
+}
+function paySchedule(oneTime, weeks, upfront=0){
   if(oneTime<=0) return [];
-  if(oneTime<15000) return [["Deposit (50%)","On signature",Math.round(oneTime/2)],["Final (50%)","On final delivery",oneTime-Math.round(oneTime/2)]];
-  const dep=Math.round(oneTime*0.3/50)*50, n=Math.min(8,Math.max(2,Math.round(weeks/4.33))), each=Math.round((oneTime-dep)/n/50)*50, rows=[["Deposit (30%)","On signature",dep]];
-  for(let k=1;k<=n;k++) rows.push([`Installment ${k}`,`Month ${k}`, k<n?each:oneTime-dep-each*(n-1)]);
+  const rate=depositRate(oneTime,upfront), dep=Math.round(oneTime*rate/50)*50;
+  const n=Math.max(1,(Math.ceil((weeks||0)/4.33)||1)-1), each=Math.round((oneTime-dep)/n/50)*50;
+  const rows=[[`Deposit (${Math.round(rate*100)}%)`,"On signature",dep]];
+  for(let k=1;k<=n;k++) rows.push([n>1?`Installment ${k}`:"Final installment",`Month ${k+1}, on the 1st`, k<n?each:oneTime-dep-each*(n-1)]);
   return rows;
+}
+function payIntroText(d){
+  const n=d.pay.length-1, pct=(d.pay[0]?.[0].match(/\d+%/)||["30%"])[0];
+  return `A ${pct} deposit is due on signature to hold the team and the dates in this scope and to cover the work at its start (discovery, onboarding and kickoff), and the balance is billed in ${n===1?"one installment":n+" equal monthly installments"} on the 1st of each month, so payment follows the work on dates both teams can plan around. If the work finishes early, the remaining balance is due on final delivery.`;
 }
 
 function proposalData(){
@@ -1418,8 +1432,10 @@ function proposalData(){
     ["Proposal.Date",fmtDate(issued)],["Proposal.ValidUntil",fmtDate(valid)],
     ["Project.Kickoff",kick?fmtDate(kick):"the agreed kickoff date"],["Project.Launch",launch?fmtDate(launch):`week ${launchWk}`],
     ["Project.Weeks",String(launchWk)],["Project.Total","$"+oneTime.toLocaleString("en-US")],
+    ["Scope.SignByDate",fmtDate(valid)],
   ].map(([name,value])=>({name,value:String(value??"")}));
-  return {tier,b,items,once,monthly,oneTime,perMonth,tokens,pay:paySchedule(oneTime,b.launch)};
+  const upfront=once.filter(x=>isUpfront(x.e.sku)).reduce((a,x)=>a+x.i.price*x.e.qty,0);
+  return {tier,b,items,once,monthly,oneTime,perMonth,tokens,pay:paySchedule(oneTime,b.launch,upfront)};
 }
 
 const wkSpan = r => Math.max(1,Math.ceil(r.end)-Math.floor(r.start)); // matches the "Weeks a to b" range
@@ -1499,7 +1515,7 @@ function proposalMarkdown(){
   }
   // Payment schedule
   p(`## Payment Schedule`);
-  p(d.oneTime<15000 ? `A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.` : `A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in equal monthly installments, so payment follows the work.`);
+  p(payIntroText(d));
   p(`| Invoice | Due | Amount |\n|---|---|---|\n`+d.pay.map(([a,b,c])=>`| ${a} | ${b} | $${c.toLocaleString("en-US")} |`).join("\n")+`\n| **Total** |  | **[Project.Total]** |`);
   if(d.monthly.length) p(`Ongoing services are invoiced monthly from launch at $${d.perMonth.toLocaleString("en-US")} per month.`);
   // Terms
@@ -1605,11 +1621,11 @@ function proposalPageOne(){
   // Building blocks shared by the tiers
   const itemsHTML=list=>SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
     return `<div class="sp-stage">${esc(s)}</div>`+g.map(x=>{ const i=x.i;
-      return `<div class="sp-item"><div><h4>${nm(x)}</h4>${wavesOn()&&x.e.wave?`<div class="lv"><span class="sp-wv">${WAVE[x.e.wave]}</span></div>`:""}${i.lname?`<div class="lv">${esc(cap(i.lname))}</div>`:""}<div class="pr">${money0(i.price*x.e.qty)}${per(x)}</div></div>
+      return `<div class="sp-item sp-li"><div><h4>${nm(x)}</h4>${wavesOn()&&x.e.wave?`<div class="lv"><span class="sp-wv">${WAVE[x.e.wave]}</span></div>`:""}${i.lname?`<div class="lv">${esc(cap(i.lname))}</div>`:""}<div class="pr">${money0(i.price*x.e.qty)}${per(x)}</div></div>
         <div><p>${esc(cDesc(i))}</p>${(i.incl&&i.incl.length)||(i.deliv&&i.deliv.length)?`<div class="cols">${i.incl&&i.incl.length?`<div><span class="eb">Includes</span><ul class="dots">${i.incl.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:""}${i.deliv&&i.deliv.length?`<div><span class="eb">Deliverables</span><ul class="dots">${i.deliv.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`:""}</div>`:""}${i.note?`<p class="note">Note: ${esc(i.note)}</p>`:""}</div></div>`; }).join(""); }).join("");
-  const budgetTbl=(list,label,total,suffix)=>`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Item</th><th>Deliverables</th><th class="r">Price</th></tr></thead><tbody>`+
+  const budgetTbl=(list,label,total,suffix)=>`<div class="scroll"><table class="sp-tbl sp-lt"><thead><tr><th>Item</th><th>Deliverables</th><th class="r">Price</th></tr></thead><tbody>`+
     SECTION_ORDER.map(s=>{ const g=list.filter(x=>x.i.section===s); if(!g.length) return "";
-      return `<tr class="stage"><td colspan="3">${esc(s)}</td></tr>`+g.map(x=>`<tr><td><b>${nm(x)}</b><div class="d">${esc(tier==="L1"?cDesc(x.i):cap(x.i.lname||""))}</div></td><td class="dl">${(x.i.deliv||[]).map(esc).join("<br>")}</td><td class="r">${money0(x.i.price*x.e.qty)}${suffix}</td></tr>`).join(""); }).join("")+
+      return `<tr class="stage"><td colspan="2">${esc(s)}</td><td class="r">${money0(g.reduce((a,x)=>a+x.i.price*x.e.qty,0))}${suffix}</td></tr>`+g.map(x=>`<tr><td><b>${nm(x)}</b><div class="d">${esc(tier==="L1"?cDesc(x.i):cap(x.i.lname||""))}</div></td><td class="dl">${(x.i.deliv||[]).map(esc).join("<br>")}</td><td class="r">${money0(x.i.price*x.e.qty)}${suffix}</td></tr>`).join(""); }).join("")+
     `<tr class="tot"><td colspan="2">${label}</td><td class="r">${money0(total)}${suffix}</td></tr></tbody></table></div>`;
   const dx=shownDirect(), directHTML=dx.length?`<div class="sp-cardbox"><h3 class="sub">Contracted directly by ${co}</h3><p>These partners work for ${co} directly and bill ${co}, so they are not in the totals above. We coordinate their work with ours. The estimates are rough until each partner quotes.</p><div class="scroll" style="margin-top:18px"><table class="sp-tbl"><tbody>${dx.map(x=>`<tr><td><b>${esc(x.what.trim())}</b>${x.named&&String(x.who||"").trim()?`<div class="d">${esc(x.who.trim())}</div>`:""}</td><td class="r">${directEst(x)}</td></tr>`).join("")}</tbody></table></div></div>`:"";
   const notInHTML=notIn.length?`<div class="sp-cardbox"><h3 class="sub">Not in scope</h3><ul class="dots">${notIn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
@@ -1626,7 +1642,7 @@ function proposalPageOne(){
         <td class="bar"><div style="position:relative;height:8px;background:var(--sp-line)"><i style="position:absolute;top:0;bottom:0;left:${(r.start/W*100).toFixed(2)}%;width:${Math.max(2,(r.end-r.start)/W*100).toFixed(2)}%;background:${r.type==="mlr"?"repeating-linear-gradient(135deg,var(--sp-fg2) 0 1.5px,transparent 1.5px 5px)":c?c[0]:"var(--sp-ink)"};${c&&r.type!=="mlr"?`box-shadow:inset 0 0 0 1px ${c[1]}`:""}"></i></div></td></tr>`; }).join("")+
     `<tr class="tot"><td>Launch / final files</td><td>Week ${weeks}</td>${tl.start?`<td>${launch?tlFmt(launch):""}</td>`:""}<td class="r"></td><td></td></tr></tbody></table></div>`;
   const tlLine=`<p style="margin-top:18px">Work begins ${kick?fmtDate(kick):"at kickoff"}, with launch planned for ${launch?fmtDate(launch):"week "+weeks}. The timeline is an estimate and assumes feedback within ${tl.fb} business days each round${d.b.m?" and the MLR timing shown":""}.</p>`;
-  const payIntro=d.oneTime<15000?"A 50% deposit is due on signature to start the project and reserve scheduling, and the balance is invoiced on final delivery.":`A 30% deposit is due on signature to start the project and hold its place on our calendar, and the balance is billed in ${d.pay.length-1} equal monthly installments, so payment follows the work as it happens.`;
+  const payIntro=payIntroText(d);
   const payHTML=`<p>${payIntro}</p><div class="scroll" style="margin-top:22px"><table class="sp-tbl"><tbody>${d.pay.map(([a,b,c])=>`<tr><td><b>${a}</b></td><td class="due">${b==="On signature"?"Due upon signing":b}</td><td class="r">${money0(c)}</td></tr>`).join("")}<tr class="tot"><td colspan="2">Total</td><td class="r">${money0(d.oneTime)}</td></tr></tbody></table></div>${d.monthly.length?`<p style="margin-top:18px">Ongoing services are invoiced monthly from launch at ${money0(d.perMonth)} per month.</p>`:""}`;
 
   // Options: each one side by side, lead first, then what each changes against the lead and its full scope on request

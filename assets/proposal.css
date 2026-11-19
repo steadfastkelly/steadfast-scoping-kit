@@ -1,5 +1,5 @@
 /* Steadfast proposal: the client-facing page the Scope Builder previews and publishes.
-   Built on the Complex (L3) proposal layout, in the Steadfast design system v1.6.0 (Steadfast Mode,
+   Built on the Complex (L3) proposal layout, in the Steadfast design system v1.7.0 (Steadfast Mode,
    docs/handoffs/steadfast-design-system.json): paper ground, ink type and rules, Zalando Sans for display and labels,
    Google Sans Flex for reading text, JetBrains Mono for every figure. Light only: the system has no dark mode and a
    proposal is read, printed and signed as a document. Simple and Mid-range proposals use the same parts with fewer
@@ -279,3 +279,24 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
   .sp-dark .why p{color:var(--sp-fg2)}
   .sp-dark .why i{background:var(--sp-ink);color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* Design system 1.7 (November 19, 2026): line items read as separate blocks. New class names only (sp-li, sp-lt),
+   so proposals already published keep their look. Each Scope of Work item is a beige strip (name, level, price)
+   over a white body; budget stages are beige strips with their subtotal, with a white break between stages. */
+.sp-item.sp-li{display:block;padding:0;border-bottom:0;margin-top:12px}
+.sp-item.sp-li>div:first-child{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:baseline;background:var(--sf-paper);padding:12px 16px}
+.sp-item.sp-li h4{font-family:var(--sp-body);font-size:1rem;font-weight:600}
+.sp-item.sp-li .pr{grid-column:2;grid-row:1;margin:0;text-align:right}
+.sp-item.sp-li .lv{grid-column:1;margin-top:2px}
+.sp-item.sp-li>div:last-child{padding:16px 16px 24px;border-bottom:1px solid var(--sp-line)}
+.sp-item.sp-li .cols .eb{margin-bottom:6px}
+.sp-item.sp-li .cols>div:last-child ul.dots{color:var(--sp-fg2)}
+.sp-item.sp-li .note{font-style:italic}
+.sp-tbl.sp-lt th:first-child,.sp-tbl.sp-lt td:first-child{padding-left:16px}
+.sp-tbl.sp-lt th:last-child,.sp-tbl.sp-lt td:last-child{padding-right:16px}
+.sp-tbl.sp-lt tr.stage td{background:var(--sf-paper);font-family:var(--sp-body);font-size:.9375rem;letter-spacing:0;text-transform:none;font-weight:600;padding-top:12px;padding-bottom:12px;border-bottom:0;border-top:12px solid #fff}
+.sp-tbl.sp-lt tr.stage td.r{font-family:var(--sp-mono);font-weight:500}
+.sp-tbl.sp-lt thead+tbody tr.stage:first-child td{border-top:0}
+.sp-tbl.sp-lt tr.tot td:first-child{font-family:var(--sp-label);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.sp-tbl.sp-lt tr.tot td{padding-top:16px}
+@media print{.sp-item.sp-li>div:first-child,.sp-tbl.sp-lt tr.stage td{-webkit-print-color-adjust:exact;print-color-adjust:exact}.sp-item.sp-li{break-inside:avoid}}
