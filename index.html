@@ -8,7 +8,7 @@
 <title>Steadfast SOW Kit</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@500;600&family=Zalando+Sans+Expanded:wght@400;500&family=Google+Sans+Flex:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Steadfast design system v1.3.0 (Steadfast Mode), applied to the SOW Kit. Source of truth:
+/* Steadfast design system v1.4.0 (Steadfast Mode), applied to the SOW Kit. Source of truth:
    docs/handoffs/steadfast-design-system.json. The --sf-* tokens below are css.variables, unrenamed. The kit's own
    class names stay (the scripts build them); each one is styled to the matching component spec.
    Layout: a left rail of seven views on desktop, a scrolling tab strip on phones. Paper and ink do the work; an accent
@@ -23,6 +23,8 @@
   --sf-gold-100:#f0e2c7;--sf-gold-200:#e5cd9e;--sf-gold-300:#d7b36c;--sf-gold-400:#c4952b;--sf-gold-600:#7e5c03;--sf-gold-700:#5e4300;
   --sf-purple-200:#c2b6dd;--sf-purple-300:#9f8dc4;--sf-purple-500:#5b3a8c;--sf-purple-700:#3a215e;
   --sf-copper-200:#e1b59b;--sf-copper-400:#b0622c;--sf-copper-600:#773b0c;--sf-copper-700:#5d2a01;
+  /* Extended accents (design system 1.4): chart and category color only, never status. */
+  --sf-navy-300:#7e9ec8;--sf-navy-500:#235492;--sf-navy-700:#0d3361;--sf-moss-300:#9aa077;--sf-moss-500:#535911;--sf-moss-700:#323701;--sf-plum-300:#bf88a6;--sf-plum-500:#823263;--sf-plum-700:#54193f;--sf-teal-300:#75a5ac;--sf-teal-500:#055f69;--sf-teal-700:#023b42;
   --sf-space-1:4px;--sf-space-2:8px;--sf-space-3:12px;--sf-space-4:16px;--sf-space-5:24px;--sf-space-6:32px;--sf-space-7:48px;--sf-space-8:64px;--sf-space-9:96px;
   --sf-gap-element:var(--sf-space-3);--sf-gap-group:var(--sf-space-5);--sf-gap-section:var(--sf-space-8);--sf-gutter:clamp(24px,5vw,48px);
   --sf-width-page:860px;--sf-width-app:1200px;--sf-radius-sm:4px;--sf-radius-md:6px;--sf-radius-lg:10px;--sf-control-h:44px;--sf-control-h-sm:36px;
@@ -304,15 +306,19 @@ pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;
 .g-axis span{position:absolute;bottom:var(--sf-space-1);font-family:var(--mono);font-size:var(--sf-text-label);line-height:1.3;color:var(--fg2);white-space:nowrap}
 .g-phase .g-lab{font-family:var(--display);font-weight:500;font-size:var(--sf-text-control)}
 .g-bar{position:absolute;top:50%;transform:translateY(-50%);height:12px;border-radius:0;display:flex;overflow:hidden;min-width:3px}
-/* Group color (design system: sequence slots). A chart's top-level groups take the five accents in order:
-   1 emerald, 2 maroon, 3 gold, 4 purple, 5 copper. Rows inherit their group's slot. Ungrouped rows and a
-   sixth group onward stay ink. Inside the chart color means group only; status is pattern and line. */
+/* Group color (design system 1.4: sequence slots). A chart's top-level groups take the accents in order:
+   1 emerald, 2 maroon, 3 gold, 4 purple, 5 copper, then the extended tier 6 navy, 7 moss, 8 plum, 9 teal.
+   Rows inherit their group's slot. Ungrouped rows and a tenth group onward stay ink. Inside the chart color means group only; status is pattern and line. */
 .gantt{--ph:var(--fg);--ph-l:var(--edge);--ph-d:var(--fg);--ph-k:transparent}
 .g-row.ph1{--ph:var(--sf-emerald-500);--ph-l:var(--sf-emerald-300);--ph-d:var(--sf-emerald-700)}
 .g-row.ph2{--ph:var(--sf-maroon-500);--ph-l:var(--sf-maroon-300);--ph-d:var(--sf-maroon-700)}
 .g-row.ph3{--ph:var(--sf-gold-400);--ph-l:var(--sf-gold-200);--ph-d:var(--sf-gold-700);--ph-k:var(--sf-gold-600)}
 .g-row.ph4{--ph:var(--sf-purple-500);--ph-l:var(--sf-purple-300);--ph-d:var(--sf-purple-700)}
 .g-row.ph5{--ph:var(--sf-copper-400);--ph-l:var(--sf-copper-200);--ph-d:var(--sf-copper-700);--ph-k:var(--sf-copper-600)}
+.g-row.ph6{--ph:var(--sf-navy-500);--ph-l:var(--sf-navy-300);--ph-d:var(--sf-navy-700)}
+.g-row.ph7{--ph:var(--sf-moss-500);--ph-l:var(--sf-moss-300);--ph-d:var(--sf-moss-700)}
+.g-row.ph8{--ph:var(--sf-plum-500);--ph-l:var(--sf-plum-300);--ph-d:var(--sf-plum-700)}
+.g-row.ph9{--ph:var(--sf-teal-500);--ph-l:var(--sf-teal-300);--ph-d:var(--sf-teal-700)}
 .g-bar i{display:block;height:100%;background:var(--ph);box-shadow:inset 0 0 0 1px var(--ph-k)}
 .g-bar b{display:block;height:100%;background:var(--ph-l);box-shadow:inset 1px 0 0 var(--bg)}
 .g-phasebar{height:4px;background:var(--ph)}
@@ -334,7 +340,7 @@ pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;
 .g-key span{display:inline-flex;align-items:center;gap:var(--sf-space-2)}
 .g-key span::before{content:"";display:inline-block;width:18px;height:10px;flex:none}
 .g-key .k-prod::before{background:var(--fg)} .g-key .k-rev::before{background:var(--edge)}
-.g-key .k-grp::before{width:10px;height:10px;border-radius:50%;background:conic-gradient(var(--sf-emerald-500) 0 20%,var(--sf-maroon-500) 0 40%,var(--sf-gold-400) 0 60%,var(--sf-purple-500) 0 80%,var(--sf-copper-400) 0)}
+.g-key .k-grp::before{width:10px;height:10px;border-radius:50%;background:conic-gradient(var(--sf-emerald-500) 0 11.1%,var(--sf-maroon-500) 0 22.2%,var(--sf-gold-400) 0 33.3%,var(--sf-purple-500) 0 44.4%,var(--sf-copper-400) 0 55.6%,var(--sf-navy-500) 0 66.7%,var(--sf-moss-500) 0 77.8%,var(--sf-plum-500) 0 88.9%,var(--sf-teal-500) 0)}
 .g-key .k-mlr::before{background:var(--hatch-review) 0 0/6px 6px repeat}
 .g-key .k-slip::before{background:var(--hatch-slip) 0 0/6px 6px repeat;box-shadow:inset 0 0 0 1px var(--fg2)}
 .g-key .k-ms::before{width:12px;height:12px;background:var(--fg);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
@@ -1285,9 +1291,9 @@ function renderTimeline(){
   // People needed each week (workstream mode), against the team size when one is set
   const top=Math.max(peak.v,tl.cap||0,1);
   const loadRow = tl.streams ? `<div class="g-row g-load"><div class="g-lab"><span>People needed</span><small>Peak ${peak.v.toFixed(1)}, week ${peak.k+1}</small></div><div class="g-track">${load.map((v,w)=>`<div class="g-ld${tl.cap&&v>tl.cap+0.05?" over":""}" style="left:${pct(w)};width:${pct(1)};height:${(v/top*100).toFixed(1)}%" title="Week ${w+1}: ${v.toFixed(1)} people"></div>`).join("")}${tl.cap?`<div class="g-cap" style="bottom:${(tl.cap/top*100).toFixed(1)}%" title="Team size: ${tl.cap}"></div>`:""}</div></div>` : "";
-  // Sequence slots: the chart's top-level groups (waves or workstreams, else SOW phases) take accents 1 to 5 in order.
+  // Sequence slots: the chart's top-level groups (waves or workstreams, else SOW phases) take accents 1 to 9 in order.
   const topType = rows.some(r=>r.type==="wave") ? "wave" : "phase"; let slot=0, cur=0;
-  const slotOf = r => { if(r.type===topType){ slot++; cur = slot<=5 ? slot : 0; } else if(/^(span|ongoing|launch)$/.test(r.type)) return 0; return cur; };
+  const slotOf = r => { if(r.type===topType){ slot++; cur = slot<=9 ? slot : 0; } else if(/^(span|ongoing|launch)$/.test(r.type)) return 0; return cur; };
   box.innerHTML=`<div class="gantt" style="--w:${W}"><div class="g-row g-axis"><div class="g-lab"></div><div class="g-track">${axis}</div></div>${loadRow}`+
     rows.map(r=>{ const ph=slotOf(r); return `<div class="g-row g-${r.type==="wave"?"phase g-wave":r.type}${ph?" ph"+ph:""}${r.type===topType&&ph?" g-top":""}"><div class="g-lab"><span>${r.label}</span><small>${when(r)}</small></div><div class="g-track">${r.type==="wave"?`<div class="g-bar g-wavebar" style="left:${pct(r.start)};width:${pct(Math.max(r.end-r.start,0.15))}"></div>`:bar(r)}${target!=null&&target>=0?`<div class="g-tgt" style="left:${pct(target)}"></div>`:""}</div></div>`; }).join("")+`</div>`;
   const sum=document.getElementById("tl-sum");
@@ -1610,9 +1616,9 @@ function proposalPageOne(){
   const tlRows=d.b.rows.filter(r=>r.type==="phase"||r.type==="mlr"||r.type==="wave");
   const W=Math.max(weeks,...tlRows.map(r=>Math.ceil(r.hi||r.end)));
   // Same sequence slots as the kit's timeline: top-level groups take the five accents in order (design system, color in charts).
-  const SLOT=[null,["#0f6b4f","#0f6b4f"],["#7a1f2b","#7a1f2b"],["#c4952b","#7e5c03"],["#5b3a8c","#5b3a8c"],["#b0622c","#773b0c"]];
+  const SLOT=[null,["#0f6b4f","#0f6b4f"],["#7a1f2b","#7a1f2b"],["#c4952b","#7e5c03"],["#5b3a8c","#5b3a8c"],["#b0622c","#773b0c"],["#235492","#235492"],["#535911","#535911"],["#823263","#823263"],["#055f69","#055f69"]];
   const topT=tlRows.some(r=>r.type==="wave")?"wave":"phase"; let sN=0, sCur=0;
-  const slotC=r=>{ if(r.type===topT){ sN++; sCur=sN<=5?sN:0; } return SLOT[sCur]; };
+  const slotC=r=>{ if(r.type===topT){ sN++; sCur=sN<=9?sN:0; } return SLOT[sCur]; };
   const dot=c=>c?`<span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c[0]};box-shadow:inset 0 0 0 1px ${c[1]};margin-right:8px"></span>`:"";
   const tlTbl=`<div class="scroll"><table class="sp-tbl"><thead><tr><th>Stage</th><th>Timing</th>${tl.start?"<th>Dates</th>":""}<th class="r">Length</th><th style="width:30%"></th></tr></thead><tbody>`+
     tlRows.map(r=>{ const a=tlDate(r.start), b=tlDate(Math.max(r.start,r.end-0.01)), c=slotC(r);
