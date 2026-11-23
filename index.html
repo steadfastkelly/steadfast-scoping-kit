@@ -417,13 +417,15 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
 .ptip:hover,.ptip[aria-expanded="true"]{background:var(--bg2)}
 .ptip:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 #gltip.pt b{display:block;margin:0 0 2px;color:var(--sf-gold-300)}
-#gltip.ld{min-width:220px}
+#gltip.ld{min-width:240px}
 #gltip.ld b{display:block;margin:0 0 2px}
 #gltip.ld .ld-t{margin:0 0 6px;color:#cfc8bc}
 #gltip.ld .ld-r{display:flex;justify-content:space-between;gap:16px;margin:2px 0 0}
 #gltip.ld .ld-r span{display:inline;margin:0}
 #gltip.ld .ld-r span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums}
-#gltip.ld .ld-i{margin-top:8px;color:#cfc8bc}
+#gltip.ld .ld-h{margin:10px 0 2px;color:#cfc8bc}
+#gltip.ld .ld-i{margin:0;padding:0 0 0 16px;color:#cfc8bc}
+#gltip.ld .ld-i li{margin:2px 0 0}
 .g-ld{cursor:help}
 .g-ld:hover,.g-ld:focus-visible{background:var(--fg2);outline:0}
 @media print{abbr.gl{text-decoration:none}#gltip{display:none}}
@@ -2028,12 +2030,13 @@ function glossify(root){
 function glTip(){ let el = document.getElementById("gltip"); if(!el){ el = document.createElement("div"); el.id = "gltip"; el.setAttribute("role","tooltip"); el.hidden = true; document.body.append(el); } return el; }
 function glShow(a){
   const el = glTip();
-  if(a.classList.contains("g-ld")){ const w=+a.dataset.w, d=TL_LOAD[w]||{roles:{},items:[]}, dt=tlDate(w), tot=Object.values(d.roles).reduce((x,y)=>x+y,0);
-    const roles=Object.keys(ROLE).filter(k=>d.roles[k]>0.05).sort((x,y)=>d.roles[y]-d.roles[x]);
-    const its=[...new Set(d.items)], more=its.length>3?its.length-3:0;
-    el.className="ld"; el.innerHTML=`<b>Week ${w+1}${dt?", "+tlFmt(dt):""}</b><span class="ld-t">${tot.toFixed(1)} people in production</span>`+
-      roles.map(k=>`<span class="ld-r"><span>${ROLE[k]}</span><span>${d.roles[k].toFixed(1)}</span></span>`).join("")+
-      (its.length?`<span class="ld-i">${its.slice(0,3).map(esc).join(", ")}${more?`, and ${more} more`:""}</span>`:""); }
+  if(a.classList.contains("g-ld")){ const w=+a.dataset.w, d=TL_LOAD[w]||{roles:{},items:[]}, dt=tlDate(w);
+    const hrs={}; for(const k of Object.keys(ROLE)){ const h=Math.round((d.roles[k]||0)*TL_CAP); if(h>0) hrs[k]=h; }
+    const roles=Object.keys(hrs).sort((x,y)=>hrs[y]-hrs[x]), tot=roles.reduce((x,k)=>x+hrs[k],0);
+    const its=[...new Set(d.items)], cap=8, more=its.length>cap?its.length-cap:0;
+    el.className="ld"; el.innerHTML=`<b>Week ${w+1}${dt?", "+tlFmt(dt):""}</b><span class="ld-t">${(tot/TL_CAP).toFixed(1)} people, ${tot} hours at ${TL_CAP} hours each</span>`+
+      roles.map(k=>`<span class="ld-r"><span>${ROLE[k]}</span><span>${hrs[k]} hrs</span></span>`).join("")+
+      (its.length?`<span class="ld-h">In production this week</span><ul class="ld-i">${its.slice(0,cap).map(t=>`<li>${esc(t)}</li>`).join("")}${more?`<li>and ${more} more</li>`:""}</ul>`:""); }
   else if(a.classList.contains("ptip")){ el.className = "pt"; el.innerHTML = `<b>${esc(a.dataset.lab)}</b><span>${esc(a.dataset.tip.replace(/^(needs a partner|partner optional|optional)\s*[:.-]\s*/i,"").replace(/^./,c=>c.toUpperCase()))}</span>`; a.setAttribute("aria-expanded","true"); }
   else { const g = glMap[a.dataset.t]; if(!g) return; el.className = ""; el.innerHTML = `<b>${esc(g.t)}</b> ${esc(g.s)}${g.tip?`<span>${esc(g.tip)}</span>`:""}`; }
   el.hidden = false;
