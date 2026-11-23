@@ -774,6 +774,13 @@ const RISKS_DEFAULT = {
 let OPT_TERMS = OPT_TERMS_DEFAULT;
 // From the Sheet, an opt-in group named "Assumptions and Risks" is the risk table: Heading = the risk, Text = "Likelihood | How it's handled".
 const optTermGroups = () => OPT_TERMS.filter(g=>!/assumption|risk/i.test(g.h));
+/* Missing inputs hide what depends on them. With no trial data readout date set, the proposal drops every sentence,
+   assumption and risk about the readout. The kit's Terms page still lists everything. */
+const READOUT_RX=/trial data|phase 3 data|reads? out|readout/i;
+const keepSentences=s=>tl.readout?String(s):String(s).split(/(?<=\.)\s+/).filter(x=>!READOUT_RX.test(x)).join(" ");
+const propTermGroups=()=>optTermGroups().map(g=>({h:g.h,items:g.items.map(([a,b])=>[a,keepSentences(b)]).filter(([a,b])=>b.trim()&&(tl.readout||!READOUT_RX.test(a)))})).filter(g=>g.items.length);
+function propRisks(){ const R=risksData(); if(tl.readout) return R;
+  return {assumptions:R.assumptions.filter(a=>!READOUT_RX.test(a)), risks:R.risks.filter(([a])=>!READOUT_RX.test(a)).map(([a,b,c])=>[a,b,keepSentences(c)])}; }
 function risksData(){
   const g=OPT_TERMS.find(g=>/assumption|risk/i.test(g.h)); if(!g) return RISKS_DEFAULT;
   const risks=[], assumptions=[];
@@ -1742,7 +1749,7 @@ function proposalPageOne(){
 
   // Assumptions and Risks (large-program proposals only): each risk, how likely it is, and the term that handles it
   if(prop.bigTerms){
-    const R=risksData(), cl=s=>esc(String(s).replace(/\{client\}/g,company||"The client"));
+    const R=propRisks(), cl=s=>esc(String(s).replace(/\{client\}/g,company||"The client"));
     let r=head("Assumptions and Risks",`<p>A launch program runs for months and depends on dates neither of us fully controls. Here is what we assume, what could go wrong, and how this agreement handles each case.</p>`);
     if(R.assumptions.length) r+=`<h3 class="sub">What we assume</h3><div class="sp-cardbox"><ul class="arrows">${R.assumptions.map(a=>`<li>${cl(a)}</li>`).join("")}</ul></div>`;
     r+=`<h3 class="sub" style="margin-top:40px">Risks and how we handle them</h3><div class="scroll"><table class="sp-tbl sp-risk"><thead><tr><th>Risk</th><th>How likely</th><th>How this agreement handles it</th></tr></thead><tbody>${R.risks.map(([a,b,c])=>`<tr><td><b>${cl(a)}</b></td><td>${cl(b)}</td><td>${cl(c)}</td></tr>`).join("")}</tbody></table></div>`;
@@ -1769,7 +1776,7 @@ function proposalPageOne(){
     if(/billing/i.test(g.h)) items.push(`<div id="rates"><h4>Rates</h4><p>${esc(RATES_TXT)}</p></div>`);
     t+=`<h3 class="sub">${esc(g.h)}</h3><div class="grid">${items.join("")}</div>`; }
   if(!TERMS.some(g=>/billing/i.test(g.h))) t+=`<div class="grid"><div id="rates"><h4>Rates</h4><p>${esc(RATES_TXT)}</p></div></div>`;
-  if(prop.bigTerms) for(const g of optTermGroups()) t+=`<h3 class="sub">${esc(g.h)}</h3><div class="grid">${g.items.map(([a,b])=>`<div><h4>${esc(a)}</h4><p>${linkRates(b)}</p></div>`).join("")}</div>`;
+  if(prop.bigTerms) for(const g of propTermGroups()) t+=`<h3 class="sub">${esc(g.h)}</h3><div class="grid">${g.items.map(([a,b])=>`<div><h4>${esc(a)}</h4><p>${linkRates(b)}</p></div>`).join("")}</div>`;
   h+=sec("alt",t+`</div>`);
 
   // Acceptance of Proposal: the Firm signs on issue; the client signs on the published page
