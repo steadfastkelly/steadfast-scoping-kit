@@ -305,3 +305,7 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-tbl.sp-lt th{border-bottom:0}
 .sp-tbl tr:has(+ tr.stage) td,.sp-tbl tr:has(+ tr.tot) td,.sp-mini tr:has(+ tr.tot) td{border-bottom:0}
 .sp-tbl.sp-lt tr.stage td{border-bottom:0}
+
+/* Text selection in the system's colors, not the browser's blue: ink on light ground, paper on the dark cover and bands. */
+::selection{background:var(--sf-ink);color:var(--sf-paper)}
+.sp-cover ::selection,.sp-dark ::selection{background:var(--sf-paper);color:var(--sf-ink)}
