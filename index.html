@@ -655,7 +655,7 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
       <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together. A "proposal" block fills the Proposal panel (title, client, contact, overview, objectives, sitemap and the section ticks); fields it leaves out stay as they are.</p>
       <label>Scope file<input type="file" id="imp-file" accept=".json,application/json" onchange="readImportFile(this)"></label>
       <label>Or paste it<textarea id="imp-text" rows="6" spellcheck="false" style="font-family:var(--mono);font-size:var(--sf-text-small)"></textarea></label>
-      <label class="rm"><input type="checkbox" id="imp-replace"> Replace every option in the builder (otherwise the import is added as new options)</label>
+      <label class="rm"><input type="checkbox" id="imp-replace"> Replace every option in the builder (otherwise the import is added as new options). Replacing also clears the target launch, trial data readout and Wave B dates.</label>
       <div class="err" id="imp-err" aria-live="polite"></div>
       <div class="acts"><button type="submit" class="pri">Import</button><button type="button" onclick="closeImport()">Cancel</button></div>
     </form>
@@ -975,7 +975,10 @@ function doImport(){
   let r; try{ r=parseImport(document.getElementById("imp-text").value,impName); }catch(e){ err.textContent=e.message; return; }
   if(!r.list.some(o=>o.rows.length)){ err.textContent="None of those SKUs are in the catalog."+(r.skipped.length?" Not found: "+r.skipped.join(", "):""); return; }
   saveScope();
-  if(document.getElementById("imp-replace").checked){ opts={v:1,active:0,list:r.list}; }
+  // Replacing everything starts a new proposal, so the last one's dates don't carry over: target launch, trial data
+  // readout and the Wave B start are cleared. Kickoff and the review settings stay.
+  const fresh=document.getElementById("imp-replace").checked, hadDates=fresh&&(tl.target||tl.readout||tl.wb);
+  if(fresh){ opts={v:1,active:0,list:r.list}; tl.target=""; tl.readout=""; tl.wb=""; saveTl(); }
   else { if(!curOpt().rows.length) opts.list.splice(opts.active,1); if(opts.list.some(o=>o.lead)) r.list.forEach(o=>o.lead=false); opts.list.push(...r.list); }
   if(!opts.list.some(o=>o.lead)) opts.list[0].lead=true;
   opts.active=opts.list.indexOf(r.list.find(o=>o.lead)||r.list[0]); if(opts.active<0) opts.active=0;
@@ -983,7 +986,7 @@ function doImport(){
   if(r.proposal){ if(("company" in r.proposal&&r.proposal.company!==prop.company)||("title" in r.proposal&&r.proposal.title!==prop.title)) prop.clickupTask=""; Object.assign(prop,r.proposal); saveProp(); renderProp(); }
   renderBuilder();
   const rows=r.list.reduce((a,o)=>a+o.rows.length,0);
-  toast(`Imported ${plural(r.list.length,"option")}, ${rows} rows${r.proposal?", and the proposal details":""}`);
+  toast(`Imported ${plural(r.list.length,"option")}, ${rows} rows${r.proposal?", and the proposal details":""}${hadDates?". Old target and readout dates cleared":""}`);
   if(r.skipped.length||r.merged) document.getElementById("out").textContent=`IMPORT REPORT\n${r.skipped.length?"Not in the catalog, so left out: "+r.skipped.join(", ")+"\n":""}${r.merged?r.merged+" repeated rows (same SKU and wave) were added together.\n":""}`;
 }
 function exportOpts(){ saveScope(); const s=JSON.stringify({v:1,proposal:propToFile(),options:opts.list.map(o=>({name:o.name,lead:!!o.lead,summary:o.summary||"",rows:o.rows.map(x=>({sku:x.sku,qty:x.qty,...(x.wave?{wave:x.wave}:{}),...(x.stream?{stream:x.stream}:{}),...(x.data?{data:true}:{})}))}))},null,1); document.getElementById("out").textContent=s; copyText(s,"All options copied as JSON"); }
