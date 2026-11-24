@@ -7,6 +7,6 @@ cd "$(dirname "$0")/.."
 rm -rf _site
 mkdir -p _site/assets _site/data
 cp index.html _site/
-cp assets/viewer.js assets/proposal.css _site/assets/
+cp assets/viewer.js assets/proposal.css assets/steadfast-logo-email.png _site/assets/
 cp data/catalog.enc.js _site/data/
 echo "staged $(find _site -type f | wc -l | tr -d ' ') files in _site/"

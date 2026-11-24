@@ -384,6 +384,7 @@ pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;
 
 /* Dialogs: a square paper box with a 2px ink top rule on a scrim. */
 .modal{position:fixed;inset:0;background:var(--scrim);z-index:40;display:flex;align-items:center;justify-content:center;padding:var(--sf-space-4)}
+.mbox:has(.pubdone:not([hidden])){max-width:720px}
 .mbox{background:var(--bg);border-top:1px solid var(--fg);padding:var(--sf-space-6);width:100%;max-width:520px;max-height:100%;overflow:auto}
 .mbox form{display:flex;flex-direction:column;gap:var(--sf-gap-group)}
 .mbox .mrow{display:flex;gap:var(--sf-space-2);align-items:center;font-weight:400}
@@ -674,12 +675,20 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
       <div class="err" id="pub-err" aria-live="polite"></div>
       <div class="acts"><button type="submit" class="pri" id="pub-btn">Publish</button><button type="button" onclick="closePublish()">Cancel</button></div>
     </form>
-    <div id="pub-done" hidden>
+    <div id="pub-done" class="pubdone" hidden>
       <div><div class="eyebrow">Published</div><h2>It's live.</h2></div>
       <p class="small"><a id="pub-url" target="_blank" rel="noopener"></a></p>
       <p class="small muted">Password: <b class="num" id="pub-pwshow"></b></p>
-      <p class="small muted">Send the link and the password in separate messages. The client opens the link, enters the password, reads the proposal and signs at the end. Signed status shows under Published proposals.</p>
-      <div class="acts" style="margin-top:var(--sf-space-3)"><button class="pri" onclick="copyText(document.getElementById('pub-url').href,'Link copied')">Copy link</button><button onclick="copyText(document.getElementById('pub-pwshow').textContent,'Password copied')">Copy password</button><button onclick="closePublish()">Done</button></div>
+      <div class="eyebrow" style="margin-top:var(--sf-space-5)">1. Email the Proposal</div>
+      <p class="small muted">Write your note, copy the email, then paste it into a new message in your mail app. It keeps the Steadfast look and comes from your own address.</p>
+      <label>Subject<input id="pe-subj" readonly onclick="this.select()" style="width:100%"></label>
+      <label>Your note, above the proposal<textarea id="pe-note" rows="4" oninput="renderPropEmail()" style="width:100%;line-height:1.5"></textarea></label>
+      <iframe id="pe-view" title="Email preview" style="width:100%;height:340px;border:1px solid var(--line);border-radius:var(--sf-radius-md);background:#fff"></iframe>
+      <div class="acts" style="margin-top:var(--sf-space-3)"><button class="pri" type="button" onclick="copyPropEmail('link')">Copy the proposal email</button></div>
+      <div class="eyebrow" style="margin-top:var(--sf-space-5)">2. Email the Password</div>
+      <p class="small muted">Send the password in a second message, so the link and the password never travel together. Subject: <span id="pe-subj2"></span></p>
+      <div class="acts" style="margin-top:var(--sf-space-3)"><button type="button" onclick="copyPropEmail('pw')">Copy the password email</button></div>
+      <p class="small muted" style="margin-top:var(--sf-space-5)">The client opens the link, enters the password, reads the proposal and signs at the end. Signed status shows under Published proposals. <a href="#" onclick="event.preventDefault();closePublish()">Close</a></p>
     </div>
   </div>
 </div>
@@ -2004,6 +2013,7 @@ async function doPublish(){
     prop.clickupTask=task||""; saveProp();
     document.getElementById("pub-form").hidden=true; document.getElementById("pub-done").hidden=false;
     document.getElementById("pub-url").textContent=url; document.getElementById("pub-url").href=url; document.getElementById("pub-pwshow").textContent=pw;
+    startPropEmail(url,pw);
     loadPublished();
   }catch(e){ err.textContent=e.message||String(e); }
   btn.disabled=false; btn.textContent="Publish";
@@ -2060,6 +2070,63 @@ function copyTimeline(){ if(!scope.length){toast("Nothing in the scope yet");ret
 /* ---------- utilities ---------- */
 let tt;
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),1600); }
+/* The branded emails that carry a published proposal: one with the link and the account manager's note, one with the
+   password. Built as email-safe HTML (tables, inline styles, system fonts, a hosted logo) and copied to the clipboard
+   as rich text, so it pastes into Gmail or Outlook with its look intact and goes out from the sender's own address. */
+let PE={url:"",pw:""};
+const EM={ink:"#0a0a0a",paper:"#f2efe9",gray:"#6a665f",line:"#d8d1c4",font:`'Helvetica Neue',Helvetica,Arial,sans-serif`};
+function emailShell(inner){
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;font-family:${EM.font};color:${EM.ink}">
+<tr><td style="background:${EM.ink};padding:28px 32px"><img src="${location.origin}/assets/steadfast-logo-email.png" width="183" height="28" alt="Steadfast" style="display:block;border:0;width:183px;height:28px"></td></tr>
+<tr><td style="padding:36px 32px 8px 32px;font-size:16px;line-height:1.5">${inner}</td></tr>
+<tr><td style="padding:24px 32px 32px 32px;border-top:1px solid ${EM.line};font-size:12px;line-height:1.5;color:${EM.gray}">${esc(FIRM.name)} &nbsp;&middot;&nbsp; ${esc(FIRM.addr)} &nbsp;&middot;&nbsp; <a href="${FIRM.site}" style="color:${EM.gray}">steadfastdesignfirm.com</a></td></tr>
+</table></td></tr></table>`;
+}
+const emailParas = t => String(t||"").trim().split(/\n\s*\n/).filter(x=>x.trim()).map(x=>`<p style="margin:0 0 16px 0">${esc(x.trim()).replace(/\n/g,"<br>")}</p>`).join("");
+const emailEyebrow = t => `<p style="margin:0 0 10px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${EM.gray}">${t}</p>`;
+const emailSign = () => `<p style="margin:24px 0 28px 0">${esc((prop.firmName||"").trim())}${(prop.firmTitle||"").trim()?`<br><span style="color:${EM.gray};font-size:14px">${esc(prop.firmTitle.trim())}, Steadfast</span>`:""}</p>`;
+function propEmailParts(){
+  const title=(prop.title||"").trim()||"Proposal", co=(prop.company||"").trim(), partner=(prop.partner||"").trim();
+  let valid=""; try{ const d=withScope(propSource().rows,()=>proposalData()); valid=(d.tokens.find(t=>t.name==="Proposal.ValidUntil")||{}).value||""; }catch(e){}
+  return {title,co,partner,valid};
+}
+function propEmailHTML(){
+  const p=propEmailParts(), note=document.getElementById("pe-note").value;
+  return supMarks(emailShell(`${emailEyebrow(`Proposal &nbsp;&middot;&nbsp; Version ${esc(prop.version||1)}`)}
+<h1 style="margin:0 0 6px 0;font-size:30px;line-height:1.15;font-weight:400;letter-spacing:-0.5px">${esc(p.title)}</h1>
+${p.co?`<p style="margin:0 0 28px 0;font-size:14px;color:${EM.gray}">Prepared for ${esc(p.co)}${p.partner?`, in partnership with ${esc(p.partner)}`:""}</p>`:`<p style="margin:0 0 28px 0"></p>`}
+${emailParas(note)}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 28px 0"><tr><td style="background:${EM.ink};border-radius:8px"><a href="${esc(PE.url)}" style="display:inline-block;padding:15px 21px;font-family:${EM.font};font-size:15px;font-weight:bold;color:${EM.paper};text-decoration:none">Review the proposal</a></td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${EM.paper};padding:20px 24px;font-size:14px;line-height:1.55">
+<p style="margin:0 0 6px 0;font-weight:bold">How It Works</p>
+<p style="margin:0">Open the link and enter the password, which arrives in a separate email. Read the proposal, then sign at the end to accept it.${p.valid?` It is valid until ${esc(p.valid)}.`:""}</p></td></tr></table>
+<p style="margin:16px 0 0 0;font-size:12px;color:${EM.gray}">If the button doesn't open, use this address: <a href="${esc(PE.url)}" style="color:${EM.gray}">${esc(PE.url)}</a></p>
+${emailSign()}`));
+}
+function pwEmailHTML(){
+  const p=propEmailParts();
+  return supMarks(emailShell(`${emailEyebrow("Proposal Password")}
+<h1 style="margin:0 0 20px 0;font-size:24px;line-height:1.2;font-weight:400;letter-spacing:-0.3px">${esc(p.title)}</h1>
+<p style="margin:0 0 16px 0">Here is the password for the proposal we sent in a separate email.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0"><tr><td style="background:${EM.paper};padding:16px 24px;font-size:20px;letter-spacing:1px;font-family:${EM.font}">${esc(PE.pw)}</td></tr></table>
+<p style="margin:0">Enter it when the proposal asks for it.</p>
+${emailSign()}`));
+}
+const emailText = html => { const d=document.createElement("div"); d.innerHTML=html.replace(/<br>/g,"\n").replace(/<\/(p|h1|tr)>/g,"$&\n"); return d.textContent.replace(/\n\s*\n\s*/g,"\n\n").trim(); };
+function startPropEmail(url,pw){
+  PE={url,pw}; const p=propEmailParts(), first=(prop.first||"").trim();
+  document.getElementById("pe-subj").value=`Proposal: ${p.title}`;
+  document.getElementById("pe-subj2").textContent=`Password for your proposal: ${p.title}`;
+  document.getElementById("pe-note").value=`${first?`Hi ${first},`:"Hello,"}\n\nThank you for your time. Our proposal for ${p.title} is ready for your review.`;
+  renderPropEmail();
+}
+function renderPropEmail(){ const f=document.getElementById("pe-view"); if(f) f.srcdoc=`<!doctype html><meta charset="utf-8"><body style="margin:0">${propEmailHTML()}</body>`; }
+async function copyPropEmail(which){
+  const html=which==="pw"?pwEmailHTML():propEmailHTML(), msg=which==="pw"?"Password email copied. Paste it into a new message":"Proposal email copied. Paste it into a new message";
+  try{ await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([emailText(html)],{type:"text/plain"})})]); toast(msg); }
+  catch(e){ copyText(emailText(html),"Copied as plain text; this browser blocked the formatted copy"); }
+}
 function copyText(s,msg){ const done=()=>toast(msg||"Copied");
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(s).then(done).catch(()=>fallback(s,done)); } else fallback(s,done); }
 function fallback(s,done){ const ta=document.createElement("textarea"); ta.value=s; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); done();}catch(e){ toast("Select the text and copy it"); } document.body.removeChild(ta); }
