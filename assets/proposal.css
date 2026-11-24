@@ -328,3 +328,15 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-meter[data-level="T"] i{background:transparent;box-shadow:inset 0 0 0 1px var(--sf-n-500)}
 .sp .scroll>.sp-sitemap{min-width:480px}
 @media print{.sp-sitemap tr{break-inside:avoid}.sp-sitemap tr.grp td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Level colors: levels are a fixed category set, so they take the four extended accents, which have no status meaning
+   (teal Level 1, navy Level 2, plum Level 3, moss Template). The meter and the word still carry the level on their own. */
+.sp-meter[data-level="1"]{--lv:#055f69;--lv-tint:#cee1e4}
+.sp-meter[data-level="2"]{--lv:#235492;--lv-tint:#d1def0}
+.sp-meter[data-level="3"]{--lv:#823263;--lv-tint:#edd6e2}
+.sp-meter[data-level="T"]{--lv:#535911;--lv-tint:#dcdfcf}
+.sp-meter[data-level] i{background:var(--lv-tint)}
+.sp-meter[data-level="1"] i:nth-child(-n+1),.sp-meter[data-level="2"] i:nth-child(-n+2),.sp-meter[data-level="3"] i{background:var(--lv)}
+.sp-meter[data-level="T"] i{background:transparent;box-shadow:inset 0 0 0 1px var(--lv)}
+.sp-sitemap .sp-tpl{color:#323701;background:#dcdfcf;padding:2px 6px;letter-spacing:.1em}
+@media print{.sp-meter i,.sp-sitemap .sp-tpl{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
