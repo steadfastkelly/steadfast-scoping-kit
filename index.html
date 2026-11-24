@@ -639,7 +639,7 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
   <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="imp-h">
     <form onsubmit="event.preventDefault();doImport()">
       <div><div class="eyebrow">Import a scope</div><h2 id="imp-h">Load a scope file.</h2></div>
-      <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together.</p>
+      <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together. A "proposal" block fills the Proposal panel (title, client, contact, overview, objectives and the section ticks); fields it leaves out stay as they are.</p>
       <label>Scope file<input type="file" id="imp-file" accept=".json,application/json" onchange="readImportFile(this)"></label>
       <label>Or paste it<textarea id="imp-text" rows="6" spellcheck="false" style="font-family:var(--mono);font-size:var(--sf-text-small)"></textarea></label>
       <label class="rm"><input type="checkbox" id="imp-replace"> Replace every option in the builder (otherwise the import is added as new options)</label>
@@ -929,8 +929,32 @@ function parseImport(text,fallbackName){
       const wave=/^[AB]$/i.test(x.wave||"")?String(x.wave).toUpperCase():"", qty=Math.max(1,parseInt(x.qty)||1);
       const stream=STREAMS.includes(x.stream)?x.stream:"", data=!!x.data, e=rows.find(r=>sameRow(r,sku,wave,data)); if(e){ e.qty+=qty; merged++; } else rows.push({sku,qty,wave,...(stream?{stream}:{}),...(data?{data}:{})}); }
     return {id:newId(),name:String(o.name||(raw.length>1?"Option "+(n+1):fallbackName||"Imported option")).slice(0,60),lead:!!o.lead,summary:String(o.summary||"").slice(0,200),rows}; });
-  return {list,skipped:[...skipped],merged};
+  return {list,skipped:[...skipped],merged,proposal:propFromFile(j)};
 }
+/* A scope file can carry the Proposal panel too: {"proposal":{title, company, partner, first, last, email, date, version,
+   tier, overview, obj:[...], firmName, firmTitle, bigTerms, showVoices, voicesTitle, showDirect, direct:[...]}}. Keys the
+   file leaves out keep their current value. Voices never travel in a file: each quote needs a written approval and is
+   entered by hand. */
+const PROP_TEXT={title:120,company:120,partner:120,first:60,last:60,email:120,overview:6000,firmName:80,firmTitle:80,voicesTitle:80};
+const PROP_FLAGS=["bigTerms","showVoices","showDirect"];
+function propFromFile(j){
+  const p=j&&!Array.isArray(j)&&j.proposal; if(!p||typeof p!=="object") return null; const o={};
+  for(const [k,n] of Object.entries(PROP_TEXT)) if(typeof p[k]==="string") o[k]=p[k].trim().slice(0,n);
+  for(const k of PROP_FLAGS) if(typeof p[k]==="boolean") o[k]=p[k];
+  if(/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")) o.date=p.date;
+  if(parseInt(p.version)>0) o.version=parseInt(p.version);
+  if(["auto","L1","L2","L3"].includes(p.tier)) o.tier=p.tier;
+  if(Array.isArray(p.obj)) o.obj=[0,1,2].map(n=>String(p.obj[n]||"").trim().slice(0,400));
+  if(Array.isArray(p.direct)) o.direct=p.direct.filter(x=>x&&typeof x==="object").map(x=>({what:String(x.what||"").slice(0,200),who:String(x.who||"").slice(0,120),low:String(x.low||""),high:String(x.high||""),named:!!x.named}));
+  return Object.keys(o).length?o:null;
+}
+function propToFile(){ const o={};
+  for(const k of Object.keys(PROP_TEXT)) if(String(prop[k]||"").trim()) o[k]=prop[k];
+  for(const k of PROP_FLAGS) o[k]=!!prop[k];
+  if(prop.date) o.date=prop.date; o.version=parseInt(prop.version)||1; o.tier=prop.tier||"auto";
+  if(prop.obj.some(v=>String(v||"").trim())) o.obj=prop.obj.slice(0,3);
+  if(prop.direct.length) o.direct=prop.direct.map(({what,who,low,high,named})=>({what,who,low,high,named:!!named}));
+  return o; }
 function doImport(){
   const err=document.getElementById("imp-err"); err.textContent="";
   let r; try{ r=parseImport(document.getElementById("imp-text").value,impName); }catch(e){ err.textContent=e.message; return; }
@@ -940,12 +964,14 @@ function doImport(){
   else { if(!curOpt().rows.length) opts.list.splice(opts.active,1); if(opts.list.some(o=>o.lead)) r.list.forEach(o=>o.lead=false); opts.list.push(...r.list); }
   if(!opts.list.some(o=>o.lead)) opts.list[0].lead=true;
   opts.active=opts.list.indexOf(r.list.find(o=>o.lead)||r.list[0]); if(opts.active<0) opts.active=0;
-  scope=curOpt().rows; saveScope(); closeImport(); impName=""; renderBuilder();
+  scope=curOpt().rows; saveScope(); closeImport(); impName="";
+  if(r.proposal){ if(("company" in r.proposal&&r.proposal.company!==prop.company)||("title" in r.proposal&&r.proposal.title!==prop.title)) prop.clickupTask=""; Object.assign(prop,r.proposal); saveProp(); renderProp(); }
+  renderBuilder();
   const rows=r.list.reduce((a,o)=>a+o.rows.length,0);
-  toast(`Imported ${plural(r.list.length,"option")}, ${rows} rows`);
+  toast(`Imported ${plural(r.list.length,"option")}, ${rows} rows${r.proposal?", and the proposal details":""}`);
   if(r.skipped.length||r.merged) document.getElementById("out").textContent=`IMPORT REPORT\n${r.skipped.length?"Not in the catalog, so left out: "+r.skipped.join(", ")+"\n":""}${r.merged?r.merged+" repeated rows (same SKU and wave) were added together.\n":""}`;
 }
-function exportOpts(){ saveScope(); const s=JSON.stringify({v:1,options:opts.list.map(o=>({name:o.name,lead:!!o.lead,summary:o.summary||"",rows:o.rows.map(x=>({sku:x.sku,qty:x.qty,...(x.wave?{wave:x.wave}:{}),...(x.stream?{stream:x.stream}:{}),...(x.data?{data:true}:{})}))}))},null,1); document.getElementById("out").textContent=s; copyText(s,"All options copied as JSON"); }
+function exportOpts(){ saveScope(); const s=JSON.stringify({v:1,proposal:propToFile(),options:opts.list.map(o=>({name:o.name,lead:!!o.lead,summary:o.summary||"",rows:o.rows.map(x=>({sku:x.sku,qty:x.qty,...(x.wave?{wave:x.wave}:{}),...(x.stream?{stream:x.stream}:{}),...(x.data?{data:true}:{})}))}))},null,1); document.getElementById("out").textContent=s; copyText(s,"All options copied as JSON"); }
 function scopeTotals(rows){ let tot=0,h=H0(); for(const e of rows||scope){const i=bySku[e.sku]; tot+=i.price*e.qty; for(const k in h)h[k]+=(i.h[k]||0)*e.qty;} return {tot,h,th:Object.values(h).reduce((a,b)=>a+b,0)}; }
 function warnings(){
   const bases=new Set(scope.map(e=>bySku[e.sku].base)); const w=[];
