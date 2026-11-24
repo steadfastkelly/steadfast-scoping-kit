@@ -596,6 +596,7 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
       <label>Signing for Steadfast<input id="p-firmName" oninput="setProp('firmName',this.value)"></label>
       <label>Their title<input id="p-firmTitle" oninput="setProp('firmTitle',this.value)"></label>
       <label class="wide">Key objectives (optional, one per box; start with a short label and a colon to title it)<span class="objs"><input id="p-obj0" oninput="setProp('obj0',this.value)"><input id="p-obj1" oninput="setProp('obj1',this.value)"><input id="p-obj2" oninput="setProp('obj2',this.value)"></span></label>
+      <label class="wide">Sitemap (website projects; one page per line as Page | Level | Note, and start a section with #. Levels: L1, L2, L3, T for a shared layout. Leave blank to leave the sitemap out.)<textarea id="p-sitemap" rows="6" spellcheck="false" placeholder="# Home | L2 | Custom homepage&#10;# Products&#10;Product page | L2 | The primary product&#10;About us | T" oninput="setProp('sitemap',this.value)"></textarea></label>
       <label class="wide chk"><input type="checkbox" id="p-bigTerms" onchange="setProp('bigTerms',this.checked)"> Add the large-program terms and the Assumptions and Risks section (for multi-month launch programs only)</label>
       <label class="wide chk"><input type="checkbox" id="p-showVoices" onchange="setProp('showVoices',this.checked)"> Show a voices section (endorsements). Only entries with a written approval on file appear.</label>
     </div>
@@ -639,7 +640,7 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
   <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="imp-h">
     <form onsubmit="event.preventDefault();doImport()">
       <div><div class="eyebrow">Import a scope</div><h2 id="imp-h">Load a scope file.</h2></div>
-      <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together. A "proposal" block fills the Proposal panel (title, client, contact, overview, objectives and the section ticks); fields it leaves out stay as they are.</p>
+      <p class="small muted">Choose a .json file or paste its text. A plain list of rows ({"sku","qty"}, with an optional "wave" of A or B) becomes one option. A file with "options" becomes one option each. Rows with the same SKU and wave are added together. A "proposal" block fills the Proposal panel (title, client, contact, overview, objectives, sitemap and the section ticks); fields it leaves out stay as they are.</p>
       <label>Scope file<input type="file" id="imp-file" accept=".json,application/json" onchange="readImportFile(this)"></label>
       <label>Or paste it<textarea id="imp-text" rows="6" spellcheck="false" style="font-family:var(--mono);font-size:var(--sf-text-small)"></textarea></label>
       <label class="rm"><input type="checkbox" id="imp-replace"> Replace every option in the builder (otherwise the import is added as new options)</label>
@@ -935,10 +936,11 @@ function parseImport(text,fallbackName){
    tier, overview, obj:[...], firmName, firmTitle, bigTerms, showVoices, voicesTitle, showDirect, direct:[...]}}. Keys the
    file leaves out keep their current value. Voices never travel in a file: each quote needs a written approval and is
    entered by hand. */
-const PROP_TEXT={title:120,company:120,partner:120,first:60,last:60,email:120,overview:6000,firmName:80,firmTitle:80,voicesTitle:80};
+const PROP_TEXT={title:120,company:120,partner:120,first:60,last:60,email:120,overview:6000,sitemap:8000,firmName:80,firmTitle:80,voicesTitle:80};
 const PROP_FLAGS=["bigTerms","showVoices","showDirect"];
 function propFromFile(j){
   const p=j&&!Array.isArray(j)&&j.proposal; if(!p||typeof p!=="object") return null; const o={};
+  if(Array.isArray(p.sitemap)) p.sitemap=p.sitemap.map(String).join("\n");
   for(const [k,n] of Object.entries(PROP_TEXT)) if(typeof p[k]==="string") o[k]=p[k].trim().slice(0,n);
   for(const k of PROP_FLAGS) if(typeof p[k]==="boolean") o[k]=p[k];
   if(/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")) o.date=p.date;
@@ -951,6 +953,7 @@ function propFromFile(j){
 function propToFile(){ const o={};
   for(const k of Object.keys(PROP_TEXT)) if(String(prop[k]||"").trim()) o[k]=prop[k];
   for(const k of PROP_FLAGS) o[k]=!!prop[k];
+  if(o.sitemap) o.sitemap=o.sitemap.split(/\n/);
   if(prop.date) o.date=prop.date; o.version=parseInt(prop.version)||1; o.tier=prop.tier||"auto";
   if(prop.obj.some(v=>String(v||"").trim())) o.obj=prop.obj.slice(0,3);
   if(prop.direct.length) o.direct=prop.direct.map(({what,who,low,high,named})=>({what,who,low,high,named:!!named}));
@@ -1154,7 +1157,7 @@ const STREAM_APPROVAL="At approval";
 const STREAMS=["Strategy & messaging","Brand & campaign","Websites","Visual aid","Other materials","Wave B",STREAM_APPROVAL];
 const STREAM_STRAT=new Set(["Claims Matrix","Discovery & Strategy Brief","Working Session","Market & KOL Research Study","Physician Survey & Readout","Messaging & Content Document","Medical Writing & Narrative","Advisory Board Support","Medical & Scientific Consultation","Channel Strategy","Naming","Brand Evolution Summit","Website & Brand Audit"]);
 const STREAM_BRAND=new Set(["Brand Identity","Brand Visual Direction","Logo","Brand Guidelines","Template System","Campaign Development","Medical Illustration","Brand Asset Onboarding","Figma Design System"]);
-const STREAM_SITE=new Set(["Website Architecture & Sitemap","Wireframes","Website Narrative & Content","Site Foundation","Homepage Design","Homepage Development","Web Page Design","Web Page Development","Page Template","Site Feature or Integration","Content Population & Migration","QA, Accessibility & Launch","Accessibility Audit & Remediation","Email Platform Setup & Automation","Launch Measurement Plan & Setup","CMS Upgrade or Platform Migration","Localization Management","Web Application or Dashboard","Post-Launch Support & Training"]);
+const STREAM_SITE=new Set(["Website Architecture & Sitemap","Wireframes","Website Narrative & Content","Site Foundation","Homepage Design","Homepage Development","Web Page Design","Web Page Development","Page Template","Site Feature or Integration","Content Population & Migration","QA, Accessibility & Launch","Accessibility Audit & Remediation","Email Platform Setup & Automation","Launch Measurement Plan & Setup","CMS Upgrade or Platform Migration","Localization Management","Web Application or Dashboard","Post-Launch Support & Training","SEO, AEO & GEO Setup"]);
 const STREAM_VA=new Set(["Interactive Visual Aid","Rep CRM Certification"]);
 function streamOf(e,i){
   if(e.stream && STREAMS.includes(e.stream)) return e.stream;
@@ -1395,7 +1398,7 @@ function timelineText(){
    Every tier carries Project Overview, Budget, Timeline, Payment Schedule, Terms & Conditions and
    Acceptance of Proposal. Client name, dates and totals are PandaDoc variables, filled after creation,
    so they stay linked everywhere they appear. */
-let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director",
+let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],sitemap:"",firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director",
   bigTerms:false,showVoices:false,voicesTitle:"Retina Voices",voices:[],showDirect:false,direct:[]};
 function saveProp(){ try{localStorage.setItem("sowkit.prop",JSON.stringify(prop));}catch(e){} }
 function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} if(!Array.isArray(prop.voices)) prop.voices=[]; if(!Array.isArray(prop.direct)) prop.direct=[]; }
@@ -1441,10 +1444,24 @@ function renderVoices(){
    <div class="acts"><label class="chk"><input type="checkbox"${v.show?" checked":""} onchange="setVoice(${n},'show',this.checked)"> Show</label><span class="small muted" id="vx-st-${n}">${voiceStatus(v)}</span><button class="sm" onclick="delVoice(${n})">Remove</button></div></div>`).join("")+
    `<button class="sm" onclick="addVoice()">Add a voice</button>`;
 }
+/* Sitemap (website proposals): one page per line, "Page | Level | Note"; a line starting with # is a section row, which
+   may carry its own level when its landing page is scoped. Level: L1, L2, L3, or T for a shared layout with no design
+   of its own; "L2 template" keeps the level and adds a Template label. Blank means no sitemap section at all. */
+function sitemapRows(){
+  return String(prop.sitemap||"").split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const group=l[0]==="#", p=(group?l.slice(1):l).split("|").map(x=>x.trim());
+    const lv=p[1]||"", n=(lv.match(/[123]/)||[])[0]||"", t=/\bt\b|template|shared/i.test(lv);
+    return {group,name:p[0]||"",level:n||(t?"T":""),tpl:!!(n&&t),note:p.slice(2).join(" | ")}; }).filter(r=>r.name);
+}
+function sitemapHTML(){
+  const rows=sitemapRows(); if(!rows.length) return "";
+  const lvl=r=>r.level?`<span class="sp-level"><span class="sp-meter" data-level="${r.level}"><i></i><i></i><i></i></span>${r.level==="T"?"Template":"Level "+r.level}</span>`:"";
+  const cell=r=>`${esc(r.name)}${r.tpl?`<span class="sp-tpl">Template</span>`:""}${r.note?`<span class="sp-sub">${esc(r.note)}</span>`:""}`;
+  return `<div class="scroll"><table class="sp-sitemap"><thead><tr><th>Page</th><th>Level</th></tr></thead><tbody>${rows.map(r=>r.group&&!r.level&&!r.note?`<tr class="grp"><td colspan="2">${esc(r.name)}</td></tr>`:`<tr${r.group?' class="grp"':""}><td>${cell(r)}</td><td>${lvl(r)}</td></tr>`).join("")}</tbody></table></div>`;
+}
 // A new company or title means a new engagement, so the remembered ClickUp task must not carry over to it.
 function setProp(k,v){ if(k.startsWith("obj")) prop.obj[+k.slice(3)]=v; else { if((k==="company"||k==="title")&&prop[k]!==v) prop.clickupTask=""; prop[k]=v; } saveProp(); if(k==="showVoices") renderVoices(); if(k==="showDirect") renderDirect(); renderPropTier(); }
 function renderProp(){
-  for(const k of ["title","company","partner","first","last","email","date","version","tier","overview","firmName","firmTitle"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
+  for(const k of ["title","company","partner","first","last","email","date","version","tier","overview","sitemap","firmName","firmTitle"]){ const el=document.getElementById("p-"+k); if(el && document.activeElement!==el) el.value=prop[k]??""; }
   prop.obj.forEach((v,n)=>{ const el=document.getElementById("p-obj"+n); if(el && document.activeElement!==el) el.value=v; });
   for(const k of ["bigTerms","showVoices"]){ const el=document.getElementById("p-"+k); if(el) el.checked=!!prop[k]; }
   { const el=document.getElementById("p-showDirect"); if(el) el.checked=!!prop.showDirect; }
@@ -1743,9 +1760,9 @@ function proposalPageOne(){
       <div><span class="sp-tag">Budget</span><table class="sp-mini"><tbody>${stages.map(s=>`<tr><td>${esc(s)}</td><td>${money0(bySec[s])}</td></tr>`).join("")}<tr class="tot"><td>Total</td><td>${money0(d.oneTime)}</td></tr></tbody></table>${wavesOn()&&waveTotals().b?`<p class="sp-note">Wave A and program ${money0(waveTotals().a)}. Wave B ${money0(waveTotals().b)}.</p>`:""}${d.monthly.length?`<p class="sp-note">Plus optional post-launch services from ${money0(d.perMonth)} per month.</p>`:""}</div>
       <div><span class="sp-tag">Timeline</span><div class="sp-big"><div class="v">${months||weeks}</div><div class="k">${months?"Months":"Weeks"}</div><div class="s">Kickoff to launch${kick?`<br>${tlFmt(kick)} to ${tlFmt(launch)}`:""}</div></div></div></div>`;
     p+=`<div class="sp-cardbox" style="border-top:0"><h3 class="sub">Payment Schedule</h3>${payHTML}</div>`+directHTML;
-    p+=`<div style="margin-top:56px"><details class="sp-acc" data-k="scope"><summary><span class="lt">A</span><h3>Scope of Work</h3><span class="ex"></span></summary><div class="body">${itemsHTML(d.once)}</div></details>
-      <details class="sp-acc" data-k="budget"><summary><span class="lt">B</span><h3>Budget</h3><span class="ex"></span></summary><div class="body">${budgetTbl(d.once,"Total",d.oneTime,"")}${notInHTML}</div></details>
-      <details class="sp-acc" data-k="timeline"><summary><span class="lt">C</span><h3>Timeline</h3><span class="ex"></span></summary><div class="body">${tlTbl}${tlLine}</div></details></div>`;
+    const smap=sitemapHTML();
+    const accs=[["scope","Scope of Work",itemsHTML(d.once)],...(smap?[["sitemap","Sitemap",smap]]:[]),["budget","Budget",budgetTbl(d.once,"Total",d.oneTime,"")+notInHTML],["timeline","Timeline",tlTbl+tlLine]];
+    p+=`<div style="margin-top:56px">`+accs.map(([k,t,body],n)=>`<details class="sp-acc" data-k="${k}"><summary><span class="lt">${"ABCDE"[n]}</span><h3>${t}</h3><span class="ex"></span></summary><div class="body">${body}</div></details>`).join("")+`</div>`;
     h+=sec("card",p);
     // 03 Post-Launch Services, when the scope carries monthly work
     if(d.monthly.length){
@@ -1755,7 +1772,7 @@ function proposalPageOne(){
     }
   } else {
     // Mid-range: the scope in full; Simple: straight to the budget
-    if(L(2)) h+=sec("card",head("Scope of Work",`<p>Here is what each part of the project includes and what ${co} receives at the end of it.</p>`)+itemsHTML(d.once));
+    if(L(2)) h+=sec("card",head("Scope of Work",`<p>Here is what each part of the project includes and what ${co} receives at the end of it.</p>`)+itemsHTML(d.once)+(sitemapHTML()?`<h3 class="sub" style="margin-top:44px">Sitemap</h3>`+sitemapHTML():""));
     h+=sec(L(2)?"alt":"card",head("Budget",`<p>The investment for the scope as written${d.monthly.length?", with ongoing services listed separately":""}.</p>`)+budgetTbl(d.once,"Total",d.oneTime,"")+(d.monthly.length?`<h3 class="sub" style="margin-top:44px">Ongoing services (monthly)</h3>`+budgetTbl(d.monthly,"Monthly total",d.perMonth," / mo"):"")+(notInHTML?`<div style="margin-top:28px">${notInHTML}</div>`:"")+(directHTML?`<div style="margin-top:28px">${directHTML}</div>`:""));
     h+=sec(L(2)?"card":"alt",head("Timeline",`<p>About ${plural(weeks,"week")} from kickoff to ${d.b.rows.some(r=>r.type==="launch")?"launch":"final files"}.</p>`)+tlTbl+tlLine);
     h+=sec(L(2)?"alt":"card",head("Payment Schedule",`<p>${payIntro}</p>`)+payHTML.replace(/^<p>.*?<\/p>/,""));
