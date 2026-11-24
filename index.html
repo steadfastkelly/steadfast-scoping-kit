@@ -159,6 +159,9 @@ input[type=checkbox]:checked{background-color:var(--fg);border-color:var(--fg);b
 .chk,.gate label.rm,.mbox label.rm{display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:var(--sf-space-3)!important;min-height:var(--sf-control-h);padding-block:10px;font-family:var(--body)!important;font-size:var(--sf-text-body)!important;font-weight:400!important;line-height:1.5;letter-spacing:0!important;text-transform:none!important;color:var(--fg)!important;cursor:pointer}
 .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--sf-gap-group) var(--sf-space-5)}
 .propgrid .wide{grid-column:1/-1}
+/* Fields in one row share one line: a label is pushed to the bottom of its cell, so a one-line label sits level with
+   the last line of a two-line label beside it and the field boxes line up. */
+.propgrid>label:not(.chk):not(.wide){display:flex;flex-direction:column;justify-content:flex-end}
 .propgrid .objs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:var(--sf-space-3)}
 .propgrid textarea{line-height:1.5}
 /* The timeline settings are a control strip: on the paper between a 2px rule and a hairline. */
@@ -255,6 +258,11 @@ input[type=checkbox]:checked{background-color:var(--fg);border-color:var(--fg);b
 .tot .t{min-width:0}
 .tot .t .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--sf-text-h3);font-weight:500;line-height:1.25}
 .tot .t:first-child .v{font-size:var(--sf-text-figure);line-height:1.1}
+/* One line across the row: every figure sits on the headline figure's baseline (a zero-width strut at that size sets
+   each line box), and every label starts on the same line under it, however many lines a label runs to. */
+.tot{align-items:start}
+.tot .t .v{line-height:1.1}
+.tot .t .v::before{content:"\200b";font-size:var(--sf-text-figure);line-height:1.1}
 .tot .t .k{font-variant-numeric:normal;font-family:var(--label);font-size:var(--sf-text-label);font-weight:500;line-height:1.3;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2);margin-top:var(--sf-space-1)}
 pre.out{font-family:var(--mono);font-size:var(--sf-text-small);line-height:1.45;white-space:pre-wrap;word-break:break-word;background:var(--panel);border-radius:var(--sf-radius-lg);padding:var(--sf-space-5);max-height:420px;overflow:auto;margin:0}
 
@@ -1007,7 +1015,7 @@ function renderBuilder(){
   const t=scopeTotals(), wv=wavesOn();
   renderOptBar();
   const wt=wv?waveTotals():null;
-  document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">${multi()?esc(curOpt().name):"Scope total"}</div></div>${wt?`<div class="t"><div class="v">${money(wt.a)}</div><div class="k">Wave A + program</div></div><div class="t"><div class="v">${money(wt.b)}</div><div class="k">Wave B</div></div>`:""}<div class="t"><div class="v">${t.th} h</div><div class="k">Production hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
+  document.getElementById("tots").innerHTML = `<div class="t"><div class="v">${money(t.tot)}</div><div class="k">${multi()?esc(curOpt().name):"Scope total"}</div></div>${wt?`<div class="t"><div class="v">${money(wt.a)}</div><div class="k">Wave A + program</div></div><div class="t"><div class="v">${money(wt.b)}</div><div class="k">Wave B</div></div>`:""}<div class="t"><div class="v">${t.th} h</div><div class="k">Total hours</div></div>`+Object.keys(RATE).filter(k=>t.h[k]).map(k=>`<div class="t"><div class="v">${t.h[k]} h</div><div class="k">${ROLE[k]}</div></div>`).join("");
   document.getElementById("warns").innerHTML = warnings().map(w=>`<div class="cmp">${w}</div>`).join("");
   const sv=!!tl.streams, dv=!!tl.readout, cols=7;
   document.getElementById("bhead").innerHTML = `<tr><th>Line item</th><th>Level</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Total</th><th class="r">Hours</th><th></th></tr>`;

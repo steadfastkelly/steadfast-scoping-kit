@@ -372,3 +372,6 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-testi .who .co{font-weight:600;color:var(--sp-ink-fg)}
 @media (max-width:820px){.sp-dark .sp-whybento{grid-template-columns:minmax(0,1fr)}}
 @media print{.sp-testi{background:transparent;border:1px solid var(--sp-line);break-inside:avoid}.sp-testi blockquote p,.sp-testi .who,.sp-testi .who b,.sp-testi .who .co,.sp-testi .hl{color:var(--sp-fg)}}
+
+/* Text set side by side shares a baseline: the Client and Issued labels sit on the baseline of the first line beside them. */
+.sp-meta .c{align-items:baseline}
