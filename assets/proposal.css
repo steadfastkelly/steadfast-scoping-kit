@@ -340,3 +340,19 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-meter[data-level="T"] i{background:transparent;box-shadow:inset 0 0 0 1px var(--lv)}
 .sp-sitemap .sp-tpl{color:#323701;background:#dcdfcf;padding:2px 6px;letter-spacing:.1em}
 @media print{.sp-meter i,.sp-sitemap .sp-tpl{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Photos and graphics the account manager adds in the Proposal panel.
+   Cover: an image in place of the Steadfast mark. A graphic (transparent) sits whole at the right; a photo fills the
+   right side and fades into the ink so the title stays readable. */
+.sp-cover .sp-coverimg{position:absolute;top:0;right:0;height:100%;z-index:0;pointer-events:none}
+.sp-cover .sp-coverimg.graphic{width:auto;max-width:50%;object-fit:contain;object-position:right center}
+.sp-cover .sp-coverimg.photo{width:min(58%,820px);object-fit:cover;-webkit-mask-image:linear-gradient(to right,transparent,#000 55%);mask-image:linear-gradient(to right,transparent,#000 55%)}
+/* Why work with Steadfast: each fact as a row, photo on the left, and the fact with its graphic on the right. */
+.sp-dark .facts.pics{grid-template-columns:minmax(0,1fr);gap:16px}
+.sp-dark .facts figure{margin:0;display:grid;grid-template-columns:minmax(0,37%) minmax(0,1fr);background:var(--sf-n-800)}
+.sp-dark .facts figure.nophoto{grid-template-columns:minmax(0,1fr)}
+.sp-dark .facts figure .ph{display:block;width:100%;height:100%;aspect-ratio:1/1;object-fit:cover}
+.sp-dark .facts figcaption{align-self:center;padding:clamp(24px,5vw,56px);font-variant-numeric:normal;font-family:var(--sp-label);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;line-height:1.6;color:var(--sf-dark-body)}
+.sp-dark .facts figcaption .gr{display:block;height:48px;width:auto;max-width:100%;margin-bottom:24px}
+@media (max-width:560px){.sp-dark .facts figure{grid-template-columns:minmax(0,1fr)}.sp-dark .facts figure .ph{aspect-ratio:3/2}}
+@media print{.sp-dark .facts figure{break-inside:avoid;background:transparent;border:1px solid var(--sp-line)}.sp-dark .facts figcaption{color:var(--sp-fg)}.sp-cover .sp-coverimg{-webkit-print-color-adjust:exact;print-color-adjust:exact}}

@@ -603,6 +603,8 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
     <div class="propgrid" style="margin-top:var(--sf-gap-group)"><label class="wide chk"><input type="checkbox" id="p-showDirect" onchange="setProp('showDirect',this.checked)"> List work the client contracts directly (market research, advisory board costs). Not in our price.</label></div>
     <div id="p-direct" class="vox" hidden></div>
     <div id="p-voices" class="vox" hidden></div>
+    <div class="head" style="margin:var(--sf-space-7) 0 var(--sf-space-3)"><span class="eyebrow">Photos and graphics</span><p class="small muted">Optional. Add a background graphic to the cover, and a photo and a graphic to each fact under Why work with Steadfast. Images are resized in this browser, stay on this computer and travel inside the published proposal. Left empty, the proposal looks as it does today.</p></div>
+    <div id="p-media"></div>
     <p class="small muted" id="p-tierhint" style="margin-top:var(--sf-space-3)"></p>
     <div class="toolbar" style="margin:var(--sf-gap-group) 0 0"><button class="pri" onclick="openPreview()">Preview Proposal</button><button onclick="openPublish()">Publish Proposal</button></div>
     <div class="head" style="margin:var(--sf-space-7) 0 var(--sf-space-3)"><span class="eyebrow">Published proposals</span></div>
@@ -1444,6 +1446,46 @@ function renderVoices(){
    <div class="acts"><label class="chk"><input type="checkbox"${v.show?" checked":""} onchange="setVoice(${n},'show',this.checked)"> Show</label><span class="small muted" id="vx-st-${n}">${voiceStatus(v)}</span><button class="sm" onclick="delVoice(${n})">Remove</button></div></div>`).join("")+
    `<button class="sm" onclick="addVoice()">Add a voice</button>`;
 }
+/* Photos and graphics for the proposal. Kept apart from prop (which saves on every keystroke) under its own key.
+   Each image is resized in the browser and stored as a data URL, because a published proposal is one encrypted
+   document: nothing is uploaded on its own. A graphic keeps its transparency; a photo becomes a JPEG. */
+const MEDIA_SLOTS=[["cover","Cover: background graphic or photo (replaces the Steadfast mark)"],
+  ["why0","Why Steadfast, first fact: photo"],["why0g","Why Steadfast, first fact: graphic"],
+  ["why1","Why Steadfast, second fact: photo"],["why1g","Why Steadfast, second fact: graphic"]];
+const MEDIA_MAX=1800000; // characters across every image, so a published proposal stays well under the server's request limit
+let media={};
+function loadMedia(){ try{ media=JSON.parse(localStorage.getItem("sowkit.media")||"{}")||{}; }catch(e){ media={}; } }
+function saveMedia(){ try{ localStorage.setItem("sowkit.media",JSON.stringify(media)); return true; }catch(e){ return false; } }
+const mediaSize=()=>Object.values(media).reduce((a,v)=>a+(typeof v==="string"?v.length:0),0);
+const readAs=(file,how)=>new Promise((ok,no)=>{ const r=new FileReader(); r.onload=()=>ok(r.result); r.onerror=()=>no(new Error("That file could not be read.")); r[how](file); });
+async function mediaFromFile(file,isPhotoSlot){
+  if(!/^image\//.test(file.type)) throw new Error("Choose an image: JPG, PNG, WebP or SVG.");
+  if(file.type==="image/svg+xml"){ if(file.size>300000) throw new Error("That SVG is over 300 KB. Simplify it or export a PNG."); return {url:await readAs(file,"readAsDataURL"),alpha:true}; }
+  const img=await new Promise(async(ok,no)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>no(new Error("That image could not be opened.")); i.src=await readAs(file,"readAsDataURL"); });
+  const max=isPhotoSlot?1400:1600, k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)), w=Math.max(1,Math.round(img.naturalWidth*k)), h=Math.max(1,Math.round(img.naturalHeight*k));
+  const c=document.createElement("canvas"); c.width=w; c.height=h; const x=c.getContext("2d"); x.drawImage(img,0,0,w,h);
+  let alpha=false; if(!isPhotoSlot){ const d=x.getImageData(0,0,w,h).data; for(let n=3;n<d.length;n+=4*97){ if(d[n]<250){ alpha=true; break; } } }
+  if(!alpha){ const j=document.createElement("canvas"); j.width=w; j.height=h; const y=j.getContext("2d"); y.fillStyle="#fff"; y.fillRect(0,0,w,h); y.drawImage(c,0,0); return {url:j.toDataURL("image/jpeg",.82),alpha:false}; }
+  const webp=c.toDataURL("image/webp",.9); return {url:webp.startsWith("data:image/webp")?webp:c.toDataURL("image/png"),alpha:true};
+}
+async function setMedia(k,inp){
+  const f=inp.files&&inp.files[0], st=document.getElementById("pm-st"); if(!f) return; st.textContent="";
+  try{ const m=await mediaFromFile(f,k==="why0"||k==="why1"), was=media[k], wasKind=media[k+"Kind"];
+    media[k]=m.url; media[k+"Kind"]=m.alpha?"graphic":"photo";
+    if(mediaSize()>MEDIA_MAX||!saveMedia()){ if(was){ media[k]=was; media[k+"Kind"]=wasKind; } else { delete media[k]; delete media[k+"Kind"]; } saveMedia(); throw new Error("That image takes the proposal over its size limit. Use a smaller image, or remove another one first."); }
+  }catch(e){ st.textContent=e.message||String(e); }
+  renderMedia(); refreshPreview();
+}
+function delMedia(k){ delete media[k]; delete media[k+"Kind"]; saveMedia(); renderMedia(); refreshPreview(); }
+function renderMedia(){
+  const box=document.getElementById("p-media"); if(!box) return;
+  box.innerHTML=`<div class="propgrid">`+MEDIA_SLOTS.map(([k,l])=>`<label class="wide">${l}${media[k]?`<span style="display:flex;align-items:center;gap:var(--sf-space-3);margin-top:var(--sf-space-2)"><img src="${media[k]}" alt="" style="height:56px;width:auto;max-width:120px;object-fit:contain;background:var(--sf-n-800,#2a2825)"><button type="button" class="sm" onclick="event.preventDefault();delMedia('${k}')">Remove</button></span>`:`<input type="file" accept="image/*" onchange="setMedia('${k}',this)">`}</label>`).join("")+`</div><div class="err" id="pm-st" aria-live="polite"></div>`;
+}
+function whyFactsHTML(){
+  const facts=["Bespoke, human-led design with 18+ years in life sciences","Senior-level, U.S.-based team, headquartered in Raleigh, NC"];
+  if(!facts.some((_,n)=>media["why"+n]||media["why"+n+"g"])) return `<div class="facts">${facts.map(t=>`<div>${t}</div>`).join("")}</div>`;
+  return `<div class="facts pics">${facts.map((t,n)=>`<figure${media["why"+n]?"":' class="nophoto"'}>${media["why"+n]?`<img class="ph" src="${media["why"+n]}" alt="">`:""}<figcaption>${media["why"+n+"g"]?`<img class="gr" src="${media["why"+n+"g"]}" alt="">`:""}${t}</figcaption></figure>`).join("")}</div>`;
+}
 /* Sitemap (website proposals): one page per line, "Page | Level | Note"; a line starting with # is a section row, which
    may carry its own level when its landing page is scoped. Level: L1, L2, L3, or T for a shared layout with no design
    of its own; "L2 template" keeps the level and adds a Template label. Blank means no sitemap section at all. */
@@ -1693,7 +1735,7 @@ function proposalPageOne(){
   const hasQA=d.items.some(x=>/QA, Accessibility|Landing Page|Single-Page Website|Template Website/.test(x.i.base));
 
   // Cover and the client strip
-  h+=`<header class="sp-cover">${LOGO.s}<div class="wrapw"><div class="top">${LOGO.h}<span class="eb">Prepared for ${co}${partner?`, in partnership with ${esc(partner)}`:""}</span></div><h1>${title}</h1><div class="sub">Proposal <span class="pill">v${esc(prop.version||1)}</span></div></div></header>`;
+  h+=`<header class="sp-cover">${media.cover?`<img class="sp-coverimg ${media.coverKind==="photo"?"photo":"graphic"}" src="${media.cover}" alt="">`:LOGO.s}<div class="wrapw"><div class="top">${LOGO.h}<span class="eb">Prepared for ${co}${partner?`, in partnership with ${esc(partner)}`:""}</span></div><h1>${title}</h1><div class="sub">Proposal <span class="pill">v${esc(prop.version||1)}</span></div></div></header>`;
   h+=`<div class="sp-meta"><div class="wrapw"><div class="c"><span class="eb">Client</span><div><b>${co}${partner?`, in partnership with ${esc(partner)}`:""}</b><div class="s">${contact?esc(contact):DRAFT("Contact name")}${prop.email?`, ${esc(prop.email)}`:""}</div></div></div>
     <div class="c"><span class="eb">Issued</span><div><b>${esc(tok["Proposal.Date"])}</b><div class="s">Version ${esc(prop.version||1)}</div><div class="xs">Valid until ${esc(tok["Proposal.ValidUntil"])}</div></div></div></div></div>`;
 
@@ -1809,7 +1851,7 @@ function proposalPageOne(){
       <div><i>&rarr;</i><b>Complex science is our wheelhouse.</b><p>Nearly 20 years in life sciences have taught us how to make sophisticated information clear, compelling, and useful without compromising its substance.</p></div>
       <div><i>&rarr;</i><b>No templates. No shortcuts.</b><p>Just thoughtful work that raises the bar. We tighten the story, refine the visuals, and build a foundation you won't need to revisit for years.</p></div>
       <div><i>&rarr;</i><b>A senior team, start to finish.</b><p>Bespoke, human-led design from a senior-level, U.S.-based team, so the people who plan the work are the people who make it.</p></div></div>
-      <div class="facts"><div>Bespoke, human-led design with 18+ years in life sciences</div><div>Senior-level, U.S.-based team, headquartered in Raleigh, NC</div></div>
+      ${whyFactsHTML()}
       <a class="visit" href="${FIRM.site}" target="_blank" rel="noopener">Visit the Steadfast website &rarr;</a></div></section>`;
 
   // Terms & Conditions
@@ -2121,7 +2163,7 @@ function start(){
   }
   const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
   for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
-  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); renderBuilder(); renderProp(); route(); loadPublished();
+  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); loadMedia(); renderBuilder(); renderProp(); renderMedia(); route(); loadPublished();
 }
 function lock(){ forgetPw(); location.reload(); }
 (function init(){
