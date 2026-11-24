@@ -356,3 +356,19 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-dark .facts figcaption .gr{display:block;height:48px;width:auto;max-width:100%;margin-bottom:24px}
 @media (max-width:560px){.sp-dark .facts figure{grid-template-columns:minmax(0,1fr)}.sp-dark .facts figure .ph{aspect-ratio:3/2}}
 @media print{.sp-dark .facts figure{break-inside:avoid;background:transparent;border:1px solid var(--sp-line)}.sp-dark .facts figcaption{color:var(--sp-fg)}.sp-cover .sp-coverimg{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Why work with Steadfast with a testimonial: two columns, the quote first, the facts stacked beside it. */
+.sp-dark .sp-whybento{display:grid;grid-template-columns:minmax(0,36%) minmax(0,1fr);gap:16px;margin-top:48px;align-items:stretch}
+.sp-dark .sp-whybento .facts{margin-top:0;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:16px}
+.sp-dark .sp-whybento .facts>div{display:flex;align-items:center}
+.sp-testi{margin:0;background:var(--sf-n-800);padding:clamp(24px,4vw,56px);display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+.sp-testi blockquote{margin:0}
+.sp-testi blockquote p{max-width:none;font-size:1.0625rem;line-height:1.65;color:var(--sf-dark-body)}
+.sp-testi .hl{font-weight:500;color:var(--sp-ink-fg)}
+.sp-testi figcaption{display:flex;align-items:center;gap:16px}
+.sp-testi .hs{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none}
+.sp-testi .who{display:flex;flex-direction:column;gap:2px;font-size:.875rem;line-height:1.5;color:var(--sf-dark-body)}
+.sp-testi .who b{font-family:var(--sp-label);font-weight:500;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sp-ink-fg);margin-bottom:4px}
+.sp-testi .who .co{font-weight:600;color:var(--sp-ink-fg)}
+@media (max-width:820px){.sp-dark .sp-whybento{grid-template-columns:minmax(0,1fr)}}
+@media print{.sp-testi{background:transparent;border:1px solid var(--sp-line);break-inside:avoid}.sp-testi blockquote p,.sp-testi .who,.sp-testi .who b,.sp-testi .who .co,.sp-testi .hl{color:var(--sp-fg)}}

@@ -603,6 +603,8 @@ abbr.gl:hover{background:var(--bg2)} abbr.gl:focus-visible{outline:2px solid var
     <div class="propgrid" style="margin-top:var(--sf-gap-group)"><label class="wide chk"><input type="checkbox" id="p-showDirect" onchange="setProp('showDirect',this.checked)"> List work the client contracts directly (market research, advisory board costs). Not in our price.</label></div>
     <div id="p-direct" class="vox" hidden></div>
     <div id="p-voices" class="vox" hidden></div>
+    <div class="head" style="margin:var(--sf-space-7) 0 var(--sf-space-3)"><span class="eyebrow">Testimonial</span><p class="small muted">Optional. One client quote beside the facts under Why work with Steadfast. Paste it exactly as the person approved it; never write or reword a quote for someone. It shows only when it has a quote and a name and the approval box is ticked.</p></div>
+    <div id="p-testi"></div>
     <div class="head" style="margin:var(--sf-space-7) 0 var(--sf-space-3)"><span class="eyebrow">Photos and graphics</span><p class="small muted">Optional. Add a background graphic to the cover, and a photo and a graphic to each fact under Why work with Steadfast. Images are resized in this browser, stay on this computer and travel inside the published proposal. Left empty, the proposal looks as it does today.</p></div>
     <div id="p-media"></div>
     <p class="small muted" id="p-tierhint" style="margin-top:var(--sf-space-3)"></p>
@@ -1401,9 +1403,9 @@ function timelineText(){
    Acceptance of Proposal. Client name, dates and totals are PandaDoc variables, filled after creation,
    so they stay linked everywhere they appear. */
 let prop={title:"",company:"",partner:"",first:"",last:"",email:"",date:"",version:1,tier:"auto",overview:"",obj:["","",""],sitemap:"",firmName:"Taylor Tsantles",firmTitle:"Founder & Creative Director",
-  bigTerms:false,showVoices:false,voicesTitle:"Retina Voices",voices:[],showDirect:false,direct:[]};
+  bigTerms:false,showVoices:false,voicesTitle:"Retina Voices",voices:[],showDirect:false,direct:[],testi:{}};
 function saveProp(){ try{localStorage.setItem("sowkit.prop",JSON.stringify(prop));}catch(e){} }
-function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} if(!Array.isArray(prop.voices)) prop.voices=[]; if(!Array.isArray(prop.direct)) prop.direct=[]; }
+function loadProp(){ try{Object.assign(prop,JSON.parse(localStorage.getItem("sowkit.prop")||"{}"));}catch(e){} if(!Array.isArray(prop.voices)) prop.voices=[]; if(!Array.isArray(prop.direct)) prop.direct=[]; if(!prop.testi||typeof prop.testi!=="object") prop.testi={}; }
 
 /* Work the client contracts directly: a partner such as a market research firm is engaged and paid by the client,
    and the proposal shows it with a rough estimate, outside our totals. A partner is named only when "Name them" is
@@ -1450,6 +1452,7 @@ function renderVoices(){
    Each image is resized in the browser and stored as a data URL, because a published proposal is one encrypted
    document: nothing is uploaded on its own. A graphic keeps its transparency; a photo becomes a JPEG. */
 const MEDIA_SLOTS=[["cover","Cover: background graphic or photo (replaces the Steadfast mark)"],
+  ["testi","Testimonial: headshot"],
   ["why0","Why Steadfast, first fact: photo"],["why0g","Why Steadfast, first fact: graphic"],
   ["why1","Why Steadfast, second fact: photo"],["why1g","Why Steadfast, second fact: graphic"]];
 const MEDIA_MAX=1800000; // characters across every image, so a published proposal stays well under the server's request limit
@@ -1470,7 +1473,7 @@ async function mediaFromFile(file,isPhotoSlot){
 }
 async function setMedia(k,inp){
   const f=inp.files&&inp.files[0], st=document.getElementById("pm-st"); if(!f) return; st.textContent="";
-  try{ const m=await mediaFromFile(f,k==="why0"||k==="why1"), was=media[k], wasKind=media[k+"Kind"];
+  try{ const m=await mediaFromFile(f,k==="why0"||k==="why1"||k==="testi"), was=media[k], wasKind=media[k+"Kind"];
     media[k]=m.url; media[k+"Kind"]=m.alpha?"graphic":"photo";
     if(mediaSize()>MEDIA_MAX||!saveMedia()){ if(was){ media[k]=was; media[k+"Kind"]=wasKind; } else { delete media[k]; delete media[k+"Kind"]; } saveMedia(); throw new Error("That image takes the proposal over its size limit. Use a smaller image, or remove another one first."); }
   }catch(e){ st.textContent=e.message||String(e); }
@@ -1481,6 +1484,26 @@ function renderMedia(){
   const box=document.getElementById("p-media"); if(!box) return;
   box.innerHTML=`<div class="propgrid">`+MEDIA_SLOTS.map(([k,l])=>`<label class="wide">${l}${media[k]?`<span style="display:flex;align-items:center;gap:var(--sf-space-3);margin-top:var(--sf-space-2)"><img src="${media[k]}" alt="" style="height:56px;width:auto;max-width:120px;object-fit:contain;background:var(--sf-n-800,#2a2825)"><button type="button" class="sm" onclick="event.preventDefault();delMedia('${k}')">Remove</button></span>`:`<input type="file" accept="image/*" onchange="setMedia('${k}',this)">`}</label>`).join("")+`</div><div class="err" id="pm-st" aria-live="polite"></div>`;
 }
+/* Testimonial in Why work with Steadfast: one approved client quote, as the first column of a two-column layout with
+   the facts stacked beside it. Hidden unless it has a quote, a name and the approval tick. The opening words can be
+   set apart (they must match the start of the quote). Quotes never travel in a scope file. */
+const TESTI_FIELDS=[["quote","Quote, exactly as approved in writing","area"],["lead","Opening words to set apart (optional; must match the start of the quote)"],["name","Name"],["title","Title (a second line is fine)","area2"],["company","Company"]];
+const testiReady=()=>{ const t=prop.testi||{}; return !!(t.ok&&String(t.quote||"").trim()&&String(t.name||"").trim()); };
+function setTesti(k,v){ prop.testi[k]=v; saveProp(); const st=document.getElementById("pt-st"); if(st) st.textContent=testiStatus(); refreshPreview(); }
+function testiStatus(){ const t=prop.testi||{}, miss=[["quote","quote"],["name","name"]].filter(([k])=>!String(t[k]||"").trim()).map(x=>x[1]);
+  return miss.length?(String(t.quote||t.name||"").trim()?`Hidden. Missing: ${miss.join(", ")}.`:"Empty, so the proposal leaves it out."):t.ok?"Shows in the proposal.":"Hidden. Tick the approval box to include it."; }
+function renderTesti(){
+  const box=document.getElementById("p-testi"); if(!box) return; const t=prop.testi||{};
+  box.innerHTML=`<div class="propgrid">${TESTI_FIELDS.map(([k,l,kind])=>`<label class="${kind?"wide":""}">${l}${kind?`<textarea rows="${kind==="area"?4:2}" oninput="setTesti('${k}',this.value)">${esc(t[k]||"")}</textarea>`:`<input value="${esc(t[k]||"")}" oninput="setTesti('${k}',this.value)">`}</label>`).join("")}
+    <label class="wide chk"><input type="checkbox"${t.ok?" checked":""} onchange="setTesti('ok',this.checked)"> This person approved this quote in writing for use in proposals</label></div><p class="small muted" id="pt-st" style="margin-top:var(--sf-space-2)">${testiStatus()}</p>`;
+}
+function testiHTML(){
+  if(!testiReady()) return ""; const t=prop.testi, q=String(t.quote).trim().replace(/^["\u201c]+|["\u201d]+$/g,""), lead=String(t.lead||"").trim().replace(/^["\u201c]+/,"");
+  const body=lead&&q.startsWith(lead)?`<b class="hl">${esc(lead)}</b>${esc(q.slice(lead.length))}`:esc(q);
+  const lines=String(t.title||"").split(/\n/).map(x=>x.trim()).filter(Boolean);
+  return `<figure class="sp-testi"><blockquote><p>\u201c${body}\u201d</p></blockquote><figcaption>${media.testi?`<img class="hs" src="${media.testi}" alt="">`:""}<span class="who"><b>${esc(String(t.name).trim())}</b>${lines.map(x=>`<span>${esc(x)}</span>`).join("")}${String(t.company||"").trim()?`<span class="co">${esc(t.company.trim())}</span>`:""}</span></figcaption></figure>`;
+}
+function whyBlockHTML(){ const t=testiHTML(), f=whyFactsHTML(); return t?`<div class="sp-whybento">${t}${f}</div>`:f; }
 function whyFactsHTML(){
   const facts=["Bespoke, human-led design with 18+ years in life sciences","Senior-level, U.S.-based team, headquartered in Raleigh, NC"];
   if(!facts.some((_,n)=>media["why"+n]||media["why"+n+"g"])) return `<div class="facts">${facts.map(t=>`<div>${t}</div>`).join("")}</div>`;
@@ -1851,7 +1874,7 @@ function proposalPageOne(){
       <div><i>&rarr;</i><b>Complex science is our wheelhouse.</b><p>Nearly 20 years in life sciences have taught us how to make sophisticated information clear, compelling, and useful without compromising its substance.</p></div>
       <div><i>&rarr;</i><b>No templates. No shortcuts.</b><p>Just thoughtful work that raises the bar. We tighten the story, refine the visuals, and build a foundation you won't need to revisit for years.</p></div>
       <div><i>&rarr;</i><b>A senior team, start to finish.</b><p>Bespoke, human-led design from a senior-level, U.S.-based team, so the people who plan the work are the people who make it.</p></div></div>
-      ${whyFactsHTML()}
+      ${whyBlockHTML()}
       <a class="visit" href="${FIRM.site}" target="_blank" rel="noopener">Visit the Steadfast website &rarr;</a></div></section>`;
 
   // Terms & Conditions
@@ -2163,7 +2186,7 @@ function start(){
   }
   const fc=document.getElementById("fcat"); fc.querySelectorAll("option:not(:first-child)").forEach(o=>o.remove());
   for(const c of DATA.cats){ const o=document.createElement("option"); o.value=c.code; o.textContent=c.name; fc.appendChild(o); }
-  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); loadMedia(); renderBuilder(); renderProp(); renderMedia(); route(); loadPublished();
+  renderTerms(); renderLevels(); renderPacks(); renderCatalog(); loadScopeLocal(); loadTl(); loadProp(); loadMedia(); renderBuilder(); renderProp(); renderMedia(); renderTesti(); route(); loadPublished();
 }
 function lock(){ forgetPw(); location.reload(); }
 (function init(){
