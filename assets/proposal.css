@@ -375,3 +375,6 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 
 /* Text set side by side shares a baseline: the Client and Issued labels sit on the baseline of the first line beside them. */
 .sp-meta .c{align-items:baseline}
+
+/* Registered and trademark symbols: always superscript, small, and never changing the line's height. */
+.sp sup.sp-mark{font-size:.5em;line-height:0;position:relative;top:-.7em;vertical-align:baseline;font-weight:inherit;letter-spacing:0;margin-left:.04em}

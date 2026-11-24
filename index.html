@@ -1735,7 +1735,10 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 
 // With several options, the proposal is built on the lead option and compares the others in its Options section.
 const propSource = () => multi() ? leadOpt() : (curOpt().rows.length ? curOpt() : opts.list.find(o=>o.rows.length)||curOpt());
-function proposalPage(){ return withScope(propSource().rows, proposalPageOne); }
+/* Registered and trademark symbols are always superscript. This runs over the finished proposal, on text only (tags
+   and their attributes are left alone), so every ® and ™ is caught wherever it came from: the catalog, the panel or a quote. */
+const supMarks = h => h.replace(/(<[^>]*>)|(&reg;|&trade;|&#174;|&#8482;|[\u00ae\u2122])/g, (m,tag,ch) => tag ? tag : `<sup class="sp-mark">${/reg|174|\u00ae/.test(ch)?"\u00ae":"\u2122"}</sup>`);
+function proposalPage(){ return supMarks(withScope(propSource().rows, proposalPageOne)); }
 const propOptions = () => multi() ? [...opts.list.filter(o=>o.rows.length)].sort((a,b)=>(b.lead?1:0)-(a.lead?1:0)) : [];
 // What an option changes against the lead, in plain words, by deliverable.
 function optDiff(a,b){
