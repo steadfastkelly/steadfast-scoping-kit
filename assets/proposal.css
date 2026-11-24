@@ -313,7 +313,7 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 /* Sitemap table (design system 1.7 sitemap_table): Page and Level columns, beige section rows, hairline page rows,
    and a 3-step level meter beside the word. Levels are never shown by color. */
 .sp-sitemap{width:100%;border-collapse:collapse;font-size:.9375rem}
-.sp-sitemap th{text-align:left;font-family:var(--sp-label);font-weight:500;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sp-fg);padding:0 16px 8px}
+.sp-sitemap th{text-align:left;font-variant-numeric:normal;font-family:var(--sp-label);font-weight:500;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sp-fg);padding:0 16px 8px}
 .sp-sitemap td{padding:12px 16px;border-bottom:1px solid var(--sf-n-200);vertical-align:top}
 .sp-sitemap td:last-child,.sp-sitemap th:last-child{width:9.5em;white-space:nowrap}
 .sp-sitemap tr.grp td{background:var(--sf-paper);font-weight:600;border-bottom-color:var(--sp-bg)}
@@ -368,7 +368,7 @@ body{margin:0;background:var(--sp-bg);color:var(--sp-fg);font-family:var(--sp-bo
 .sp-testi figcaption{display:flex;align-items:center;gap:16px}
 .sp-testi .hs{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none}
 .sp-testi .who{display:flex;flex-direction:column;gap:2px;font-size:.875rem;line-height:1.5;color:var(--sf-dark-body)}
-.sp-testi .who b{font-family:var(--sp-label);font-weight:500;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sp-ink-fg);margin-bottom:4px}
+.sp-testi .who b{font-variant-numeric:normal;font-family:var(--sp-label);font-weight:500;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sp-ink-fg);margin-bottom:4px}
 .sp-testi .who .co{font-weight:600;color:var(--sp-ink-fg)}
 @media (max-width:820px){.sp-dark .sp-whybento{grid-template-columns:minmax(0,1fr)}}
 @media print{.sp-testi{background:transparent;border:1px solid var(--sp-line);break-inside:avoid}.sp-testi blockquote p,.sp-testi .who,.sp-testi .who b,.sp-testi .who .co,.sp-testi .hl{color:var(--sp-fg)}}

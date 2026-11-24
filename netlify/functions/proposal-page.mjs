@@ -17,12 +17,12 @@ const page = (body, data) => `<!doctype html>
 <style>.sp-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px clamp(24px,5vw,48px);background:var(--sp-ink)}
 .sp-gate form{background:var(--sp-bg);border-radius:0;padding:32px;width:100%;max-width:400px;display:grid;gap:24px}
 .sp-gate .logo{display:block;width:32px;height:auto;color:var(--sp-ink)}
-.sp-gate h1{font-family:var(--sp-display);font-weight:500;font-size:clamp(1.5rem,3vw,1.75rem);line-height:1.15;margin:8px 0 0}
+.sp-gate h1{font-variant-numeric:normal;font-family:var(--sp-display);font-weight:500;font-size:clamp(1.5rem,3vw,1.75rem);line-height:1.15;margin:8px 0 0}
 .sp-gate p{margin:0;color:var(--sp-fg2);font-size:.9375rem}
 .sp-gate input{font:inherit;font-size:1rem;min-height:44px;padding:0 16px;border:1px solid var(--sp-edge,#7f786d);border-radius:6px;background:var(--sp-card);color:var(--sp-fg);width:100%}
 .sp-gate input:focus-visible{outline:2px solid var(--sp-fg);outline-offset:2px}
 .sp-gate .sp-btn{justify-self:start}
-.sp-gate .eb{font-family:var(--sp-label);font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sp-fg2)}</style>
+.sp-gate .eb{font-variant-numeric:normal;font-family:var(--sp-label);font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sp-fg2)}</style>
 </head><body>${body}${data ? `<script id="sp-data" type="application/json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script><script src="/assets/viewer.js"></script>` : ""}</body></html>`;
 
 const notFound = () => new Response(page(`<div class="sp-gate"><form>${BADGE}<h1>Nothing here</h1><p>This proposal isn't published at this address. If you followed a link from Steadfast, ask your contact for a fresh one.</p><p><a href="https://www.steadfastdesignfirm.com/">steadfastdesignfirm.com</a></p></form></div>`), { status: 404, headers: HEADERS });
