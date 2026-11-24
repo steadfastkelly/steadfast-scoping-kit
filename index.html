@@ -992,6 +992,8 @@ function doImport(){
   if(!opts.list.some(o=>o.lead)) opts.list[0].lead=true;
   opts.active=opts.list.indexOf(r.list.find(o=>o.lead)||r.list[0]); if(opts.active<0) opts.active=0;
   scope=curOpt().rows; saveScope(); closeImport(); impName="";
+  // A file that puts rows in Wave B means the plan runs in two waves, so the tick comes on with it.
+  if(!tl.waves && r.list.some(o=>o.rows.some(x=>x.wave==="B"))){ tl.waves=true; saveTl(); const c=document.getElementById("tl-waves"); if(c) c.checked=true; const w=document.getElementById("tl-wbbox"); if(w) w.hidden=false; }
   if(r.proposal){ if(("company" in r.proposal&&r.proposal.company!==prop.company)||("title" in r.proposal&&r.proposal.title!==prop.title)) prop.clickupTask=""; Object.assign(prop,r.proposal); saveProp(); renderProp(); }
   renderBuilder();
   const rows=r.list.reduce((a,o)=>a+o.rows.length,0);
